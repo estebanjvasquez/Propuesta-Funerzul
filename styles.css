@@ -182,13 +182,18 @@ a {
 
 /* Barra de Emergencia Fija */
 .emergency-bar {
-    background-color: var(--color-error);
+    background-color: var(--color-secondary);
     color: var(--color-surface);
     padding: 10px 0;
     font-size: 14px;
     font-weight: 500;
     position: relative;
     z-index: 100;
+}
+
+/* Hide any emergency icon if present */
+.emergency-bar .emergency-icon {
+    display: none;
 }
 
 .emergency-bar .container {
@@ -919,6 +924,20 @@ a {
     text-align: center;
     font-size: 13px;
     color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-icon {
+    height: 24px;
+    width: auto;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+/* Ensure favicon appears */
+link[rel="icon"] {
+    /* No additional styles needed */
 }
 
 /* Floating WhatsApp Button */

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Funeraria del Zulia | Servicios Funerarios y Previsión Familiar 24 Horas</title>
+    <link rel="icon" href="favicon.png" type="image/png">
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Estado Zulia. Atención 24/7, cremación, traslados y planes de previsión familiar con dignidad y respeto eterno.">
     <link rel="stylesheet" href="styles.css">
     
@@ -45,10 +46,7 @@
     <div class="emergency-bar">
         <div class="container">
             <div class="info">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                </svg>
-                <span>Atención de Emergencias Inmediata 24/7 en Maracaibo y todo el Zulia</span>
+                <span class="emergency-text">Atención de Emergencias Inmediata 24/7 en Maracaibo y todo el Zulia</span>
             </div>
             <a href="tel:+582610000000" class="phone-link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -63,9 +61,7 @@
     <header class="header">
         <div class="container">
             <a href="index.html" class="logo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--color-secondary-light)">
-                    <path d="M12 2L2 22h20L12 2zm0 3.99L19.53 19H4.47L12 5.99zM13 16h-2v2h2v-2zm0-6h-2v4h2v-4z"/>
-                </svg>
+                <img src="logo.png" alt="Logo Funeraria del Zulia" class="logo-icon" style="height:48px; width:auto; margin-right:10px;">
                 Funeraria del Zulia
             </a>
             
@@ -75,7 +71,7 @@
                     <li><a href="#obituarios">Obituarios</a></li>
                     <li><a href="#preguntas">Preguntas Frecuentes</a></li>
                     <li><a href="#contacto">Contacto</a></li>
-                    <li><a href="admin.html" style="color: var(--color-secondary-light); font-weight: 700;">Panel Admin</a></li>
+                    <li><a href="admin.html" style="background-color: var(--color-primary-light); color: var(--color-secondary-light); font-weight: 700; padding: 5px 10px; border-radius: 4px;">Panel Admin</a></li>
                 </ul>
             </nav>
 
@@ -379,15 +375,14 @@
                 <!-- Mapa Simulado -->
                 <div>
                     <h4>Nuestra Ubicación</h4>
-                    <div class="simulated-map">
-                        <div class="simulated-map-overlay">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                            </svg>
-                            <span style="font-weight: 600; font-size: 13px;">Maracaibo, Estado Zulia</span>
-                            <span style="font-size: 11px; opacity: 0.8;">Av. Delicias y Calle 77 (5 de Julio)</span>
-                        </div>
-                    </div>
+<div class="map-container">
+    <a href="https://www.google.com/maps/search/?api=1&query=10.658488620454362%2C-71.60468907313687" target="_blank" class="map-link">
+        <iframe src="https://maps.google.com/maps?q=10.658488620454362,-71.60468907313687&z=15&output=embed" width="100%" height="300" style="border:0; border-radius:8px;" allowfullscreen="" loading="lazy"></iframe>
+    </a>
+    <p style="margin-top:8px; font-weight:600;">Dirección: Av. Delicias y Calle 77 (5 de Julio), Maracaibo 4001, Zulia, Venezuela</p>
+    <p>Teléfono: <a href="tel:+582610000000" style="color:var(--color-primary);">+58 261 000 0000</a></p>
+    <p>Horario de atención: Lunes a Domingo, 00:00 - 23:59</p>
+</div>
                 </div>
             </div>
 
