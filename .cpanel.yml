@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/legadoholding/public_html/funerzul
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -R index.html css js images terminos-condiciones.txt admin $DEPLOYPATH
