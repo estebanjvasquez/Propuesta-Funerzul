@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | Funeraria del Zulia</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- CABECERA SIMPLE ADMIN -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--color-secondary-light)">
+                    <path d="M12 2L2 22h20L12 2zm0 3.99L19.53 19H4.47L12 5.99zM13 16h-2v2h2v-2zm0-6h-2v4h2v-4z"/>
+                </svg>
+                Panel de Control - Funeraria del Zulia
+            </a>
+            
+            <a href="index.html" class="btn btn-outline" style="color: var(--color-surface); border-color: var(--color-surface);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                Volver al Sitio
+            </a>
+        </div>
+    </header>
+
+    <main class="container admin-main">
+        
+        <!-- HEADER DE ACCIÓN -->
+        <div class="admin-header">
+            <div>
+                <h1 style="font-size: 32px; color: var(--color-primary);">Gestión de Obituarios</h1>
+                <p>Cargue, modifique y elimine los obituarios vigentes que se muestran en el sitio principal.</p>
+            </div>
+        </div>
+
+        <!-- ESTADÍSTICAS DEL PANEL -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <span class="stat-label">Total Homenajes</span>
+                <span class="stat-value" id="statTotal">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Servicios de Velación</span>
+                <span class="stat-value" id="statVelacion">0</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Servicios de Cremación</span>
+                <span class="stat-value" id="statCremacion">0</span>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE TRABAJO EN GRID -->
+        <div class="admin-grid">
+            
+            <!-- FORMULARIO DE CARGA / EDICIÓN -->
+            <div class="admin-card">
+                <h3 class="admin-card-title" id="formTitle">Cargar Nuevo Obituario</h3>
+                
+                <form id="obituaryForm" onsubmit="handleFormSubmit(event)">
+                    <!-- ID oculto para edición -->
+                    <input type="hidden" id="obituaryId">
+
+                    <div class="form-group">
+                        <label for="fullName" class="form-label">Nombre Completo del Fallecido</label>
+                        <input type="text" id="fullName" class="form-control" placeholder="Ej. Sr. Carlos Eduardo Rincón" required>
+                    </div>
+
+                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label for="birthYear" class="form-label">Año de Nacimiento</label>
+                            <input type="number" id="birthYear" class="form-control" placeholder="Ej. 1945" min="1900" max="2026" required>
+                        </div>
+                        <div>
+                            <label for="deathDate" class="form-label">Fecha de Fallecimiento</label>
+                            <input type="date" id="deathDate" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="serviceType" class="form-label">Tipo de Servicio</label>
+                        <select id="serviceType" class="form-control" required>
+                            <option value="Velación">Velación</option>
+                            <option value="Cremación">Cremación</option>
+                            <option value="Homenaje Póstumo">Homenaje Póstumo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="locationName" class="form-label">Lugar de Velación / Cremación</label>
+                        <input type="text" id="locationName" class="form-control" placeholder="Ej. Capilla San Judas - Sede Principal" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="locationAddress" class="form-label">Dirección del Lugar</label>
+                        <input type="text" id="locationAddress" class="form-control" placeholder="Ej. Av. Delicias, Maracaibo" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventSchedule" class="form-label">Información de Oficios / Sepelio (Fecha y Hora)</label>
+                        <input type="text" id="eventSchedule" class="form-control" placeholder="Ej. Sepelio: 25 de Octubre a las 3:00 PM, Cementerio Jardines" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="biography" class="form-label">Biografía Breve o Nota Recordatoria</label>
+                        <textarea id="biography" class="form-control" placeholder="Escriba unas palabras en memoria..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photoUrl" class="form-label">Enlace de la Fotografía (URL)</label>
+                        <input type="url" id="photoUrl" class="form-control" placeholder="Ej. https://enlace-imagen.com/foto.jpg">
+                        <label class="form-label" style="margin-top: 12px; font-size: 11px; font-weight: normal; color: var(--color-text-muted);">
+                            O elija una foto de muestra premium preestablecida o cargue una propia:
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+                            <input type="file" id="photoFile" accept="image/*" class="form-control" style="flex: 1;">
+                            <button type="button" class="btn btn-outline" onclick="handleFileUpload()">Cargar</button>
+                        </div>
+                        <div class="sample-photos-grid">
+                            <div class="sample-photo-option" data-url="https://lh3.googleusercontent.com/aida-public/AB6AXuD4wysETBJuqfFrejdGNDb6SxDwIZ5zigW4i56-F68zhQP-5EuBdYfSDtOBRueThxu2ey67DFmIgHsbFqoTOtB9ZDHLslr8-5VEwtwIyH7TXnGKGFpLNJE2BsS0IkO4t8_6zYQrx03jM1SOS9j5BSXSLNbABy8k-5lFNYy3rWWR6SYC_hQ0SLHn5Ow8cIEMcF02hLR2Icl4uGuaAP_6bz-JjfuHq453W7ILqcY6I7U3sMOd7uDcu7M7iwmboogoptHZyq50-3rKDRc" onclick="selectSamplePhoto(this)">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4wysETBJuqfFrejdGNDb6SxDwIZ5zigW4i56-F68zhQP-5EuBdYfSDtOBRueThxu2ey67DFmIgHsbFqoTOtB9ZDHLslr8-5VEwtwIyH7TXnGKGFpLNJE2BsS0IkO4t8_6zYQrx03jM1SOS9j5BSXSLNbABy8k-5lFNYy3rWWR6SYC_hQ0SLHn5Ow8cIEMcF02hLR2Icl4uGuaAP_6bz-JjfuHq453W7ILqcY6I7U3sMOd7uDcu7M7iwmboogoptHZyq50-3rKDRc" alt="Caballero 1">
+                            </div>
+                            <div class="sample-photo-option" data-url="https://lh3.googleusercontent.com/aida-public/AB6AXuB1gU520waL1whYt90ih-ayFvzvPO-UHnOL2Zn1gSpANVG86fNdHCgvquYDX05IUQaQNbZuC-p-1F1-eYc_NjNkTxONzGYqAyMlKZujgUdurTVXhgeGgurMuazbbE85ebGsilOqlEN0aNt-5lr1jJmyk_Rx-D6pqgeX8Q-tWsQIW-rFcQaErR7ahJv_OA8737C7_MgS_FOqD6lBj0J0kDHhpmPg6KIMVuuBSJ2R17iw89HKATwLAGGqi-BEBGlrdq1mVRHvO6qFisA" onclick="selectSamplePhoto(this)">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1gU520waL1whYt90ih-ayFvzvPO-UHnOL2Zn1gSpANVG86fNdHCgvquYDX05IUQaQNbZuC-p-1F1-eYc_NjNkTxONzGYqAyMlKZujgUdurTVXhgeGgurMuazbbE85ebGsilOqlEN0aNt-5lr1jJmyk_Rx-D6pqgeX8Q-tWsQIW-rFcQaErR7ahJv_OA8737C7_MgS_FOqD6lBj0J0kDHhpmPg6KIMVuuBSJ2R17iw89HKATwLAGGqi-BEBGlrdq1mVRHvO6qFisA" alt="Dama 1">
+                            </div>
+                            <div class="sample-photo-option" data-url="https://lh3.googleusercontent.com/aida-public/AB6AXuADbcbhtPRHER-G6QGu6cI5hxMMOBhS6MuCFA-drR5NvRCXVfjEH6Jc1MNWWcMnIbE981YES2bJ9Jq4FIM9v8OH4JAmGrE-oWTZHYIYOQedONyXGakQRnL_G7S3m93Sd54Np6GdVfvbQdtfylGR_zQMcBmIVNH0piyJhaBATQf4d7ijGPPqPbd4r5D4cJzHG5If1l9KejGRTdWMDf5DlN-5jF_S-pNjxvRd8N7Lqe5tRarp3IxuKMPCy-cWCL2il3XhAfPL_WcJwok" onclick="selectSamplePhoto(this)">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuADbcbhtPRHER-G6QGu6cI5hxMMOBhS6MuCFA-drR5NvRCXVfjEH6Jc1MNWWcMnIbE981YES2bJ9Jq4FIM9v8OH4JAmGrE-oWTZHYIYOQedONyXGakQRnL_G7S3m93Sd54Np6GdVfvbQdtfylGR_zQMcBmIVNH0piyJhaBATQf4d7ijGPPqPbd4r5D4cJzHG5If1l9KejGRTdWMDf5DlN-5jF_S-pNjxvRd8N7Lqe5tRarp3IxuKMPCy-cWCL2il3XhAfPL_WcJwok" alt="Caballero 2">
+                            </div>
+                            <div class="sample-photo-option" data-url="https://lh3.googleusercontent.com/aida-public/AB6AXuD2vdWv17AGbSU7dt4LYFRdpVyU6ZUfxOts_TByqNVCmi3xjTZiN4d5FPy999Zw0F5ws0bmrfSxKauIldyIinR8rZg2ZGAl6riTfslzZPlhvZ-xlsrhkw_KDzsX1bh8sQzUGKwOhKO3VjJeqV0N-laDB_OpZWBdyFsPwf3du7waaM_-7MFwt_rBG5OYRJVwck-gYYuoewsbp9zIlYt5oibOlIk0A7mYnf4G4LnIPEDR0_e4JLBLm39-rxik_dtg8J9yRCzUs3tuYgY" onclick="selectSamplePhoto(this)">
+                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2vdWv17AGbSU7dt4LYFRdpVyU6ZUfxOts_TByqNVCmi3xjTZiN4d5FPy999Zw0F5ws0bmrfSxKauIldyIinR8rZg2ZGAl6riTfslzZPlhvZ-xlsrhkw_KDzsX1bh8sQzUGKwOhKO3VjJeqV0N-laDB_OpZWBdyFsPwf3du7waaM_-7MFwt_rBG5OYRJVwck-gYYuoewsbp9zIlYt5oibOlIk0A7mYnf4G4LnIPEDR0_e4JLBLm39-rxik_dtg8J9yRCzUs3tuYgY" alt="Dama 2">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button type="submit" class="btn btn-primary" style="flex: 2;" id="submitBtn">Guardar Obituario</button>
+                        <button type="button" class="btn btn-outline" style="flex: 1;" id="cancelBtn" onclick="resetForm()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TABLA DE OBITUARIOS EXISTENTES -->
+            <div class="admin-card">
+                <h3 class="admin-card-title">Obituarios Publicados</h3>
+                
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Fallecido</th>
+                                <th>Fecha Defunción</th>
+                                <th>Tipo Servicio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="obituariesTableBody">
+                            <!-- Se poblará dinámicamente con admin.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast">Notificación</div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
