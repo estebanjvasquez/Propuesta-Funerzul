@@ -1646,13 +1646,16 @@ textarea.form-control {
     align-items: center;
     gap: 10px;
 }
-.footer-logo .logo-text { font-size: 20px; }
+.footer-logo .logo-text { font-size: 22px; }
 .footer-logo-icon {
-    height: 36px;
-    width: 36px;
+    height: 84px;
+    width: 84px;
     object-fit: contain;
     flex-shrink: 0;
     margin-right: 0;
+}
+@media (max-width: 768px) {
+    .footer-logo-icon { height: 68px; width: 68px; }
 }
 
 /* Accesibilidad: respetar usuarios que reducen el movimiento */
