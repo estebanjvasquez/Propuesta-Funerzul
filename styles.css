@@ -7,20 +7,22 @@
 
 /* Variables de Diseño */
 :root {
-    /* Paleta de Colores Principal */
-    --color-primary: #1a2b48;          /* Azul Marino Override */
-    --color-primary-dark: #0f1c30;     /* Azul Marino Oscuro */
-    --color-primary-light: #2c3f5f;    /* Azul Marino Claro */
-    --color-secondary: #b8860b;        /* Oro Viejo Override */
-    --color-secondary-hover: #9c7108;  /* Oro Viejo Oscuro */
-    --color-secondary-light: #f7bd48;  /* Oro Viejo Brillante */
-    
-    /* Neutros */
-    --color-bg: #f8f9fa;               /* Soft White */
+    /* Paleta de Colores Principal — Azul royal/celestial del logo oficial */
+    --color-primary: #1F4E79;          /* Azul royal del logo (aro/texto) */
+    --color-primary-dark: #163A5F;     /* Azul profundo (hero/footer) */
+    --color-primary-light: #2F6DB3;    /* Azul royal claro (hover/ala) */
+    --color-celeste: #8FB8DD;          /* Azul celestial (acento secundario) */
+    --color-celeste-light: #C3DAEE;    /* Celeste claro (reflejos) */
+    --color-secondary: #b8860b;        /* Oro viejo — acento sutil */
+    --color-secondary-hover: #9c7108;  /* Oro viejo oscuro */
+    --color-secondary-light: #f7bd48;  /* Oro viejo brillante */
+
+    /* Neutros (tono frío sutil para armonizar con el azul) */
+    --color-bg: #f5f8fc;               /* Blanco azulado suave */
     --color-surface: #ffffff;          /* Blanco Puro */
-    --color-surface-dim: #d9dadb;      /* Gris Medio */
-    --color-surface-low: #f3f4f5;      /* Gris Claro */
-    --color-surface-high: #e7e8e9;     /* Gris Alto */
+    --color-surface-dim: #d6dde6;      /* Gris azulado medio */
+    --color-surface-low: #eef4fb;      /* Celeste muy claro (secciones) */
+    --color-surface-high: #e2e9f2;     /* Gris azulado alto */
     
     /* Tipografía y Acompañamiento */
     --color-text: #191c1d;             /* Texto Oscuro */
@@ -37,9 +39,9 @@
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
     
     /* Sombras */
-    --shadow-sm: 0 2px 8px rgba(26, 43, 72, 0.04);
-    --shadow-md: 0 4px 20px rgba(26, 43, 72, 0.06);
-    --shadow-lg: 0 10px 30px rgba(26, 43, 72, 0.1);
+    --shadow-sm: 0 2px 8px rgba(31, 78, 121, 0.04);
+    --shadow-md: 0 4px 20px rgba(31, 78, 121, 0.06);
+    --shadow-lg: 0 10px 30px rgba(31, 78, 121, 0.1);
     
     /* Bordes Redondeados */
     --radius-sm: 4px;
@@ -182,13 +184,14 @@ a {
 
 /* Barra de Emergencia Fija */
 .emergency-bar {
-    background-color: var(--color-secondary);
+    background-color: var(--color-primary-dark);
     color: var(--color-surface);
     padding: 10px 0;
     font-size: 14px;
     font-weight: 500;
     position: relative;
     z-index: 100;
+    border-bottom: 1px solid rgba(143, 184, 221, 0.18);
 }
 
 /* Hide any emergency icon if present */
@@ -211,8 +214,8 @@ a {
 }
 
 .emergency-bar .phone-link {
-    background-color: var(--color-surface);
-    color: var(--color-error);
+    background-color: var(--color-secondary);
+    color: var(--color-primary-dark);
     padding: 6px 16px;
     border-radius: var(--radius-full);
     font-weight: 700;
@@ -223,7 +226,7 @@ a {
 }
 
 .emergency-bar .phone-link:hover {
-    background-color: var(--color-bg);
+    background-color: var(--color-secondary-light);
 }
 
 /* Cabecera / Header */
@@ -325,7 +328,7 @@ a {
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(15, 28, 48, 0.8) 0%, rgba(26, 43, 72, 0.95) 100%);
+    background: linear-gradient(180deg, rgba(31, 78, 121, 0.78) 0%, rgba(22, 58, 95, 0.96) 100%);
     z-index: 2;
 }
 
@@ -505,7 +508,7 @@ a {
 
 .search-input:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(26, 43, 72, 0.1);
+    box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.1);
 }
 
 .search-icon {
@@ -620,7 +623,7 @@ a {
     position: absolute;
     top: 16px;
     right: 16px;
-    background-color: rgba(26, 43, 72, 0.9);
+    background-color: rgba(22, 58, 95, 0.9);
     color: var(--color-surface);
     padding: 4px 12px;
     border-radius: var(--radius-full);
@@ -628,6 +631,7 @@ a {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
 }
 
@@ -908,7 +912,7 @@ a {
     justify-content: center;
     align-items: center;
     gap: 8px;
-    background-color: rgba(26, 43, 72, 0.6);
+    background-color: rgba(31, 78, 121, 0.6);
     color: var(--color-surface);
 }
 
@@ -993,7 +997,8 @@ link[rel="icon"] {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(15, 28, 48, 0.7);
+    background-color: rgba(22, 58, 95, 0.7);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
@@ -1082,7 +1087,7 @@ link[rel="icon"] {
 
 .form-control:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(26, 43, 72, 0.08);
+    box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.08);
 }
 
 textarea.form-control {
@@ -1414,13 +1419,13 @@ textarea.form-control {
     --gradient-gold: linear-gradient(135deg, #f7bd48 0%, #b8860b 55%, #9c7108 100%);
 }
 
-/* Logo: imagotipo con texto en degradado dorado */
+/* Logo: imagotipo en blanco con leve celeste (familia del logo) */
 .logo-text {
-    background: var(--gradient-gold);
+    background: linear-gradient(135deg, #ffffff 0%, var(--color-celeste-light) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    color: var(--color-secondary-light); /* fallback */
+    color: var(--color-surface); /* fallback */
     letter-spacing: 0.01em;
 }
 
@@ -1460,18 +1465,18 @@ textarea.form-control {
     font-weight: 600;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--color-secondary-light);
+    color: var(--color-celeste);
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(247, 189, 72, 0.3);
+    border-bottom: 1px solid rgba(143, 184, 221, 0.35);
 }
 
 .hero-title span {
-    background: var(--gradient-gold);
+    background: linear-gradient(135deg, var(--color-celeste-light) 0%, var(--color-celeste) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    color: var(--color-secondary-light); /* fallback */
+    color: var(--color-celeste); /* fallback */
 }
 
 .hero-vision {
@@ -1509,7 +1514,7 @@ textarea.form-control {
 .hero-trust strong {
     font-family: var(--font-display);
     font-size: 22px;
-    color: var(--color-secondary-light);
+    color: var(--color-celeste);
     font-weight: 700;
 }
 
@@ -1545,7 +1550,7 @@ textarea.form-control {
 
 .plan-featured {
     border-top-color: var(--color-secondary);
-    box-shadow: 0 12px 36px rgba(26, 43, 72, 0.12);
+    box-shadow: 0 12px 36px rgba(31, 78, 121, 0.12);
 }
 .plan-featured::after {
     content: '';
