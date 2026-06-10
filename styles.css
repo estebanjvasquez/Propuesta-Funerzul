@@ -1633,6 +1633,14 @@ textarea.form-control {
 .map-iframe { border: 0; border-radius: var(--radius-md); }
 .map-address { margin-top: 8px; font-weight: 600; }
 .footer-address { font-size: 13px; }
+.header-logo-img {
+    height: 44px;
+    width: auto;
+    display: block;
+}
+@media (max-width: 480px) {
+    .header-logo-img { height: 38px; }
+}
 .footer-logo {
     margin-bottom: 20px;
     align-items: center;
