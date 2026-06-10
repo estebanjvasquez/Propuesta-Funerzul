@@ -1404,3 +1404,259 @@ textarea.form-control {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==========================================================================
+   REDISEÑO ESTRATÉGICO 2026 — Identidad Mind Branding (Oro sobre Azul)
+   ========================================================================== */
+
+/* Acento dorado degradado reutilizable (PANTONE 7729 C family) */
+:root {
+    --gradient-gold: linear-gradient(135deg, #f7bd48 0%, #b8860b 55%, #9c7108 100%);
+}
+
+/* Logo: imagotipo con texto en degradado dorado */
+.logo-text {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--color-secondary-light); /* fallback */
+    letter-spacing: 0.01em;
+}
+
+.nav-admin-link {
+    background-color: var(--color-primary-light);
+    color: var(--color-secondary-light);
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+}
+.nav-admin-link::after { display: none; }
+
+/* Micro-interacción: el botón se reduce 2% al presionar */
+.btn:active { transform: scale(0.98); }
+
+/* Barra de emergencia: punto pulsante sutil */
+.emergency-pulse {
+    width: 9px;
+    height: 9px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-surface);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6);
+    animation: emergency-pulse 2.2s infinite;
+    flex-shrink: 0;
+}
+@keyframes emergency-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55); }
+    70%  { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+/* Hero refinado */
+.hero-eyebrow {
+    display: inline-block;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-secondary-light);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(247, 189, 72, 0.3);
+}
+
+.hero-title span {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--color-secondary-light); /* fallback */
+}
+
+.hero-vision {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 24px;
+    color: var(--color-surface);
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.btn-hero {
+    padding: 16px 28px;
+    font-size: 15px;
+}
+
+.hero-trust {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px 40px;
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.hero-trust li {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.hero-trust strong {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--color-secondary-light);
+    font-weight: 700;
+}
+
+/* Sección de Previsión Familiar / Planes */
+.prevision-section {
+    background-color: var(--color-surface-low);
+    border-top: 1px solid var(--color-outline);
+}
+
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+
+.plan-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-surface-high);
+    border-top: 3px solid var(--color-outline);
+    border-radius: var(--radius-lg);
+    padding: 32px 28px;
+    transition: var(--transition-normal);
+}
+.plan-card:hover {
+    transform: translateY(-4px);
+    border-top-color: var(--color-secondary);
+    box-shadow: var(--shadow-md);
+}
+
+.plan-featured {
+    border-top-color: var(--color-secondary);
+    box-shadow: 0 12px 36px rgba(26, 43, 72, 0.12);
+}
+.plan-featured::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--color-secondary);
+    pointer-events: none;
+}
+
+.plan-badge {
+    position: absolute;
+    top: -12px;
+    left: 28px;
+    background: var(--gradient-gold);
+    color: var(--color-primary-dark);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 5px 14px;
+    border-radius: var(--radius-full);
+}
+
+.plan-name {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+.plan-target {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin-bottom: 20px;
+    min-height: 40px;
+}
+
+.plan-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+    flex-grow: 1;
+}
+.plan-features li {
+    position: relative;
+    padding-left: 26px;
+    font-size: 14px;
+    color: var(--color-text);
+    line-height: 1.4;
+}
+.plan-features li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    background-color: rgba(184, 134, 11, 0.12);
+    border-radius: var(--radius-full);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23b8860b'%3E%3Cpath d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
+    background-size: 12px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.plan-cta { width: 100%; margin-top: auto; }
+
+.prevision-note {
+    text-align: center;
+    margin-top: 36px;
+    font-size: 14px;
+    color: var(--color-text-muted);
+}
+.prevision-note a { color: var(--color-secondary-hover); font-weight: 600; }
+
+/* Footer: enlaces telefónicos y mapa (reemplazo de estilos inline) */
+.footer-tel { color: var(--color-secondary-light); }
+.footer-tel:hover { text-decoration: underline; }
+.footer-contact-item span strong { color: var(--color-surface); font-weight: 600; }
+.map-iframe { border: 0; border-radius: var(--radius-md); }
+.map-address { margin-top: 8px; font-weight: 600; }
+.footer-address { font-size: 13px; }
+.footer-logo {
+    margin-bottom: 20px;
+    align-items: center;
+    gap: 10px;
+}
+.footer-logo .logo-text { font-size: 20px; }
+.footer-logo-icon {
+    height: 36px;
+    width: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+    margin-right: 0;
+}
+
+/* Accesibilidad: respetar usuarios que reducen el movimiento */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+    .obituary-card:hover, .service-card:hover, .plan-card:hover { transform: none; }
+}
+
+/* Responsivo del rediseño */
+@media (max-width: 768px) {
+    .hero-vision { font-size: 20px; }
+    .hero-actions .btn-hero { width: 100%; }
+    .hero-trust { gap: 16px 28px; }
+    .plan-target { min-height: 0; }
+}
