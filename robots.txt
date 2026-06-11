@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /partials/
+
+# Permitir el rastreo de fotos de obituarios (SEO de imágenes)
+Allow: /uploads/obituarios/
+
+Sitemap: https://www.funerariadelzulia.com/sitemap.php
