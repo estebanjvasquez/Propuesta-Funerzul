@@ -3,4 +3,4 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/legadoholding/public_html/funerzul
     - /bin/mkdir -p $DEPLOYPATH
-    - /bin/cp -R index.html styles.css app.js admin.js admin.html favicon.png logo.png logo-horizontal-white.png logo-seal-footer.png uploads $DEPLOYPATH
+    - /bin/cp -R index.html styles.css app.js admin.js admin.html favicon.png logo.png logo-horizontal-white.png logo-seal-footer.png api uploads $DEPLOYPATH

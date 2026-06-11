@@ -1,0 +1,16 @@
+# --- Secretos del backend (NO versionar) ---
+api/config.php
+
+# --- Fotos subidas: viven en el disco del servidor, no en el repo ---
+uploads/obituarios/*
+!uploads/obituarios/_placeholder.webp
+!uploads/obituarios/.htaccess
+
+# --- Sistema ---
+.DS_Store
+Thumbs.db
+*.log
+
+# --- Temporales ---
+COMMIT_MSG.tmp
+_preview_*.png

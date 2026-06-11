@@ -1,0 +1,4 @@
+# Proteger el archivo de configuración del acceso web directo
+<FilesMatch "^config\.php$">
+  Require all denied
+</FilesMatch>
