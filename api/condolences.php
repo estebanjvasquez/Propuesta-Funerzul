@@ -40,6 +40,31 @@ switch ($action) {
         json_out(['ok' => true, 'items' => array_map('cond_out', $st->fetchAll())]);
     }
 
+    case 'admin_list': {
+        require_method('GET');
+        require_role('admin', 'editor');
+        $status = $_GET['status'] ?? 'all';
+        $where = "1=1"; $params = [];
+        if (in_array($status, ['pending', 'approved', 'hidden'], true)) {
+            $where .= " AND c.status = ?"; $params[] = $status;
+        }
+        $sql = "SELECT c.*, o.full_name AS obituary_name, o.slug AS obituary_slug
+                  FROM condolences c
+                  JOIN obituaries o ON o.id = c.obituary_id
+                 WHERE $where
+                 ORDER BY c.created_at DESC
+                 LIMIT 300";
+        $st = db()->prepare($sql);
+        $st->execute($params);
+        $items = array_map(function ($r) {
+            $o = cond_out($r);
+            $o['obituary_name'] = $r['obituary_name'];
+            $o['obituary_slug'] = $r['obituary_slug'];
+            return $o;
+        }, $st->fetchAll());
+        json_out(['ok' => true, 'items' => $items]);
+    }
+
     case 'create': {
         require_method('POST');
         $b = body_json();

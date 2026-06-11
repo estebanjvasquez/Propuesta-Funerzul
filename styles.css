@@ -1676,3 +1676,167 @@ textarea.form-control {
     .hero-trust { gap: 16px 28px; }
     .plan-target { min-height: 0; }
 }
+
+/* ==========================================================================
+   PANEL DE ADMINISTRACIÓN (Sistema de Obituarios)
+   ========================================================================== */
+.admin-body { background-color: var(--color-surface-low); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* ---- Login ---- */
+.login-view {
+    min-height: 100dvh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    background: linear-gradient(160deg, var(--color-primary-dark), var(--color-primary));
+}
+.login-card {
+    background: var(--color-surface);
+    width: 100%; max-width: 400px;
+    padding: 40px 32px; border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg); text-align: center;
+}
+.login-logo { width: 72px; height: 72px; object-fit: contain; margin: 0 auto 12px; display: block; }
+.login-title { font-size: 22px; margin-bottom: 4px; }
+.login-sub { font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px; }
+.login-card .form-group { text-align: left; }
+.login-btn { width: 100%; margin-top: 8px; }
+.login-back { display: inline-block; margin-top: 16px; font-size: 13px; color: var(--color-text-muted); }
+.login-back:hover { color: var(--color-primary); }
+.login-error {
+    background: rgba(186, 26, 26, 0.08); color: var(--color-error);
+    border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; margin-bottom: 12px; text-align: left;
+}
+
+/* ---- Topbar ---- */
+.admin-topbar { background: var(--color-primary-dark); position: sticky; top: 0; z-index: 50; }
+.admin-topbar-inner { display: flex; align-items: center; gap: 20px; height: 64px; }
+.admin-brand { display: flex; align-items: center; gap: 10px; }
+.admin-brand-logo { height: 30px; width: auto; }
+.admin-brand-tag {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--color-celeste); border: 1px solid rgba(143,184,221,0.4);
+    padding: 2px 8px; border-radius: var(--radius-full);
+}
+.admin-tabs { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+.admin-tab-btn {
+    background: transparent; border: none; color: rgba(255,255,255,0.75);
+    font-family: var(--font-sans); font-size: 14px; font-weight: 500;
+    padding: 8px 14px; border-radius: var(--radius-md); cursor: pointer;
+    transition: var(--transition-fast); display: inline-flex; align-items: center; gap: 6px;
+}
+.admin-tab-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.admin-tab-btn.active { color: var(--color-primary-dark); background: var(--color-celeste-light); }
+.tab-badge {
+    background: var(--color-secondary); color: var(--color-primary-dark);
+    font-size: 11px; font-weight: 700; border-radius: var(--radius-full);
+    min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px;
+}
+.admin-user { display: flex; align-items: center; gap: 12px; }
+.admin-user-name { color: rgba(255,255,255,0.85); font-size: 13px; }
+.admin-topbar .btn-outline { color: #fff; border-color: rgba(255,255,255,0.4); }
+.admin-topbar .btn-outline:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+/* ---- Main / toolbar ---- */
+.admin-main { padding: 32px 24px 64px; }
+.admin-tab-panel { animation: fadeUp 0.25s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none; } }
+.admin-toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 16px; margin: 28px 0 20px;
+}
+.admin-toolbar h2 { font-size: 24px; }
+.admin-toolbar-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.admin-toolbar-actions .form-control { width: 240px; }
+
+/* ---- Badges de estado ---- */
+.status-badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: var(--radius-full); white-space: nowrap;
+}
+.badge-green { background: rgba(37,211,102,0.15); color: #1a7a43; }
+.badge-amber { background: rgba(184,134,11,0.15); color: var(--color-secondary-hover); }
+.badge-gray  { background: var(--color-surface-high); color: var(--color-text-muted); }
+.badge-blue  { background: rgba(31,78,121,0.1); color: var(--color-primary); }
+.row-name { font-weight: 600; color: var(--color-primary); }
+.row-sub { font-size: 11px; color: var(--color-text-muted); }
+.pin-dot { color: var(--color-secondary); }
+.empty-row { text-align: center; color: var(--color-text-muted); padding: 32px; }
+
+/* ---- Formularios en modal ---- */
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+.modal-actions .btn { flex: 1; }
+.code-area { font-family: ui-monospace, "Courier New", monospace; font-size: 12px; min-height: 120px; }
+.photo-uploader { display: flex; gap: 16px; align-items: flex-start; }
+.photo-preview {
+    width: 90px; height: 90px; object-fit: cover; border-radius: var(--radius-md);
+    border: 1px solid var(--color-outline); background: var(--color-surface-low);
+}
+.photo-uploader-controls { flex: 1; }
+
+/* ---- Modal admin ---- */
+.admin-modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(22,58,95,0.7); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto;
+}
+.admin-modal {
+    background: var(--color-surface); width: 100%; max-width: 620px;
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+}
+.admin-modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px; border-bottom: 1px solid var(--color-surface-high); position: sticky; top: 0; background: var(--color-surface);
+}
+.admin-modal-header h3 { font-size: 20px; }
+.admin-modal-body { padding: 24px; }
+
+/* ---- Condolencias ---- */
+.cond-list { display: flex; flex-direction: column; gap: 16px; }
+.cond-card {
+    background: var(--color-surface); border: 1px solid var(--color-surface-high);
+    border-left: 3px solid var(--color-secondary); border-radius: var(--radius-md); padding: 18px 20px;
+}
+.cond-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+.cond-meta { font-size: 12px; color: var(--color-text-muted); margin-left: 6px; }
+.cond-msg { font-size: 14px; color: var(--color-text); margin-bottom: 14px; }
+
+/* ---- Plantillas ---- */
+.tpl-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.tpl-card { background: var(--color-surface); border: 1px solid var(--color-surface-high); border-radius: var(--radius-md); padding: 20px; }
+.tpl-card-head { margin-bottom: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ---- Configuración ---- */
+.settings-card { max-width: 720px; padding: 8px 28px; }
+.setting-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 24px;
+    padding: 20px 0; border-bottom: 1px solid var(--color-surface-high);
+}
+.setting-row:last-of-type { border-bottom: none; }
+.setting-help { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; max-width: 420px; }
+.setting-input { width: 110px; }
+.setting-actions { padding: 20px 0; }
+
+/* Switch (toggle) */
+.switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute; inset: 0; cursor: pointer; background: var(--color-surface-dim);
+    border-radius: var(--radius-full); transition: var(--transition-fast);
+}
+.slider::before {
+    content: ''; position: absolute; height: 20px; width: 20px; left: 3px; top: 3px;
+    background: #fff; border-radius: 50%; transition: var(--transition-fast);
+}
+.switch input:checked + .slider { background: var(--color-primary); }
+.switch input:checked + .slider::before { transform: translateX(20px); }
+.switch-inline { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+
+@media (max-width: 768px) {
+    .admin-tabs { order: 3; width: 100%; }
+    .admin-topbar-inner { height: auto; padding: 12px 0; flex-wrap: wrap; }
+    .form-grid-2 { grid-template-columns: 1fr; }
+    .admin-toolbar-actions .form-control { width: 100%; }
+    .setting-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+}

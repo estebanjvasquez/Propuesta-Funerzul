@@ -286,6 +286,25 @@ switch ($action) {
         json_out(['ok' => true]);
     }
 
+    // ---- ESTADÍSTICAS (dashboard) ----------------------------------------
+    case 'stats': {
+        require_method('GET');
+        require_role('admin', 'editor');
+        $pdo = db();
+        $total  = (int)$pdo->query("SELECT COUNT(*) FROM obituaries WHERE deleted_at IS NULL")->fetchColumn();
+        $active = (int)$pdo->query("SELECT COUNT(*) FROM obituaries WHERE deleted_at IS NULL AND status='active'")->fetchColumn();
+        $pinned = (int)$pdo->query("SELECT COUNT(*) FROM obituaries WHERE deleted_at IS NULL AND is_pinned=1")->fetchColumn();
+        $pending = (int)$pdo->query("SELECT COUNT(*) FROM condolences WHERE status='pending'")->fetchColumn();
+        $types = [];
+        foreach ($pdo->query("SELECT service_type, COUNT(*) c FROM obituaries WHERE deleted_at IS NULL GROUP BY service_type") as $row) {
+            $types[$row['service_type']] = (int)$row['c'];
+        }
+        json_out(['ok' => true, 'stats' => [
+            'total' => $total, 'active' => $active, 'pinned' => $pinned,
+            'by_type' => $types, 'pending_condolences' => $pending,
+        ]]);
+    }
+
     default:
         json_out(['ok' => false, 'error' => 'Acción no encontrada.'], 404);
 }
