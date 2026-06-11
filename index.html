@@ -335,43 +335,13 @@
                 </div>
             </div>
 
-            <!-- Panel de Controles Interactivos -->
-            <div class="obituaries-controls">
-                <div class="search-box">
-                    <span class="search-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                        </svg>
-                    </span>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nombre, apellido o fecha de fallecimiento...">
-                </div>
-
-                <div class="filters-wrapper">
-                    <div class="filter-group" id="timeFilters">
-                        <span class="filter-label">Filtrar por:</span>
-                        <button class="filter-btn active" data-time="all">Todos</button>
-                        <button class="filter-btn" data-time="week">Esta Semana</button>
-                        <button class="filter-btn" data-time="month">Este Mes</button>
-                    </div>
-
-                    <div class="filter-group">
-                        <select id="typeFilter" class="select-filter">
-                            <option value="all">Tipo de Servicio (Todos)</option>
-                            <option value="Velación">Velación</option>
-                            <option value="Cremación">Cremación</option>
-                            <option value="Homenaje Póstumo">Homenaje Póstumo</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Grid de Obituarios Dinámico -->
+            <!-- Grid de los obituarios destacados / recientes (desde la API) -->
             <div class="obituaries-grid" id="obituariesGrid">
-                <!-- Se poblará dinámicamente con app.js -->
+                <!-- Se puebla dinámicamente con app.js (obituaries.php?action=homepage) -->
             </div>
-            
-            <div style="text-align: center; margin-top: 40px;" id="loadMoreContainer">
-                <button class="btn btn-outline" id="loadMoreBtn">Cargar Más Obituarios</button>
+
+            <div class="obituaries-cta">
+                <a href="obituarios.php" class="btn btn-outline">Ver todos los obituarios</a>
             </div>
         </div>
     </section>
@@ -663,6 +633,6 @@
     <!-- 12. TOAST NOTIFICATION -->
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=20260611"></script>
 </body>
 </html>
