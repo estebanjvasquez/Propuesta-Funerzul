@@ -118,16 +118,10 @@ switch ($action) {
     case 'homepage': {
         require_method('GET');
         $limit = setting_int('homepage_recent_count', 3);
-        $sql = "SELECT * FROM (
-                    SELECT *, 0 AS grp, COALESCE(pin_order, 999999) AS ord
-                      FROM obituaries
-                      WHERE status='active' AND deleted_at IS NULL AND is_pinned=1
-                    UNION ALL
-                    SELECT *, 1 AS grp, 0 AS ord
-                      FROM obituaries
-                      WHERE status='active' AND deleted_at IS NULL AND is_pinned=0
-                ) q
-                ORDER BY grp ASC, ord ASC, death_date DESC, id DESC
+        // Fijados primero (por pin_order), luego los más recientes. Una sola tabla (robusto).
+        $sql = "SELECT * FROM obituaries
+                WHERE status='active' AND deleted_at IS NULL
+                ORDER BY is_pinned DESC, COALESCE(pin_order, 999999) ASC, death_date DESC, id DESC
                 LIMIT " . max($limit, 0);
         $rows = array_map('obit_out', db()->query($sql)->fetchAll());
         json_out(['ok' => true, 'items' => $rows]);
