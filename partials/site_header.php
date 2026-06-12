@@ -14,7 +14,7 @@ $headExtra = $P['head'] ?? '';
     <meta name="description" content="<?= esc($desc) ?>">
     <?php if ($canonical): ?><link rel="canonical" href="<?= esc($canonical) ?>"><?php endif; ?>
     <link rel="icon" href="favicon.png" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20260611">
+    <link rel="stylesheet" href="styles.css?v=20260612">
     <?= $headExtra ?>
 </head>
 <body>

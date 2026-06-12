@@ -1683,6 +1683,10 @@ textarea.form-control {
 .admin-body { background-color: var(--color-surface-low); }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 
+/* El atributo [hidden] debe prevalecer sobre display:flex/grid de contenedores
+   (login, app, modal, paneles de pestañas). Sin esto, el modal vacío se muestra. */
+[hidden] { display: none !important; }
+
 /* ---- Login ---- */
 .login-view {
     min-height: 100dvh;
