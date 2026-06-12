@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Guía Rápida — Panel de Obituarios | Funeraria del Zulia</title>
+<style>
+  :root { --azul:#1F4E79; --azuld:#163A5F; --oro:#b8860b; --gris:#5b6470; --linea:#e2e9f2; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#1d2733; background:#eef2f7; padding:24px; line-height:1.4; }
+  .sheet { max-width:920px; margin:0 auto; background:#fff; padding:34px 40px; box-shadow:0 4px 24px rgba(0,0,0,.08); border-radius:10px; }
+  header { display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--azul); padding-bottom:14px; margin-bottom:18px; }
+  header h1 { font-size:22px; color:var(--azul); }
+  header .sub { font-size:12px; color:var(--gris); }
+  .url { background:var(--azuld); color:#fff; font-size:13px; padding:8px 12px; border-radius:6px; margin-bottom:18px; }
+  .url b { color:#C3DAEE; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 24px; }
+  .card { border:1px solid var(--linea); border-top:3px solid var(--oro); border-radius:8px; padding:14px 16px; break-inside:avoid; }
+  .card h2 { font-size:14px; color:var(--azul); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .num { background:var(--azul); color:#fff; width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; }
+  .card ol, .card ul { margin-left:18px; font-size:12.5px; color:#2a3340; }
+  .card li { margin-bottom:3px; }
+  .tag { display:inline-block; background:#eef4fb; color:var(--azul); font-size:11px; padding:1px 7px; border-radius:10px; font-weight:600; }
+  .note { font-size:11.5px; color:var(--gris); margin-top:6px; font-style:italic; }
+  .full { grid-column:1 / -1; }
+  .roles { display:flex; gap:16px; font-size:12px; }
+  .roles div { flex:1; }
+  footer { margin-top:18px; border-top:1px solid var(--linea); padding-top:10px; font-size:11px; color:var(--gris); display:flex; justify-content:space-between; }
+  .print-btn { position:fixed; top:16px; right:16px; background:var(--azul); color:#fff; border:none; padding:10px 16px; border-radius:6px; font-size:13px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.2); }
+  @media print {
+    body { background:#fff; padding:0; }
+    .sheet { box-shadow:none; max-width:100%; padding:10px 14px; border-radius:0; }
+    .print-btn { display:none; }
+    @page { margin:12mm; }
+  }
+</style>
+</head>
+<body>
+<button class="print-btn" onclick="window.print()">Imprimir / Guardar PDF</button>
+
+<div class="sheet">
+  <header>
+    <div>
+      <h1>Guía Rápida — Panel de Obituarios</h1>
+      <div class="sub">Funeraria del Zulia · Uso diario del sistema de administración</div>
+    </div>
+    <div class="sub" style="text-align:right">Desde 1942</div>
+  </header>
+
+  <div class="url">Acceso: <b>www.funerariadelzulia.com/admin.html</b> &nbsp;·&nbsp; Cierra sesión con el botón <b>Salir</b> al terminar.</div>
+
+  <div class="grid">
+
+    <div class="card">
+      <h2><span class="num">1</span> Iniciar sesión</h2>
+      <ol>
+        <li>Abre <b>/admin.html</b>.</li>
+        <li>Escribe tu correo y contraseña.</li>
+        <li>Entrarás al tablero (pestaña Obituarios).</li>
+      </ol>
+      <p class="note">Cada persona usa su propio usuario. No compartir claves.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">2</span> Crear un obituario</h2>
+      <ol>
+        <li>Pestaña <b>Obituarios</b> → <b>+ Nuevo obituario</b>.</li>
+        <li>Completa nombre y <b>fecha de fallecimiento</b> (obligatorios).</li>
+        <li>Llena lugar, oficios/sepelio y biografía.</li>
+        <li>Elige la <b>foto</b> (JPG/PNG/WebP) y la <b>plantilla</b>.</li>
+        <li>Estado <span class="tag">Activo</span> y <b>Guardar</b>.</li>
+      </ol>
+      <p class="note">Sin foto, se usa una imagen con el logo. La URL se genera sola.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">3</span> Estados del obituario</h2>
+      <ul>
+        <li><span class="tag">Activo</span> visible en el sitio.</li>
+        <li><span class="tag">Borrador</span> guardado, no visible.</li>
+        <li><span class="tag">Inactivo</span> oculto del sitio.</li>
+      </ul>
+      <p class="note">“Baja” lo retira pero se puede restaurar (no se borra).</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">4</span> Destacar en la portada</h2>
+      <ul>
+        <li>La portada muestra 3 obituarios.</li>
+        <li>Orden: <b>destacados</b> primero, luego recientes.</li>
+        <li>En la fila: <b>Fijar</b> para destacar, <b>Quitar</b> para sacar.</li>
+      </ul>
+      <p class="note">Útil para mantener visible un homenaje especial.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">5</span> Moderar condolencias</h2>
+      <ol>
+        <li>Pestaña <b>Condolencias</b> (el número rojo = pendientes).</li>
+        <li><b>Aprobar</b> → se publica. <b>Ocultar</b> → no se muestra.</li>
+        <li><b>Editar</b> corrige texto; <b>Eliminar</b> la borra.</li>
+      </ol>
+      <p class="note">Las nuevas llegan como “Por revisar”.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">6</span> Editar o corregir</h2>
+      <ul>
+        <li>En la tabla: botón <b>Editar</b> de cada obituario.</li>
+        <li>Puedes cambiar cualquier dato o la foto.</li>
+        <li>Guarda para aplicar los cambios al sitio.</li>
+      </ul>
+      <p class="note">Cambiar la foto reinicia su periodo de conservación.</p>
+    </div>
+
+    <div class="card full">
+      <h2><span class="num">A</span> Solo Administrador</h2>
+      <div class="roles">
+        <div><b>Plantillas:</b> diseños del obituario; marca una como predeterminada. Marcadores: <code>{{full_name}} {{death_date}} {{photo}} {{biography}}…</code></div>
+        <div><b>Usuarios:</b> crear personal (Editor/Admin), cambiar clave, activar/desactivar.</div>
+        <div><b>Configuración:</b> activar/desactivar <b>purga de fotos</b>, días de retención, nº en portada y moderación.</div>
+      </div>
+      <p class="note">Purga: borra fotos viejas para ahorrar disco y las reemplaza por el logo — el obituario y su texto siguen publicados e indexables.</p>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Ante un error que no carga: recarga con <b>Ctrl + F5</b>. Si persiste, contacta al soporte técnico.</span>
+    <span>Funeraria del Zulia</span>
+  </footer>
+</div>
+</body>
+</html>
