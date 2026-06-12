@@ -106,11 +106,15 @@ function set_setting(string $key, string $value): void
     )->execute([$key, $value, $u['id'] ?? null]);
 }
 
-/** Convierte un texto a slug ASCII para URLs. */
+/** Convierte un texto a slug ASCII para URLs (sin depender de iconv). */
 function slugify(string $text): string
 {
-    $t = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
-    $t = strtolower($t !== false ? $t : $text);
+    $from = ['á','à','ä','â','ã','é','è','ë','ê','í','ì','ï','î','ó','ò','ö','ô','õ','ú','ù','ü','û','ñ','ç',
+             'Á','À','Ä','Â','Ã','É','È','Ë','Ê','Í','Ì','Ï','Î','Ó','Ò','Ö','Ô','Õ','Ú','Ù','Ü','Û','Ñ','Ç'];
+    $to   = ['a','a','a','a','a','e','e','e','e','i','i','i','i','o','o','o','o','o','u','u','u','u','n','c',
+             'a','a','a','a','a','e','e','e','e','i','i','i','i','o','o','o','o','o','u','u','u','u','n','c'];
+    $t = str_replace($from, $to, trim($text));
+    $t = function_exists('mb_strtolower') ? mb_strtolower($t, 'UTF-8') : strtolower($t);
     $t = preg_replace('/[^a-z0-9]+/', '-', $t) ?? '';
     $t = trim($t, '-');
     return $t !== '' ? $t : 'obituario';
