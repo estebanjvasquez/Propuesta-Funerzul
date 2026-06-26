@@ -15,6 +15,8 @@
                     <ul class="footer-links-list">
                         <li><a href="index.html#servicios">Servicios</a></li>
                         <li><a href="obituarios.php">Obituarios</a></li>
+                        <li><a href="directorio-medico.php">Directorio Médico</a></li>
+                        <li><a href="recursos.php">Recursos de Lectura</a></li>
                         <li><a href="index.html#prevision">Previsión Familiar</a></li>
                         <li><a href="index.html#preguntas">Preguntas Frecuentes</a></li>
                     </ul>

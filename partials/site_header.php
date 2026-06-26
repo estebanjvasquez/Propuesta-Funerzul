@@ -14,7 +14,7 @@ $headExtra = $P['head'] ?? '';
     <meta name="description" content="<?= esc($desc) ?>">
     <?php if ($canonical): ?><link rel="canonical" href="<?= esc($canonical) ?>"><?php endif; ?>
     <link rel="icon" href="favicon.png" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20260612">
+    <link rel="stylesheet" href="styles.css?v=20260626">
     <?= $headExtra ?>
 </head>
 <body>
@@ -40,7 +40,9 @@ $headExtra = $P['head'] ?? '';
                 <ul class="nav-links">
                     <li><a href="index.html#servicios">Servicios</a></li>
                     <li><a href="index.html#prevision">Previsión</a></li>
-                    <li><a href="obituarios.php" class="active">Obituarios</a></li>
+                    <li><a href="obituarios.php">Obituarios</a></li>
+                    <li><a href="directorio-medico.php">Directorio Médico</a></li>
+                    <li><a href="recursos.php">Recursos</a></li>
                     <li><a href="index.html#preguntas">Preguntas Frecuentes</a></li>
                     <li><a href="index.html#contacto">Contacto</a></li>
                 </ul>

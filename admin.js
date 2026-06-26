@@ -131,6 +131,8 @@ function switchTab(tab, btn) {
     $all('.admin-tab-panel').forEach(p => p.hidden = true);
     $('#tab-' + tab).hidden = false;
     if (tab === 'condolencias') loadCondolences();
+    if (tab === 'medicos') loadDoctors();
+    if (tab === 'recursos') loadArticles();
     if (tab === 'plantillas') loadTemplates(true);
     if (tab === 'config') loadSettings();
     if (tab === 'usuarios') loadUsers();
@@ -438,6 +440,319 @@ async function deleteCondolence(id) {
 }
 
 // ==========================================================================
+//  DIRECTORIO MÉDICO
+// ==========================================================================
+let docSearchTimer = null;
+
+async function loadDoctors() {
+    const q = $('#docSearch').value.trim();
+    try {
+        const r = await API.req('doctors.php?action=list&scope=admin&limit=200' + (q ? '&q=' + encodeURIComponent(q) : ''));
+        renderDoctorTable(r.items);
+    } catch (e) { toast(e.message); }
+}
+
+function renderDoctorTable(items) {
+    const tb = $('#docTableBody');
+    if (!items.length) {
+        tb.innerHTML = `<tr><td colspan="5" class="empty-row">No hay médicos. Cree el primero con “+ Nuevo médico”.</td></tr>`;
+        return;
+    }
+    tb.innerHTML = items.map(d => `
+        <tr>
+            <td>
+                <div class="obituary-row-info">
+                    <img src="${escapeHtml(d.photo_url || '')}" alt="" class="obituary-row-img" onerror="this.style.visibility='hidden'">
+                    <div><div class="row-name">${escapeHtml(d.full_name)} ${d.is_featured ? '<span class="pin-dot" title="Destacado">★</span>' : ''}</div></div>
+                </div>
+            </td>
+            <td>${escapeHtml(d.specialty)}</td>
+            <td class="row-sub">${escapeHtml(d.phone || d.email || '—')}</td>
+            <td>${statusBadge(d.status)}</td>
+            <td>
+                <div class="admin-actions">
+                    <button class="btn btn-outline btn-sm" onclick="toggleFeatureDoctor(${d.id}, ${d.is_featured ? 0 : 1})">${d.is_featured ? 'Quitar' : 'Destacar'}</button>
+                    <button class="btn btn-outline btn-sm" onclick="editDoctor(${d.id})">Editar</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteDoctor(${d.id}, ${escapeAttr(d.full_name)})">Baja</button>
+                </div>
+            </td>
+        </tr>`).join('');
+}
+
+function doctorFormHtml(d = {}) {
+    return `
+    <form id="docForm">
+        <input type="hidden" id="df_id" value="${d.id || ''}">
+        <input type="hidden" id="df_photo_path" value="${escapeHtml(d.photo_url || '')}">
+        <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">Nombre completo *</label>
+                <input type="text" id="df_full_name" class="form-control" value="${escapeHtml(d.full_name || '')}" required></div>
+            <div class="form-group"><label class="form-label">Especialidad *</label>
+                <input type="text" id="df_specialty" class="form-control" value="${escapeHtml(d.specialty || '')}" required></div>
+        </div>
+        <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">Teléfono</label>
+                <input type="text" id="df_phone" class="form-control" value="${escapeHtml(d.phone || '')}"></div>
+            <div class="form-group"><label class="form-label">Correo</label>
+                <input type="email" id="df_email" class="form-control" value="${escapeHtml(d.email || '')}"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Centro / clínica</label>
+            <input type="text" id="df_location_name" class="form-control" value="${escapeHtml(d.location_name || '')}"></div>
+        <div class="form-group"><label class="form-label">Dirección / zona</label>
+            <input type="text" id="df_location_address" class="form-control" value="${escapeHtml(d.location_address || '')}"></div>
+        <div class="form-group"><label class="form-label">Descripción / trayectoria</label>
+            <textarea id="df_bio" class="form-control">${escapeHtml(d.bio || '')}</textarea></div>
+        <div class="form-group"><label class="form-label">Estado</label>
+            <select id="df_status" class="form-control">
+                <option value="active" ${d.status === 'active' ? 'selected' : ''}>Activo</option>
+                <option value="draft" ${d.status === 'draft' ? 'selected' : ''}>Borrador</option>
+                <option value="inactive" ${d.status === 'inactive' ? 'selected' : ''}>Inactivo</option>
+            </select></div>
+        <div class="form-group">
+            <label class="form-label">Fotografía</label>
+            <div class="photo-uploader">
+                <img id="df_photo_preview" class="photo-preview" src="${escapeHtml(d.photo_url || '')}" alt="" ${d.photo_url ? '' : 'hidden'}>
+                <div class="photo-uploader-controls">
+                    <input type="file" id="df_photo_file" accept="image/jpeg,image/png,image/webp" class="form-control">
+                    <p class="setting-help">JPG, PNG o WebP. Se sube al disco del servidor al guardar.</p>
+                </div>
+            </div>
+        </div>
+        <p id="df_error" class="login-error" hidden></p>
+        <div class="modal-actions">
+            <button type="submit" class="btn btn-primary" id="df_submit">Guardar médico</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+        </div>
+    </form>`;
+}
+
+function newDoctor() { openModal('Nuevo médico', doctorFormHtml({})); wireDoctorForm(); }
+async function editDoctor(id) {
+    try {
+        const r = await API.req('doctors.php?action=get&id=' + id);
+        openModal('Editar médico', doctorFormHtml(r.item));
+        wireDoctorForm();
+    } catch (e) { toast(e.message); }
+}
+
+function wireDoctorForm() {
+    const file = $('#df_photo_file');
+    file.addEventListener('change', () => {
+        if (file.files[0]) {
+            const prev = $('#df_photo_preview');
+            prev.src = URL.createObjectURL(file.files[0]); prev.hidden = false;
+        }
+    });
+    $('#docForm').addEventListener('submit', submitDoctor);
+}
+
+async function submitDoctor(e) {
+    e.preventDefault();
+    const btn = $('#df_submit');
+    const err = $('#df_error'); err.hidden = true;
+    btn.disabled = true; btn.innerText = 'Guardando...';
+    try {
+        let photoPath = $('#df_photo_path').value;
+        const file = $('#df_photo_file').files[0];
+        if (file) {
+            const fd = new FormData(); fd.append('photo', file);
+            const up = await API.req('upload.php?folder=doctors', { method: 'POST', form: fd });
+            photoPath = up.path;
+        }
+        const id = $('#df_id').value;
+        const payload = {
+            id: id || undefined,
+            full_name: $('#df_full_name').value.trim(),
+            specialty: $('#df_specialty').value.trim(),
+            phone: $('#df_phone').value.trim(),
+            email: $('#df_email').value.trim(),
+            location_name: $('#df_location_name').value.trim(),
+            location_address: $('#df_location_address').value.trim(),
+            bio: $('#df_bio').value.trim(),
+            status: $('#df_status').value,
+            photo_path: photoPath || ''
+        };
+        await API.req('doctors.php?action=' + (id ? 'update' : 'create'), { method: 'POST', json: payload });
+        closeModal();
+        toast(id ? 'Médico actualizado.' : 'Médico creado.');
+        loadDoctors();
+    } catch (ex) {
+        err.innerText = ex.message; err.hidden = false;
+    } finally {
+        btn.disabled = false; btn.innerText = 'Guardar médico';
+    }
+}
+
+async function toggleFeatureDoctor(id, featured) {
+    try {
+        await API.req('doctors.php?action=feature', { method: 'POST', json: { id, featured: !!featured } });
+        toast(featured ? 'Médico destacado.' : 'Médico quitado de destacados.');
+        loadDoctors();
+    } catch (e) { toast(e.message); }
+}
+
+async function deleteDoctor(id, name) {
+    if (!confirmAction(`¿Dar de baja la ficha de ${name}? Dejará de mostrarse (se puede restaurar).`)) return;
+    try {
+        await API.req('doctors.php?action=delete', { method: 'POST', json: { id } });
+        toast('Médico dado de baja.');
+        loadDoctors();
+    } catch (e) { toast(e.message); }
+}
+
+// ==========================================================================
+//  RECURSOS DE LECTURA (artículos)
+// ==========================================================================
+let artSearchTimer = null;
+const ART_CATEGORIES = ['Duelo', 'Trámites', 'Previsión', 'Acompañamiento', 'Salud', 'Familia'];
+
+async function loadArticles() {
+    const q = $('#artSearch').value.trim();
+    try {
+        const r = await API.req('articles.php?action=list&scope=admin&limit=100' + (q ? '&q=' + encodeURIComponent(q) : ''));
+        renderArticleTable(r.items);
+    } catch (e) { toast(e.message); }
+}
+
+function renderArticleTable(items) {
+    const tb = $('#artTableBody');
+    if (!items.length) {
+        tb.innerHTML = `<tr><td colspan="5" class="empty-row">No hay recursos. Cree el primero con “+ Nuevo recurso”.</td></tr>`;
+        return;
+    }
+    tb.innerHTML = items.map(a => `
+        <tr>
+            <td><div class="row-name">${escapeHtml(a.title)} ${a.is_featured ? '<span class="pin-dot" title="Destacado">★</span>' : ''}</div></td>
+            <td>${escapeHtml(a.category || '—')}</td>
+            <td>${a.published_at ? fmtDate(a.published_at) : '—'}</td>
+            <td>${statusBadge(a.status)}</td>
+            <td>
+                <div class="admin-actions">
+                    <button class="btn btn-outline btn-sm" onclick="toggleFeatureArticle(${a.id}, ${a.is_featured ? 0 : 1})">${a.is_featured ? 'Quitar' : 'Destacar'}</button>
+                    <button class="btn btn-outline btn-sm" onclick="editArticle(${a.id})">Editar</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteArticle(${a.id}, ${escapeAttr(a.title)})">Baja</button>
+                </div>
+            </td>
+        </tr>`).join('');
+}
+
+function articleFormHtml(a = {}) {
+    const catList = ART_CATEGORIES.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
+    return `
+    <form id="artForm">
+        <input type="hidden" id="af_id" value="${a.id || ''}">
+        <input type="hidden" id="af_cover_path" value="${escapeHtml(a.cover_url || '')}">
+        <div class="form-group"><label class="form-label">Título *</label>
+            <input type="text" id="af_title" class="form-control" value="${escapeHtml(a.title || '')}" required></div>
+        <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">Categoría</label>
+                <input type="text" id="af_category" class="form-control" list="af_cats" value="${escapeHtml(a.category || '')}">
+                <datalist id="af_cats">${catList}</datalist></div>
+            <div class="form-group"><label class="form-label">Estado</label>
+                <select id="af_status" class="form-control">
+                    <option value="draft" ${a.status === 'draft' || !a.status ? 'selected' : ''}>Borrador</option>
+                    <option value="active" ${a.status === 'active' ? 'selected' : ''}>Activo (publicado)</option>
+                    <option value="inactive" ${a.status === 'inactive' ? 'selected' : ''}>Inactivo</option>
+                </select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Extracto / entradilla</label>
+            <textarea id="af_excerpt" class="form-control" rows="2">${escapeHtml(a.excerpt || '')}</textarea></div>
+        <div class="form-group"><label class="form-label">Contenido (HTML) *</label>
+            <textarea id="af_content" class="form-control code-area" required>${escapeHtml(a.content || '')}</textarea>
+            <p class="setting-help">Puede usar etiquetas HTML: &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;&lt;li&gt;, &lt;strong&gt;, &lt;a href&gt;…</p></div>
+        <div class="form-group"><label class="form-label">Descripción SEO (meta, opcional)</label>
+            <input type="text" id="af_meta" class="form-control" maxlength="320" value="${escapeHtml(a.meta_description || '')}"></div>
+        <div class="form-group">
+            <label class="form-label">Imagen de portada</label>
+            <div class="photo-uploader">
+                <img id="af_cover_preview" class="photo-preview" src="${escapeHtml(a.cover_url || '')}" alt="" ${a.cover_url ? '' : 'hidden'}>
+                <div class="photo-uploader-controls">
+                    <input type="file" id="af_cover_file" accept="image/jpeg,image/png,image/webp" class="form-control">
+                    <p class="setting-help">JPG, PNG o WebP. Se sube al disco del servidor al guardar.</p>
+                </div>
+            </div>
+        </div>
+        <p id="af_error" class="login-error" hidden></p>
+        <div class="modal-actions">
+            <button type="submit" class="btn btn-primary" id="af_submit">Guardar recurso</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+        </div>
+    </form>`;
+}
+
+function newArticle() { openModal('Nuevo recurso', articleFormHtml({})); wireArticleForm(); }
+async function editArticle(id) {
+    try {
+        const r = await API.req('articles.php?action=get&id=' + id);
+        openModal('Editar recurso', articleFormHtml(r.item));
+        wireArticleForm();
+    } catch (e) { toast(e.message); }
+}
+
+function wireArticleForm() {
+    const file = $('#af_cover_file');
+    file.addEventListener('change', () => {
+        if (file.files[0]) {
+            const prev = $('#af_cover_preview');
+            prev.src = URL.createObjectURL(file.files[0]); prev.hidden = false;
+        }
+    });
+    $('#artForm').addEventListener('submit', submitArticle);
+}
+
+async function submitArticle(e) {
+    e.preventDefault();
+    const btn = $('#af_submit');
+    const err = $('#af_error'); err.hidden = true;
+    btn.disabled = true; btn.innerText = 'Guardando...';
+    try {
+        let coverPath = $('#af_cover_path').value;
+        const file = $('#af_cover_file').files[0];
+        if (file) {
+            const fd = new FormData(); fd.append('photo', file);
+            const up = await API.req('upload.php?folder=recursos', { method: 'POST', form: fd });
+            coverPath = up.path;
+        }
+        const id = $('#af_id').value;
+        const payload = {
+            id: id || undefined,
+            title: $('#af_title').value.trim(),
+            category: $('#af_category').value.trim(),
+            excerpt: $('#af_excerpt').value.trim(),
+            content: $('#af_content').value,
+            meta_description: $('#af_meta').value.trim(),
+            status: $('#af_status').value,
+            cover_path: coverPath || ''
+        };
+        await API.req('articles.php?action=' + (id ? 'update' : 'create'), { method: 'POST', json: payload });
+        closeModal();
+        toast(id ? 'Recurso actualizado.' : 'Recurso creado.');
+        loadArticles();
+    } catch (ex) {
+        err.innerText = ex.message; err.hidden = false;
+    } finally {
+        btn.disabled = false; btn.innerText = 'Guardar recurso';
+    }
+}
+
+async function toggleFeatureArticle(id, featured) {
+    try {
+        await API.req('articles.php?action=feature', { method: 'POST', json: { id, featured: !!featured } });
+        toast(featured ? 'Recurso destacado.' : 'Recurso quitado de destacados.');
+        loadArticles();
+    } catch (e) { toast(e.message); }
+}
+
+async function deleteArticle(id, title) {
+    if (!confirmAction(`¿Dar de baja el recurso “${title}”? Dejará de mostrarse (se puede restaurar).`)) return;
+    try {
+        await API.req('articles.php?action=delete', { method: 'POST', json: { id } });
+        toast('Recurso dado de baja.');
+        loadArticles();
+    } catch (e) { toast(e.message); }
+}
+
+// ==========================================================================
 //  PLANTILLAS
 // ==========================================================================
 async function loadTemplates(render = false) {
@@ -642,9 +957,13 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
     setupCondFilters();
     $('#newObitBtn').addEventListener('click', newObituary);
+    $('#newDoctorBtn').addEventListener('click', newDoctor);
+    $('#newArticleBtn').addEventListener('click', newArticle);
     $('#newTplBtn').addEventListener('click', newTemplate);
     $('#newUserBtn').addEventListener('click', newUser);
     $('#settingsForm').addEventListener('submit', saveSettings);
     $('#obitSearch').addEventListener('input', () => { clearTimeout(obitSearchTimer); obitSearchTimer = setTimeout(loadObituaries, 300); });
+    $('#docSearch').addEventListener('input', () => { clearTimeout(docSearchTimer); docSearchTimer = setTimeout(loadDoctors, 300); });
+    $('#artSearch').addEventListener('input', () => { clearTimeout(artSearchTimer); artSearchTimer = setTimeout(loadArticles, 300); });
     bootstrapAuth();
 });

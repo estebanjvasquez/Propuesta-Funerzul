@@ -1,9 +1,10 @@
 <?php
 /**
- * Subida de fotos al DISCO del servidor:  POST api/upload.php  (multipart, campo "photo")
+ * Subida de imágenes al DISCO del servidor:  POST api/upload.php?folder=...  (multipart, campo "photo")
  * - Requiere sesión (editor/admin) + CSRF.
- * - Valida tipo/tamaño, redimensiona y guarda como WebP en uploads/obituarios/.
- * - Devuelve { path } relativo a la raíz del sitio para guardarlo en el obituario.
+ * - Valida tipo/tamaño, redimensiona y guarda como WebP.
+ * - ?folder= elige el subdirectorio (whitelist): obituarios (def.) | doctors | recursos.
+ * - Devuelve { path } relativo a la raíz del sitio para guardarlo en el registro.
  */
 require __DIR__ . '/lib/bootstrap.php';
 
@@ -12,8 +13,24 @@ require_role('admin', 'editor');
 require_csrf();
 
 $cfg = $GLOBALS['CONFIG']['uploads'];
-$dir = $GLOBALS['CONFIG']['paths']['uploads_dir'];
-$url = rtrim($GLOBALS['CONFIG']['paths']['uploads_url'], '/');
+
+// Carpeta destino según whitelist; cada una con su prefijo de archivo.
+$folders = [
+    'obituarios' => 'obit_',
+    'doctors'    => 'doc_',
+    'recursos'   => 'rec_',
+];
+$folder = $_GET['folder'] ?? 'obituarios';
+if (!isset($folders[$folder])) { $folder = 'obituarios'; }
+$prefix = $folders[$folder];
+
+// La config apunta a uploads/obituarios; derivamos la raíz uploads/ y añadimos la carpeta
+// elegida, así no hace falta editar config.php en el servidor para las nuevas secciones.
+$baseDir = dirname(rtrim($GLOBALS['CONFIG']['paths']['uploads_dir'], '/'));
+$baseUrl = dirname(rtrim($GLOBALS['CONFIG']['paths']['uploads_url'], '/'));
+if ($baseUrl === '.' || $baseUrl === DIRECTORY_SEPARATOR) { $baseUrl = ''; }
+$dir = $baseDir . '/' . $folder;
+$url = ($baseUrl !== '' ? $baseUrl . '/' : '') . $folder;
 
 if (empty($_FILES['photo']) || $_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
     json_out(['ok' => false, 'error' => 'No se recibió ninguna foto válida.'], 422);
@@ -55,7 +72,7 @@ imagefilledrectangle($dst, 0, 0, $nw, $nh, $white);
 imagecopyresampled($dst, $src, 0, 0, 0, 0, $nw, $nh, $w, $h);
 
 if (!is_dir($dir)) { @mkdir($dir, 0755, true); }
-$filename = 'obit_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.webp';
+$filename = $prefix . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.webp';
 $fullpath = $dir . '/' . $filename;
 
 if (!imagewebp($dst, $fullpath, (int)$cfg['webp_quality'])) {
@@ -66,5 +83,5 @@ imagedestroy($src);
 imagedestroy($dst);
 
 $relPath = $url . '/' . $filename;
-audit('photo.upload', 'obituaries', null, ['path' => $relPath, 'mime' => $mime]);
+audit('photo.upload', $folder, null, ['path' => $relPath, 'mime' => $mime]);
 json_out(['ok' => true, 'path' => $relPath]);

@@ -3,4 +3,4 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/legadoholding/public_html/funerzul
     - /bin/mkdir -p $DEPLOYPATH
-    - /bin/cp -R index.html obituarios.php obituario.php sitemap.php robots.txt styles.css app.js admin.js admin.html favicon.png logo.png logo-horizontal-white.png logo-seal-footer.png api partials uploads $DEPLOYPATH
+    - /bin/cp -R index.html obituarios.php obituario.php directorio-medico.php medico.php recursos.php recurso.php sitemap.php robots.txt styles.css app.js admin.js admin.html favicon.png logo.png logo-horizontal-white.png logo-seal-footer.png api partials uploads $DEPLOYPATH

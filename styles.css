@@ -1924,3 +1924,121 @@ textarea.form-control {
     .obit-detail h1 { font-size: 26px; }
     .obit-paper-masthead h1 { font-size: 32px; }
 }
+
+/* ==========================================================================
+   DIRECTORIO MÉDICO
+   ========================================================================== */
+.doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 28px;
+}
+.doctor-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-surface-high);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition-normal);
+}
+.doctor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(184, 134, 11, 0.3);
+}
+.doctor-img-container {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background-color: var(--color-surface-high);
+    display: block;
+}
+.doctor-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--transition-slow);
+}
+.doctor-card:hover .doctor-img { transform: scale(1.03); }
+.doctor-content { padding: 22px; display: flex; flex-direction: column; flex-grow: 1; }
+.doctor-specialty {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--color-primary-light); margin-bottom: 6px;
+}
+.doctor-name { font-size: 20px; margin-bottom: 10px; }
+.doctor-details-list { list-style: none; padding: 0; margin: 0 0 16px; font-size: 14px; color: var(--color-text-muted); flex-grow: 1; }
+.doctor-actions { margin-top: auto; }
+
+/* Detalle del médico */
+.doctor-detail { text-align: left; }
+.doctor-detail-head { display: flex; gap: 24px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; }
+.doctor-detail-photo {
+    width: 140px; height: 140px; object-fit: cover; border-radius: var(--radius-lg);
+    background-color: var(--color-surface-high); flex-shrink: 0;
+}
+.doctor-detail-head h1 { font-size: 30px; margin: 8px 0 4px; }
+.doctor-detail-loc { color: var(--color-text-muted); font-size: 15px; }
+.doctor-detail-bio { font-size: 16px; line-height: 1.8; color: var(--color-text); margin-bottom: 20px; }
+.doctor-detail-contact { list-style: none; padding: 0; margin: 0 0 8px; font-size: 15px; }
+.doctor-detail-contact li { padding: 6px 0; border-bottom: 1px solid var(--color-surface-high); }
+
+/* ==========================================================================
+   RECURSOS DE LECTURA
+   ========================================================================== */
+.resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 32px;
+}
+.resource-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-surface-high);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition-normal);
+}
+.resource-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(184, 134, 11, 0.3);
+}
+.resource-img-container { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background-color: var(--color-surface-high); display: block; }
+.resource-img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition-slow); }
+.resource-card:hover .resource-img { transform: scale(1.03); }
+.resource-content { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
+.resource-category {
+    display: inline-block; align-self: flex-start;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--color-primary-light); background: var(--color-celeste-light);
+    padding: 3px 10px; border-radius: var(--radius-full); margin-bottom: 10px;
+}
+.resource-title { font-size: 21px; margin-bottom: 8px; }
+.resource-date { font-size: 12px; color: var(--color-text-muted); margin-bottom: 10px; }
+.resource-excerpt { font-size: 15px; line-height: 1.7; color: var(--color-text-muted); margin-bottom: 16px; flex-grow: 1; }
+.resource-actions { margin-top: auto; }
+
+/* Detalle del recurso */
+.resource-detail { text-align: left; }
+.resource-detail-body p { max-width: none; margin: 0 0 18px; text-align: left; font-size: 17px; line-height: 1.85; }
+.resource-detail .resource-category { margin-bottom: 14px; }
+.resource-detail-title { font-size: 34px; margin-bottom: 8px; }
+.resource-detail-date { color: var(--color-text-muted); font-size: 14px; margin-bottom: 20px; }
+.resource-detail-cover { width: 100%; border-radius: var(--radius-lg); margin-bottom: 24px; }
+.resource-detail-body { font-size: 17px; line-height: 1.85; color: var(--color-text); }
+.resource-detail-body p { margin-bottom: 18px; }
+.resource-detail-body h2 { font-size: 24px; margin: 28px 0 12px; }
+.resource-detail-body h3 { font-size: 20px; margin: 22px 0 10px; }
+.resource-detail-body ul, .resource-detail-body ol { margin: 0 0 18px 24px; }
+.resource-detail-body li { margin-bottom: 6px; }
+.resource-detail-body a { color: var(--color-primary-light); text-decoration: underline; }
+.resource-detail-body img { max-width: 100%; height: auto; border-radius: var(--radius-md); }
+
+@media (max-width: 768px) {
+    .doctor-detail-head { flex-direction: column; text-align: center; }
+    .resource-detail-title { font-size: 26px; }
+}

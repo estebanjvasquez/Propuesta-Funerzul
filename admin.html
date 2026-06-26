@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Administración | Funeraria del Zulia</title>
     <link rel="icon" href="favicon.png" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20260612">
+    <link rel="stylesheet" href="styles.css?v=20260626">
 </head>
 <body class="admin-body">
 
@@ -42,6 +42,8 @@
                 <nav class="admin-tabs" id="adminTabs">
                     <button class="admin-tab-btn active" data-tab="obituarios" type="button">Obituarios</button>
                     <button class="admin-tab-btn" data-tab="condolencias" type="button">Condolencias <span class="tab-badge" id="badgePending" hidden>0</span></button>
+                    <button class="admin-tab-btn" data-tab="medicos" type="button">Directorio Médico</button>
+                    <button class="admin-tab-btn" data-tab="recursos" type="button">Recursos</button>
                     <button class="admin-tab-btn admin-only" data-tab="plantillas" type="button" hidden>Plantillas</button>
                     <button class="admin-tab-btn admin-only" data-tab="config" type="button" hidden>Configuración</button>
                     <button class="admin-tab-btn admin-only" data-tab="usuarios" type="button" hidden>Usuarios</button>
@@ -94,6 +96,44 @@
                     </div>
                 </div>
                 <div id="condList" class="cond-list"></div>
+            </section>
+
+            <!-- ---------- DIRECTORIO MÉDICO ---------- -->
+            <section id="tab-medicos" class="admin-tab-panel" hidden>
+                <div class="admin-toolbar">
+                    <h2>Directorio Médico</h2>
+                    <div class="admin-toolbar-actions">
+                        <input type="search" id="docSearch" class="form-control" placeholder="Buscar por nombre o especialidad...">
+                        <button class="btn btn-primary" id="newDoctorBtn" type="button">+ Nuevo médico</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr><th>Nombre</th><th>Especialidad</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="docTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ---------- RECURSOS DE LECTURA ---------- -->
+            <section id="tab-recursos" class="admin-tab-panel" hidden>
+                <div class="admin-toolbar">
+                    <h2>Recursos de Lectura</h2>
+                    <div class="admin-toolbar-actions">
+                        <input type="search" id="artSearch" class="form-control" placeholder="Buscar artículos...">
+                        <button class="btn btn-primary" id="newArticleBtn" type="button">+ Nuevo recurso</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr><th>Título</th><th>Categoría</th><th>Publicado</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="artTableBody"></tbody>
+                    </table>
+                </div>
             </section>
 
             <!-- ---------- PLANTILLAS ---------- -->
@@ -177,6 +217,6 @@
 
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="admin.js?v=20260611"></script>
+    <script src="admin.js?v=20260626"></script>
 </body>
 </html>

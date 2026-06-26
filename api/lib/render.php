@@ -111,3 +111,81 @@ function site_url(string $path = ''): string
     $base = rtrim($GLOBALS['CONFIG']['app']['site_url'] ?? '', '/');
     return $base . '/' . ltrim($path, '/');
 }
+
+// ============================================================================
+//  DIRECTORIO MÉDICO
+// ============================================================================
+
+/** Obtiene un médico activo por slug (o id numérico). */
+function get_public_doctor(string $slugOrId): ?array
+{
+    if (ctype_digit($slugOrId)) {
+        $st = db()->prepare("SELECT * FROM doctors WHERE id = ? AND status='active' AND deleted_at IS NULL");
+        $st->execute([(int)$slugOrId]);
+    } else {
+        $st = db()->prepare("SELECT * FROM doctors WHERE slug = ? AND status='active' AND deleted_at IS NULL");
+        $st->execute([$slugOrId]);
+    }
+    return $st->fetch() ?: null;
+}
+
+/** Imagen del médico (placeholder de obituarios si no tiene foto). */
+function doctor_photo_url(array $d): string
+{
+    if (!empty($d['photo_path'])) return $d['photo_path'];
+    return get_setting('photo_placeholder_path', 'uploads/obituarios/_placeholder.webp');
+}
+
+/** Tarjeta pública de médico (server-side) que enlaza al detalle. */
+function render_public_doctor_card(array $d): string
+{
+    $url = 'medico.php?slug=' . urlencode($d['slug'] ?: (string)$d['id']);
+    $photo = doctor_photo_url($d);
+    $loc = $d['location_name'] ? '<li class="doctor-detail-item">' . esc($d['location_name']) . '</li>' : '';
+    return '<article class="doctor-card">'
+        . '<a href="' . esc($url) . '" class="doctor-img-container" aria-label="Ver ficha de ' . esc($d['full_name']) . '">'
+        . '<img src="' . esc($photo) . '" alt="Foto de ' . esc($d['full_name']) . '" class="doctor-img" loading="lazy"></a>'
+        . '<div class="doctor-content">'
+        . '<span class="doctor-specialty">' . esc($d['specialty']) . '</span>'
+        . '<h3 class="doctor-name"><a href="' . esc($url) . '">' . esc($d['full_name']) . '</a></h3>'
+        . '<ul class="doctor-details-list">' . $loc . '</ul>'
+        . '<div class="doctor-actions"><a class="btn btn-outline" href="' . esc($url) . '">Ver ficha</a></div>'
+        . '</div></article>';
+}
+
+// ============================================================================
+//  RECURSOS DE LECTURA
+// ============================================================================
+
+/** Obtiene un artículo activo por slug (o id numérico). */
+function get_public_article(string $slugOrId): ?array
+{
+    if (ctype_digit($slugOrId)) {
+        $st = db()->prepare("SELECT * FROM articles WHERE id = ? AND status='active' AND deleted_at IS NULL");
+        $st->execute([(int)$slugOrId]);
+    } else {
+        $st = db()->prepare("SELECT * FROM articles WHERE slug = ? AND status='active' AND deleted_at IS NULL");
+        $st->execute([$slugOrId]);
+    }
+    return $st->fetch() ?: null;
+}
+
+/** Tarjeta pública de artículo (server-side) que enlaza al detalle. */
+function render_public_article_card(array $a): string
+{
+    $url = 'recurso.php?slug=' . urlencode($a['slug'] ?: (string)$a['id']);
+    $date = !empty($a['published_at']) ? fmt_date_es(substr((string)$a['published_at'], 0, 10)) : '';
+    $cover = !empty($a['cover_path'])
+        ? '<a href="' . esc($url) . '" class="resource-img-container"><img src="' . esc($a['cover_path']) . '" alt="' . esc($a['title']) . '" class="resource-img" loading="lazy"></a>'
+        : '';
+    $cat = $a['category'] ? '<span class="resource-category">' . esc($a['category']) . '</span>' : '';
+    return '<article class="resource-card">'
+        . $cover
+        . '<div class="resource-content">'
+        . $cat
+        . '<h3 class="resource-title"><a href="' . esc($url) . '">' . esc($a['title']) . '</a></h3>'
+        . ($date ? '<div class="resource-date">' . esc($date) . '</div>' : '')
+        . '<p class="resource-excerpt">' . esc($a['excerpt']) . '</p>'
+        . '<div class="resource-actions"><a class="btn btn-outline" href="' . esc($url) . '">Leer más</a></div>'
+        . '</div></article>';
+}

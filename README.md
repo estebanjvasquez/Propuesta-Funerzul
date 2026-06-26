@@ -206,6 +206,42 @@ buscadores e IA — solo se libera el peso de la foto.
 
 ---
 
+### 11. Directorio Médico (pestaña Directorio Médico)
+
+Directorio público de médicos y especialistas como servicio de apoyo a las familias.
+Lo administra todo el personal (editor y admin).
+
+- **+ Nuevo médico**: nombre y **especialidad** son obligatorios; opcionalmente
+  teléfono, correo, centro/clínica, dirección/zona, descripción y **foto**.
+- **Estado**: Activo (visible), Borrador (guardado, no visible) o Inactivo (oculto).
+- **Destacar**: aparece primero en el directorio (útil para referencias preferentes).
+- **Baja**: lo retira del sitio; se puede restaurar (no se borra del todo).
+- Las fotos de los médicos **no se purgan** (contenido permanente).
+
+Páginas públicas: lista buscable por especialidad en `directorio-medico.php` y ficha
+individual en `medico.php?slug=…` (con datos estructurados `schema.org/Physician`).
+
+### 12. Recursos de Lectura (pestaña Recursos)
+
+Biblioteca de artículos y guías (duelo, trámites, previsión…). Lo administra todo el
+personal.
+
+- **+ Nuevo recurso**: **título** y **contenido** son obligatorios; opcionalmente
+  categoría, extracto, descripción SEO e **imagen de portada**.
+- El **contenido admite HTML** (`<p>`, `<h2>`, `<ul><li>`, `<strong>`, `<a href>`…).
+- **Estado**: Borrador (no visible), Activo (publicado) o Inactivo. Al publicarse por
+  primera vez se fija la fecha de publicación.
+- **Destacar** y **Baja/restaurar** funcionan igual que en los demás módulos.
+
+Páginas públicas: lista con filtro por categoría en `recursos.php` y artículo
+individual en `recurso.php?slug=…` (con datos estructurados `schema.org/Article`).
+
+> Para activar estos módulos en una base existente, importe el archivo
+> `database/02_directorio_recursos.sql` en phpMyAdmin (crea las tablas `doctors` y
+> `articles`). Las fotos se guardan en `uploads/doctors/` y `uploads/recursos/`.
+
+---
+
 ## Cómo se ve en el sitio público
 
 - **Página principal** (`index.html`): sección de obituarios con los **destacados +
@@ -216,6 +252,11 @@ buscadores e IA — solo se libera el peso de la foto.
   elegida, **datos estructurados (JSON-LD)** para SEO/GEO, lista de condolencias
   aprobadas y formulario para enviar nuevas.
 - **Compartir**: cada obituario se puede compartir por WhatsApp/enlace.
+- **Directorio Médico** (`directorio-medico.php` → `medico.php?slug=…`): lista buscable
+  por especialidad y ficha individual con JSON-LD `Physician`.
+- **Recursos de Lectura** (`recursos.php` → `recurso.php?slug=…`): artículos con filtro
+  por categoría y detalle con JSON-LD `Article`.
+- Ambos figuran en el **menú principal**, el **pie de página** y el **sitemap.xml**.
 
 ---
 
@@ -224,7 +265,8 @@ buscadores e IA — solo se libera el peso de la foto.
 Resumen (guías detalladas en `database/README.md` y `api/README.md`):
 
 1. **Base de datos**: crear la BD MySQL en cPanel e importar
-   [`database/01_schema.sql`](database/01_schema.sql) con phpMyAdmin.
+   [`database/01_schema.sql`](database/01_schema.sql) y, para el Directorio Médico y
+   los Recursos, [`database/02_directorio_recursos.sql`](database/02_directorio_recursos.sql), con phpMyAdmin.
 2. **Backend**: copiar `api/config.example.php` → `api/config.php` y poner las
    credenciales de MySQL y un `cron_secret` aleatorio.
 3. **Extensiones PHP** (cPanel → *Select PHP Version → Extensions*): activar

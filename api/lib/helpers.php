@@ -120,14 +120,18 @@ function slugify(string $text): string
     return $t !== '' ? $t : 'obituario';
 }
 
-/** Slug único en la tabla obituaries (agrega sufijo numérico si choca). */
-function unique_slug(string $base, ?int $ignoreId = null): string
+/** Slug único en la tabla indicada (agrega sufijo numérico si choca). */
+function unique_slug(string $base, ?int $ignoreId = null, string $table = 'obituaries'): string
 {
+    // Lista blanca de tablas con columna slug (evita inyección por $table).
+    $allowed = ['obituaries', 'doctors', 'articles'];
+    if (!in_array($table, $allowed, true)) { $table = 'obituaries'; }
+
     $slug = slugify($base);
     $candidate = $slug;
     $i = 2;
     while (true) {
-        $sql = "SELECT 1 FROM obituaries WHERE slug = ?" . ($ignoreId ? " AND id <> ?" : "") . " LIMIT 1";
+        $sql = "SELECT 1 FROM $table WHERE slug = ?" . ($ignoreId ? " AND id <> ?" : "") . " LIMIT 1";
         $st = db()->prepare($sql);
         $st->execute($ignoreId ? [$candidate, $ignoreId] : [$candidate]);
         if (!$st->fetchColumn()) return $candidate;
