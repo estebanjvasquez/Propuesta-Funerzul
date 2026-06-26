@@ -3,7 +3,7 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <a href="index.html" class="logo footer-logo">
+                    <a href="index.php" class="logo footer-logo">
                         <img src="logo-seal-footer.png" alt="Sello Funeraria del Zulia - Desde 1942" class="footer-logo-icon">
                         <span class="logo-text">Funeraria del Zulia</span>
                     </a>
@@ -13,12 +13,12 @@
                 <div>
                     <h4>Enlaces</h4>
                     <ul class="footer-links-list">
-                        <li><a href="index.html#servicios">Servicios</a></li>
+                        <li><a href="index.php#servicios">Servicios</a></li>
                         <li><a href="obituarios.php">Obituarios</a></li>
                         <li><a href="directorio-medico.php">Directorio Médico</a></li>
                         <li><a href="recursos.php">Recursos de Lectura</a></li>
-                        <li><a href="index.html#prevision">Previsión Familiar</a></li>
-                        <li><a href="index.html#preguntas">Preguntas Frecuentes</a></li>
+                        <li><a href="index.php#prevision">Previsión Familiar</a></li>
+                        <li><a href="index.php#preguntas">Preguntas Frecuentes</a></li>
                     </ul>
                 </div>
                 <div>
@@ -44,6 +44,6 @@
     </a>
 
     <div id="toast" class="toast">Notificación</div>
-    <script src="app.js?v=20260627"></script>
+    <script src="app.js?v=20260628"></script>
 </body>
 </html>

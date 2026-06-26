@@ -39,7 +39,7 @@ condolencias, plantillas editables y páginas públicas optimizadas para SEO/GEO
 
 ```
 Propuesta Funerzul/
-│  index.html              Página principal
+│  index.php               Página principal (FAQ renderizado desde la BD para SEO)
 │  obituarios.php          Listado público de obituarios (estilo periódico)
 │  obituario.php           Página individual de un obituario (SEO + JSON-LD)
 │  sitemap.php             Sitemap XML dinámico
@@ -250,9 +250,10 @@ Lo administra todo el personal.
 - **Pausar / Activar**: una pregunta en pausa deja de mostrarse en la portada sin
   borrarla.
 - **Editar** y **Eliminar** (definitivo).
-- La portada construye **tanto la sección visible como el JSON-LD (`FAQPage`)** a partir
-  de estas preguntas: son la **única fuente** (no hay preguntas escritas a mano en el
-  HTML del landing).
+- La portada (`index.php`) **renderiza en el servidor** tanto la sección visible como el
+  JSON-LD (`FAQPage`) a partir de estas preguntas, leyendo de la BD en cada visita: son
+  la **única fuente** y el contenido es **indexable sin JavaScript** (mejor SEO/GEO para
+  Google, Bing e IA). Si la BD no respondiera, se muestra un respaldo mínimo.
 
 > Para activarlo en una base existente, importe `database/03_faqs.sql` en phpMyAdmin
 > (crea la tabla `faqs` con las preguntas que ya estaban en la portada, incluida la de
@@ -262,7 +263,7 @@ Lo administra todo el personal.
 
 ## Cómo se ve en el sitio público
 
-- **Página principal** (`index.html`): sección de obituarios con los **destacados +
+- **Página principal** (`index.php`): sección de obituarios con los **destacados +
   recientes** (3 por defecto). Botón **“Ver todos los obituarios”**.
 - **Listado completo** (`obituarios.php`): todos los obituarios en estilo periódico,
   con **buscador** y paginación.

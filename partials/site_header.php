@@ -33,18 +33,18 @@ $headExtra = $P['head'] ?? '';
 
     <header class="header">
         <div class="container">
-            <a href="index.html" class="logo" aria-label="Funeraria del Zulia - Inicio">
+            <a href="index.php" class="logo" aria-label="Funeraria del Zulia - Inicio">
                 <img src="logo-horizontal-white.png" alt="Funeraria del Zulia" class="header-logo-img">
             </a>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="index.html#servicios">Servicios</a></li>
-                    <li><a href="index.html#prevision">Previsión</a></li>
+                    <li><a href="index.php#servicios">Servicios</a></li>
+                    <li><a href="index.php#prevision">Previsión</a></li>
                     <li><a href="obituarios.php">Obituarios</a></li>
                     <li><a href="directorio-medico.php">Directorio Médico</a></li>
                     <li><a href="recursos.php">Recursos</a></li>
-                    <li><a href="index.html#preguntas">Preguntas Frecuentes</a></li>
-                    <li><a href="index.html#contacto">Contacto</a></li>
+                    <li><a href="index.php#preguntas">Preguntas Frecuentes</a></li>
+                    <li><a href="index.php#contacto">Contacto</a></li>
                 </ul>
             </nav>
             <div class="header-actions">

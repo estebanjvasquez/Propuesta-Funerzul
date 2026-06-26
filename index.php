@@ -1,3 +1,35 @@
+<?php
+/**
+ * Portada (server-rendered). La sección "Preguntas Frecuentes" y su JSON-LD se
+ * generan desde la base de datos (tabla faqs), de modo que sean indexables por
+ * buscadores e IA sin depender de JavaScript. Carga defensiva: si la BD no está
+ * disponible, se usa un respaldo mínimo para que la página nunca quede incompleta.
+ */
+$faqs = [];
+$cfgFile = __DIR__ . '/api/config.php';
+if (is_file($cfgFile)) {
+    try {
+        if (!defined('OBIT_APP')) define('OBIT_APP', true);
+        $GLOBALS['CONFIG'] = require $cfgFile;
+        require_once __DIR__ . '/api/lib/db.php';
+        $faqs = db()->query(
+            "SELECT question, answer FROM faqs WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
+        )->fetchAll(PDO::FETCH_ASSOC);
+    } catch (\Throwable $e) {
+        $faqs = [];
+    }
+}
+// Respaldo SOLO si la BD no respondió (no es una segunda fuente a mantener).
+if (!$faqs) {
+    $faqs = [
+        ['question' => '¿Cómo tramitar un acta de defunción en Maracaibo?', 'answer' => 'El acta de defunción debe tramitarse ante el Registro Civil correspondiente al municipio en el Estado Zulia donde ocurrió el deceso. Nuestro equipo de asesores se encarga de guiarle paso a paso, requiriendo inicialmente el Certificado Médico de Defunción (EV-14) y las cédulas de identidad.'],
+        ['question' => '¿Cuáles son los requisitos de cremación en el Estado Zulia?', 'answer' => 'Para realizar una cremación en el Estado Zulia se requieren cuatro documentos: el Certificado Médico de Defunción (Forma EV-14), el acta de defunción emitida por el Registro Civil, el permiso sanitario de cremación de la autoridad competente y la autorización escrita del familiar responsable.'],
+        ['question' => '¿Atienden las 24 horas en Maracaibo y todo el Zulia?', 'answer' => 'Sí. Funeraria del Zulia ofrece atención inmediata las 24 horas, los 7 días de la semana, en Maracaibo, San Francisco, Cabimas, Ciudad Ojeda y todo el Estado Zulia. Puede llamarnos al +58 424 695-0136 en cualquier momento.'],
+        ['question' => '¿Qué incluye la previsión funeraria familiar?', 'answer' => 'Los planes de previsión funeraria le permiten organizar anticipadamente los servicios. Incluyen el cofre (ataúd), traslados locales en Zulia, servicio de capilla velatoria, trámites legales y, si lo desea, la opción de cremación.'],
+    ];
+}
+function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,7 +38,7 @@
     <title>Funeraria del Zulia | Servicios Funerarios y Previsión Familiar 24 Horas</title>
     <link rel="icon" href="favicon.png" type="image/png">
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Estado Zulia. Atención 24/7, cremación, traslados y planes de previsión familiar con dignidad y respeto eterno.">
-    <link rel="stylesheet" href="styles.css?v=20260626">
+    <link rel="stylesheet" href="styles.css?v=20260627">
     
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -72,10 +104,16 @@
     }
     </script>
 
-    <!-- JSON-LD: FAQPage (optimización GEO). Se rellena dinámicamente desde el panel (app.js). -->
-    <script type="application/ld+json" id="faqJsonLd">
-    { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [] }
-    </script>
+    <!-- JSON-LD: FAQPage (optimización GEO). Generado por el servidor desde la BD. -->
+    <script type="application/ld+json"><?= json_encode([
+        '@context'   => 'https://schema.org',
+        '@type'      => 'FAQPage',
+        'mainEntity' => array_map(fn($f) => [
+            '@type'          => 'Question',
+            'name'           => $f['question'],
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['answer']],
+        ], $faqs),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?></script>
 </head>
 <body>
 
@@ -98,7 +136,7 @@
     <!-- 2. CABECERA / HEADER -->
     <header class="header">
         <div class="container">
-            <a href="index.html" class="logo" aria-label="Funeraria del Zulia - Inicio">
+            <a href="index.php" class="logo" aria-label="Funeraria del Zulia - Inicio">
                 <img src="logo-horizontal-white.png?v=20260610-3" alt="Funeraria del Zulia" class="header-logo-img">
             </a>
 
@@ -319,9 +357,17 @@
                 <p>Información clara, legal y administrativa para reducir su carga en estos momentos difíciles.</p>
             </div>
 
-            <!-- Las preguntas se administran desde el panel (api/faqs.php) y se cargan aquí con app.js. -->
+            <!-- Las preguntas se administran desde el panel (pestaña Preguntas) y el servidor las renderiza desde la BD. -->
             <div class="faq-list" id="faqList">
-                <p class="empty-row" id="faqLoading">Cargando preguntas frecuentes...</p>
+                <?php foreach ($faqs as $f): ?>
+                <details class="faq-item">
+                    <summary>
+                        <?= fz_e($f['question']) ?>
+                        <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    </summary>
+                    <div class="faq-content"><?= fz_e($f['answer']) ?></div>
+                </details>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
@@ -382,7 +428,7 @@
             <div class="footer-grid">
                 <!-- Brand Info -->
                 <div class="footer-brand">
-                    <a href="index.html" class="logo footer-logo">
+                    <a href="index.php" class="logo footer-logo">
                         <img src="logo-seal-footer.png?v=20260610-4" alt="Sello Funeraria del Zulia - Desde 1942" class="footer-logo-icon">
                         <span class="logo-text">Funeraria del Zulia</span>
                     </a>
@@ -551,6 +597,6 @@
     <!-- 12. TOAST NOTIFICATION -->
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="app.js?v=20260627"></script>
+    <script src="app.js?v=20260628"></script>
 </body>
 </html>

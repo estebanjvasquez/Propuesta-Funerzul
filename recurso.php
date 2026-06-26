@@ -55,7 +55,7 @@ $PAGE = ['title' => $title, 'description' => $desc, 'canonical' => $canonical, '
 require __DIR__ . '/partials/site_header.php';
 ?>
 <main class="container obit-detail-main section">
-    <nav class="breadcrumb"><a href="index.html">Inicio</a> › <a href="recursos.php">Recursos</a> › <span><?= esc($a['title']) ?></span></nav>
+    <nav class="breadcrumb"><a href="index.php">Inicio</a> › <a href="recursos.php">Recursos</a> › <span><?= esc($a['title']) ?></span></nav>
 
     <article class="obit-detail resource-detail">
         <?php if (!empty($a['category'])): ?><span class="resource-category"><?= esc($a['category']) ?></span><?php endif; ?>

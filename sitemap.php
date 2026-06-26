@@ -13,7 +13,7 @@ function sm_url(string $loc, ?string $lastmod = null, string $freq = 'weekly', s
     echo "<changefreq>$freq</changefreq><priority>$prio</priority></url>\n";
 }
 
-sm_url(site_url('index.html'), null, 'daily', '1.0');
+sm_url(site_url('index.php'), null, 'daily', '1.0');
 sm_url(site_url('obituarios.php'), null, 'daily', '0.9');
 sm_url(site_url('directorio-medico.php'), null, 'weekly', '0.8');
 sm_url(site_url('recursos.php'), null, 'weekly', '0.8');

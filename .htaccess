@@ -1,0 +1,10 @@
+# Funeraria del Zulia — configuración del sitio
+
+# La portada es ahora index.php (renderiza las Preguntas Frecuentes desde la BD).
+DirectoryIndex index.php index.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Redirige la antigua portada estática a la nueva (preserva SEO de enlaces ya indexados).
+    RewriteRule ^index\.html$ index.php [R=301,L]
+</IfModule>

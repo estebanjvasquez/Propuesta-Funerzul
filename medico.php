@@ -61,7 +61,7 @@ $PAGE = ['title' => $title, 'description' => $desc, 'canonical' => $canonical, '
 require __DIR__ . '/partials/site_header.php';
 ?>
 <main class="container obit-detail-main section">
-    <nav class="breadcrumb"><a href="index.html">Inicio</a> › <a href="directorio-medico.php">Directorio Médico</a> › <span><?= esc($d['full_name']) ?></span></nav>
+    <nav class="breadcrumb"><a href="index.php">Inicio</a> › <a href="directorio-medico.php">Directorio Médico</a> › <span><?= esc($d['full_name']) ?></span></nav>
 
     <article class="obit-detail doctor-detail">
         <div class="doctor-detail-head">

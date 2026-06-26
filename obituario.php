@@ -57,7 +57,7 @@ $bodyHtml = render_obituary_html($o);
 $conds    = approved_condolences((int)$o['id']);
 ?>
 <main class="container obit-detail-main section">
-    <nav class="breadcrumb"><a href="index.html">Inicio</a> › <a href="obituarios.php">Obituarios</a> › <span><?= esc($o['full_name']) ?></span></nav>
+    <nav class="breadcrumb"><a href="index.php">Inicio</a> › <a href="obituarios.php">Obituarios</a> › <span><?= esc($o['full_name']) ?></span></nav>
 
     <article class="obit-detail">
         <?= $bodyHtml ?>

@@ -38,59 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const grid = document.getElementById('obituariesGrid');
     if (grid) loadHomeObituaries(grid);
 
-    const faqList = document.getElementById('faqList');
-    if (faqList) loadHomeFaqs(faqList);
+    // Las Preguntas Frecuentes de la portada se renderizan en el servidor (index.php)
+    // desde la base de datos; no se cargan por JS para no sobrescribir ese contenido.
 
     // Cierre de modales al pulsar fuera
     window.addEventListener('click', (e) => {
         if (e.target.classList && e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
     });
 });
-
-// ---------- Preguntas frecuentes (portada) ----------
-// Las preguntas se administran desde el panel; la portada (sección visible + JSON-LD)
-// se construye por completo a partir de la API, sin contenido duplicado en el HTML.
-async function loadHomeFaqs(container) {
-    try {
-        const r = await apiGet('faqs.php?action=list');
-        const items = r.items || [];
-        if (items.length) {
-            container.innerHTML = items.map(faqItemHtml).join('');
-            updateFaqJsonLd(items);
-        } else {
-            container.innerHTML = `<p class="empty-row">Por el momento no hay preguntas frecuentes publicadas.</p>`;
-        }
-    } catch (e) {
-        container.innerHTML = `<p class="empty-row">No fue posible cargar las preguntas frecuentes en este momento.</p>`;
-    }
-}
-
-function faqItemHtml(f) {
-    return `
-        <details class="faq-item">
-            <summary>
-                ${escapeHtml(f.question)}
-                <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            </summary>
-            <div class="faq-content">${escapeHtml(f.answer)}</div>
-        </details>`;
-}
-
-// Reconstruye el bloque JSON-LD FAQPage con las mismas preguntas (GEO/SEO).
-function updateFaqJsonLd(items) {
-    const el = document.getElementById('faqJsonLd');
-    if (!el) return;
-    const data = {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: items.map(f => ({
-            '@type': 'Question',
-            name: f.question,
-            acceptedAnswer: { '@type': 'Answer', text: f.answer }
-        }))
-    };
-    el.textContent = JSON.stringify(data);
-}
 
 async function loadHomeObituaries(grid) {
     grid.innerHTML = obitSkeleton(3);
