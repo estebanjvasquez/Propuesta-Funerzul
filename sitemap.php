@@ -18,6 +18,18 @@ sm_url(site_url('obituarios.php'), null, 'daily', '0.9');
 sm_url(site_url('directorio-medico.php'), null, 'weekly', '0.8');
 sm_url(site_url('recursos.php'), null, 'weekly', '0.8');
 
+// Servicios
+sm_url(site_url('servicios/'), null, 'monthly', '0.9');
+foreach (['sepelio-tradicional', 'cremacion', 'traslados', 'capillas-velatorias'] as $s) {
+    sm_url(site_url('servicios/' . $s . '.php'), null, 'monthly', '0.8');
+}
+
+// Planes de previsión
+sm_url(site_url('planes/'), null, 'monthly', '0.9');
+foreach (['plan-esencial', 'plan-tradicion', 'plan-vanguardia', 'plan-vanguardia-plus'] as $p) {
+    sm_url(site_url('planes/' . $p . '.php'), null, 'monthly', '0.8');
+}
+
 $rows = db()->query(
     "SELECT slug, id, updated_at FROM obituaries
      WHERE status='active' AND deleted_at IS NULL

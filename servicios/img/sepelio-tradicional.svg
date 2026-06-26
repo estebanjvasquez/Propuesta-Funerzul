@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-label="Sepelio Tradicional en Maracaibo - Funeraria del Zulia">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1F4E79"/>
+      <stop offset="1" stop-color="#163A5F"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <circle cx="600" cy="250" r="185" fill="#2F6DB3" opacity="0.25"/>
+  <circle cx="600" cy="250" r="135" fill="#2F6DB3" opacity="0.20"/>
+  <g transform="translate(600,250) scale(8.5) translate(-12,-12)" fill="#ffffff">
+    <path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2zm0 7.5c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/>
+  </g>
+  <rect x="540" y="430" width="120" height="4" fill="#b8860b"/>
+  <text x="600" y="498" text-anchor="middle" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="bold">Sepelio Tradicional</text>
+  <text x="600" y="543" text-anchor="middle" fill="#C3DAEE" font-family="Arial, Helvetica, sans-serif" font-size="23">Velación y oficios en Maracaibo · Estado Zulia</text>
+</svg>

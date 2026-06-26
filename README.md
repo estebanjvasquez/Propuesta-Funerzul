@@ -42,6 +42,10 @@ Propuesta Funerzul/
 │  index.php               Página principal (FAQ renderizado desde la BD para SEO)
 │  obituarios.php          Listado público de obituarios (estilo periódico)
 │  obituario.php           Página individual de un obituario (SEO + JSON-LD)
+│  servicios/              Páginas de servicios (hub + cremación, sepelio, traslados, capillas)
+│  planes/                 Páginas de planes de previsión (hub + 4 planes)
+│  directorio-medico.php   Directorio médico (lista) · medico.php (ficha)
+│  recursos.php            Recursos de lectura (lista) · recurso.php (artículo)
 │  sitemap.php             Sitemap XML dinámico
 │  robots.txt              Reglas de rastreo
 │  admin.html              Panel de administración (login + gestión)
@@ -63,7 +67,9 @@ Propuesta Funerzul/
 │   cron/purge_photos.php  Rutina de purga de fotos
 │   lib/                   Núcleo (BD, auth, helpers, render)
 │
-├─ partials/               Cabecera y pie compartidos (PHP)
+├─ partials/               Cabecera, pie y banda de contacto compartidos (PHP)
+├─ servicios/img/          Imágenes SVG de cada servicio
+├─ planes/img/             Imágenes SVG de cada plan
 ├─ database/               Esquema SQL + guía de instalación de la BD
 └─ uploads/obituarios/     Fotos de obituarios (en disco) + placeholder
 ```

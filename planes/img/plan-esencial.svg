@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-label="Plan Esencial de previsión funeraria - Funeraria del Zulia">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1F4E79"/>
+      <stop offset="1" stop-color="#163A5F"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <circle cx="600" cy="250" r="185" fill="#8FB8DD" opacity="0.22"/>
+  <g transform="translate(600,250) scale(9) translate(-12,-12)" fill="#ffffff">
+    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+  </g>
+  <rect x="540" y="430" width="120" height="4" fill="#b8860b"/>
+  <text x="600" y="498" text-anchor="middle" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="bold">Plan Esencial</text>
+  <text x="600" y="543" text-anchor="middle" fill="#C3DAEE" font-family="Arial, Helvetica, sans-serif" font-size="23">Previsión familiar · Maracaibo, Zulia</text>
+</svg>
