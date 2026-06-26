@@ -44,6 +44,7 @@
                     <button class="admin-tab-btn" data-tab="condolencias" type="button">Condolencias <span class="tab-badge" id="badgePending" hidden>0</span></button>
                     <button class="admin-tab-btn" data-tab="medicos" type="button">Directorio Médico</button>
                     <button class="admin-tab-btn" data-tab="recursos" type="button">Recursos</button>
+                    <button class="admin-tab-btn" data-tab="faqs" type="button">Preguntas</button>
                     <button class="admin-tab-btn admin-only" data-tab="plantillas" type="button" hidden>Plantillas</button>
                     <button class="admin-tab-btn admin-only" data-tab="config" type="button" hidden>Configuración</button>
                     <button class="admin-tab-btn admin-only" data-tab="usuarios" type="button" hidden>Usuarios</button>
@@ -132,6 +133,23 @@
                             <tr><th>Título</th><th>Categoría</th><th>Publicado</th><th>Estado</th><th>Acciones</th></tr>
                         </thead>
                         <tbody id="artTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ---------- PREGUNTAS FRECUENTES ---------- -->
+            <section id="tab-faqs" class="admin-tab-panel" hidden>
+                <div class="admin-toolbar">
+                    <h2>Preguntas Frecuentes</h2>
+                    <button class="btn btn-primary" id="newFaqBtn" type="button">+ Nueva pregunta</button>
+                </div>
+                <p class="setting-help faq-admin-note">Las preguntas <strong>activas</strong> se muestran en la sección “Preguntas Frecuentes” de la portada, ordenadas por el campo <strong>Orden</strong> (menor primero).</p>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr><th>Orden</th><th>Pregunta</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="faqTableBody"></tbody>
                     </table>
                 </div>
             </section>

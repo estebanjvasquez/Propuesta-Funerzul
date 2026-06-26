@@ -240,6 +240,22 @@ individual en `recurso.php?slug=…` (con datos estructurados `schema.org/Articl
 > `database/02_directorio_recursos.sql` en phpMyAdmin (crea las tablas `doctors` y
 > `articles`). Las fotos se guardan en `uploads/doctors/` y `uploads/recursos/`.
 
+### 13. Preguntas Frecuentes (pestaña Preguntas)
+
+La sección **“Preguntas Frecuentes”** de la portada lee las preguntas creadas aquí.
+Lo administra todo el personal.
+
+- **+ Nueva pregunta**: pregunta y respuesta (obligatorias) + **Orden** (menor aparece
+  primero) y **Estado**.
+- **Pausar / Activar**: una pregunta en pausa deja de mostrarse en la portada sin
+  borrarla.
+- **Editar** y **Eliminar** (definitivo).
+- En la portada, si la API no responde, se conserva un contenido de respaldo para que
+  la sección nunca quede vacía.
+
+> Para activarlo en una base existente, importe `database/03_faqs.sql` en phpMyAdmin
+> (crea la tabla `faqs` con las preguntas que ya estaban en la portada).
+
 ---
 
 ## Cómo se ve en el sitio público

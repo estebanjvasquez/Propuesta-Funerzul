@@ -133,6 +133,7 @@ function switchTab(tab, btn) {
     if (tab === 'condolencias') loadCondolences();
     if (tab === 'medicos') loadDoctors();
     if (tab === 'recursos') loadArticles();
+    if (tab === 'faqs') loadFaqs();
     if (tab === 'plantillas') loadTemplates(true);
     if (tab === 'config') loadSettings();
     if (tab === 'usuarios') loadUsers();
@@ -753,6 +754,118 @@ async function deleteArticle(id, title) {
 }
 
 // ==========================================================================
+//  PREGUNTAS FRECUENTES
+// ==========================================================================
+async function loadFaqs() {
+    try {
+        const r = await API.req('faqs.php?action=list&scope=admin');
+        renderFaqTable(r.items);
+    } catch (e) { toast(e.message); }
+}
+
+function renderFaqTable(items) {
+    const tb = $('#faqTableBody');
+    if (!items.length) {
+        tb.innerHTML = `<tr><td colspan="4" class="empty-row">No hay preguntas. Cree la primera con “+ Nueva pregunta”.</td></tr>`;
+        return;
+    }
+    tb.innerHTML = items.map(f => `
+        <tr>
+            <td>${f.sort_order}</td>
+            <td><div class="row-name">${escapeHtml(f.question)}</div></td>
+            <td>${f.is_active ? '<span class="status-badge badge-green">Activa</span>' : '<span class="status-badge badge-amber">En pausa</span>'}</td>
+            <td>
+                <div class="admin-actions">
+                    <button class="btn btn-outline btn-sm" onclick="toggleFaq(${f.id}, ${f.is_active ? 0 : 1})">${f.is_active ? 'Pausar' : 'Activar'}</button>
+                    <button class="btn btn-outline btn-sm" onclick="editFaq(${f.id})">Editar</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteFaq(${f.id}, ${escapeAttr(f.question)})">Eliminar</button>
+                </div>
+            </td>
+        </tr>`).join('');
+}
+
+function faqFormHtml(f = {}) {
+    return `
+    <form id="faqForm">
+        <input type="hidden" id="ff_id" value="${f.id || ''}">
+        <div class="form-group"><label class="form-label">Pregunta *</label>
+            <input type="text" id="ff_question" class="form-control" maxlength="300" value="${escapeHtml(f.question || '')}" required></div>
+        <div class="form-group"><label class="form-label">Respuesta *</label>
+            <textarea id="ff_answer" class="form-control" rows="5" required>${escapeHtml(f.answer || '')}</textarea></div>
+        <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">Orden</label>
+                <input type="number" id="ff_order" class="form-control" value="${f.sort_order ?? 0}">
+                <p class="setting-help">Menor número = aparece primero.</p></div>
+            <div class="form-group"><label class="form-label">Estado</label>
+                <select id="ff_active" class="form-control">
+                    <option value="1" ${f.is_active !== false ? 'selected' : ''}>Activa (visible)</option>
+                    <option value="0" ${f.is_active === false ? 'selected' : ''}>En pausa</option>
+                </select></div>
+        </div>
+        <p id="ff_error" class="login-error" hidden></p>
+        <div class="modal-actions">
+            <button type="submit" class="btn btn-primary" id="ff_submit">Guardar pregunta</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+        </div>
+    </form>`;
+}
+
+function newFaq() { openModal('Nueva pregunta', faqFormHtml({})); wireFaqForm(); }
+async function editFaq(id) {
+    try {
+        const r = await API.req('faqs.php?action=get&id=' + id);
+        openModal('Editar pregunta', faqFormHtml(r.item));
+        wireFaqForm();
+    } catch (e) { toast(e.message); }
+}
+
+function wireFaqForm() {
+    $('#faqForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = $('#ff_submit');
+        const err = $('#ff_error'); err.hidden = true;
+        btn.disabled = true; btn.innerText = 'Guardando...';
+        try {
+            const id = $('#ff_id').value;
+            await API.req('faqs.php?action=' + (id ? 'update' : 'create'), {
+                method: 'POST',
+                json: {
+                    id: id || undefined,
+                    question: $('#ff_question').value.trim(),
+                    answer: $('#ff_answer').value.trim(),
+                    sort_order: $('#ff_order').value,
+                    is_active: $('#ff_active').value === '1'
+                }
+            });
+            closeModal();
+            toast(id ? 'Pregunta actualizada.' : 'Pregunta creada.');
+            loadFaqs();
+        } catch (ex) {
+            err.innerText = ex.message; err.hidden = false;
+        } finally {
+            btn.disabled = false; btn.innerText = 'Guardar pregunta';
+        }
+    });
+}
+
+async function toggleFaq(id, active) {
+    try {
+        await API.req('faqs.php?action=toggle', { method: 'POST', json: { id, is_active: !!active } });
+        toast(active ? 'Pregunta activada.' : 'Pregunta en pausa.');
+        loadFaqs();
+    } catch (e) { toast(e.message); }
+}
+
+async function deleteFaq(id, question) {
+    if (!confirmAction(`¿Eliminar definitivamente la pregunta “${question}”?`)) return;
+    try {
+        await API.req('faqs.php?action=delete', { method: 'POST', json: { id } });
+        toast('Pregunta eliminada.');
+        loadFaqs();
+    } catch (e) { toast(e.message); }
+}
+
+// ==========================================================================
 //  PLANTILLAS
 // ==========================================================================
 async function loadTemplates(render = false) {
@@ -959,6 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#newObitBtn').addEventListener('click', newObituary);
     $('#newDoctorBtn').addEventListener('click', newDoctor);
     $('#newArticleBtn').addEventListener('click', newArticle);
+    $('#newFaqBtn').addEventListener('click', newFaq);
     $('#newTplBtn').addEventListener('click', newTemplate);
     $('#newUserBtn').addEventListener('click', newUser);
     $('#settingsForm').addEventListener('submit', saveSettings);

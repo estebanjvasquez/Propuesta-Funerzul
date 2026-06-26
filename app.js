@@ -38,11 +38,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const grid = document.getElementById('obituariesGrid');
     if (grid) loadHomeObituaries(grid);
 
+    const faqList = document.getElementById('faqList');
+    if (faqList) loadHomeFaqs(faqList);
+
     // Cierre de modales al pulsar fuera
     window.addEventListener('click', (e) => {
         if (e.target.classList && e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
     });
 });
+
+// ---------- Preguntas frecuentes (portada) ----------
+async function loadHomeFaqs(container) {
+    try {
+        const r = await apiGet('faqs.php?action=list');
+        if (r.items && r.items.length) {
+            container.innerHTML = r.items.map(faqItemHtml).join('');
+        }
+        // Si la API no devuelve nada, se conserva el contenido estático de respaldo.
+    } catch (e) {
+        // Sin conexión / sin tabla: se conserva el contenido estático de respaldo.
+    }
+}
+
+function faqItemHtml(f) {
+    return `
+        <details class="faq-item">
+            <summary>
+                ${escapeHtml(f.question)}
+                <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </summary>
+            <div class="faq-content">${escapeHtml(f.answer)}</div>
+        </details>`;
+}
 
 async function loadHomeObituaries(grid) {
     grid.innerHTML = obitSkeleton(3);

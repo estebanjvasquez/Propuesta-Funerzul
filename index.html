@@ -356,7 +356,8 @@
                 <p>Información clara, legal y administrativa para reducir su carga en estos momentos difíciles.</p>
             </div>
 
-            <div class="faq-list">
+            <div class="faq-list" id="faqList">
+                <!-- Contenido inicial (respaldo). app.js lo reemplaza con las preguntas del panel. -->
                 <!-- Pregunta 1 -->
                 <details class="faq-item">
                     <summary>
@@ -431,8 +432,8 @@
                     <div class="grief-content">
                         <h4>Guías y Lecturas de Apoyo</h4>
                         <p>Material de lectura compasivo elaborado por profesionales para entender y procesar cada una de las etapas del duelo familiar.</p>
-                        <a href="#" onclick="showToast('Descarga iniciada...'); return false;">
-                            Descargar Recursos PDF 
+                        <a href="recursos.php">
+                            Ver Recursos de Lectura
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 4l-1.41 1.41L15.17 10H3v2h12.17l-4.58 4.59L12 18l8-8z"/>
                             </svg>
@@ -450,7 +451,7 @@
                     <div class="grief-content">
                         <h4>Asistencia Psicológica Directa</h4>
                         <p>Contacto inmediato con terapeutas especializados en tanatología y terapia del duelo para sesiones individuales o grupales en Maracaibo.</p>
-                        <a href="#" onclick="showToast('Redireccionando al directorio...'); return false;">
+                        <a href="directorio-medico.php">
                             Ver Directorio Médico
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12 4l-1.41 1.41L15.17 10H3v2h12.17l-4.58 4.59L12 18l8-8z"/>
@@ -637,6 +638,6 @@
     <!-- 12. TOAST NOTIFICATION -->
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="app.js?v=20260611"></script>
+    <script src="app.js?v=20260626"></script>
 </body>
 </html>
