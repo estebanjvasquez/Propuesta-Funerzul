@@ -250,11 +250,13 @@ Lo administra todo el personal.
 - **Pausar / Activar**: una pregunta en pausa deja de mostrarse en la portada sin
   borrarla.
 - **Editar** y **Eliminar** (definitivo).
-- En la portada, si la API no responde, se conserva un contenido de respaldo para que
-  la sección nunca quede vacía.
+- La portada construye **tanto la sección visible como el JSON-LD (`FAQPage`)** a partir
+  de estas preguntas: son la **única fuente** (no hay preguntas escritas a mano en el
+  HTML del landing).
 
 > Para activarlo en una base existente, importe `database/03_faqs.sql` en phpMyAdmin
-> (crea la tabla `faqs` con las preguntas que ya estaban en la portada).
+> (crea la tabla `faqs` con las preguntas que ya estaban en la portada, incluida la de
+> atención 24 horas que solo figuraba en los datos estructurados).
 
 ---
 

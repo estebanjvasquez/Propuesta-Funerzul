@@ -48,15 +48,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ---------- Preguntas frecuentes (portada) ----------
+// Las preguntas se administran desde el panel; la portada (sección visible + JSON-LD)
+// se construye por completo a partir de la API, sin contenido duplicado en el HTML.
 async function loadHomeFaqs(container) {
     try {
         const r = await apiGet('faqs.php?action=list');
-        if (r.items && r.items.length) {
-            container.innerHTML = r.items.map(faqItemHtml).join('');
+        const items = r.items || [];
+        if (items.length) {
+            container.innerHTML = items.map(faqItemHtml).join('');
+            updateFaqJsonLd(items);
+        } else {
+            container.innerHTML = `<p class="empty-row">Por el momento no hay preguntas frecuentes publicadas.</p>`;
         }
-        // Si la API no devuelve nada, se conserva el contenido estático de respaldo.
     } catch (e) {
-        // Sin conexión / sin tabla: se conserva el contenido estático de respaldo.
+        container.innerHTML = `<p class="empty-row">No fue posible cargar las preguntas frecuentes en este momento.</p>`;
     }
 }
 
@@ -69,6 +74,22 @@ function faqItemHtml(f) {
             </summary>
             <div class="faq-content">${escapeHtml(f.answer)}</div>
         </details>`;
+}
+
+// Reconstruye el bloque JSON-LD FAQPage con las mismas preguntas (GEO/SEO).
+function updateFaqJsonLd(items) {
+    const el = document.getElementById('faqJsonLd');
+    if (!el) return;
+    const data = {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: items.map(f => ({
+            '@type': 'Question',
+            name: f.question,
+            acceptedAnswer: { '@type': 'Answer', text: f.answer }
+        }))
+    };
+    el.textContent = JSON.stringify(data);
 }
 
 async function loadHomeObituaries(grid) {

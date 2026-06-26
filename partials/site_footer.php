@@ -44,6 +44,6 @@
     </a>
 
     <div id="toast" class="toast">Notificación</div>
-    <script src="app.js?v=20260626"></script>
+    <script src="app.js?v=20260627"></script>
 </body>
 </html>

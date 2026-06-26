@@ -72,46 +72,9 @@
     }
     </script>
 
-    <!-- JSON-LD: FAQPage (optimización GEO para motores de búsqueda de IA) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "¿Cómo tramitar un acta de defunción en Maracaibo?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "El acta de defunción se tramita ante el Registro Civil del municipio del Estado Zulia donde ocurrió el deceso. Se requiere el Certificado Médico de Defunción (Forma EV-14) y las cédulas de identidad del fallecido y del declarante. En Funeraria del Zulia gestionamos este trámite por usted las 24 horas."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Cuáles son los requisitos de cremación en el Estado Zulia?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Para una cremación en el Estado Zulia se requiere el Certificado Médico de Defunción (EV-14), el acta de defunción del Registro Civil, el permiso sanitario de cremación emitido por la autoridad competente y la autorización escrita del familiar responsable. Funeraria del Zulia coordina la totalidad de la documentación y el proceso en sus instalaciones de Maracaibo."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Atienden las 24 horas en Maracaibo y todo el Zulia?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sí. Funeraria del Zulia ofrece atención inmediata las 24 horas, los 7 días de la semana, en Maracaibo, San Francisco, Cabimas, Ciudad Ojeda y todo el Estado Zulia. Puede llamarnos al +58 424 695-0136 en cualquier momento."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Qué incluye la previsión funeraria familiar?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Los planes de previsión funeraria incluyen el cofre, traslados locales en el Zulia, sala de capilla velatoria, oficios religiosos, gestión documental y, según el plan, la opción de cremación o inhumación. Garantizan tranquilidad financiera y emocional para toda la familia."
-          }
-        }
-      ]
-    }
+    <!-- JSON-LD: FAQPage (optimización GEO). Se rellena dinámicamente desde el panel (app.js). -->
+    <script type="application/ld+json" id="faqJsonLd">
+    { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [] }
     </script>
 </head>
 <body>
@@ -356,59 +319,9 @@
                 <p>Información clara, legal y administrativa para reducir su carga en estos momentos difíciles.</p>
             </div>
 
+            <!-- Las preguntas se administran desde el panel (api/faqs.php) y se cargan aquí con app.js. -->
             <div class="faq-list" id="faqList">
-                <!-- Contenido inicial (respaldo). app.js lo reemplaza con las preguntas del panel. -->
-                <!-- Pregunta 1 -->
-                <details class="faq-item">
-                    <summary>
-                        ¿Cómo tramitar un acta de defunción en Maracaibo?
-                        <svg class="arrow-icon" viewBox="0 0 24 24">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                        </svg>
-                    </summary>
-                    <div class="faq-content">
-                        El acta de defunción debe tramitarse ante el Registro Civil correspondiente al municipio en el Estado Zulia donde ocurrió el deceso. Nuestro equipo de asesores se encarga de guiarle paso a paso, requiriendo inicialmente el Certificado Médico de Defunción (EV-14) y las cédulas de identidad.
-                    </div>
-                </details>
-
-                <!-- Pregunta 1B -->
-                <details class="faq-item">
-                    <summary>
-                        ¿Cuáles son los requisitos de cremación en el Estado Zulia?
-                        <svg class="arrow-icon" viewBox="0 0 24 24">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                        </svg>
-                    </summary>
-                    <div class="faq-content">
-                        Para realizar una cremación en el Estado Zulia se requieren cuatro documentos: el Certificado Médico de Defunción (Forma EV-14), el acta de defunción emitida por el Registro Civil, el permiso sanitario de cremación de la autoridad competente y la autorización escrita del familiar responsable. En Funeraria del Zulia coordinamos la totalidad de la documentación y el proceso en nuestras instalaciones crematorias de Maracaibo, con acompañamiento las 24 horas.
-                    </div>
-                </details>
-
-                <!-- Pregunta 2 -->
-                <details class="faq-item">
-                    <summary>
-                        ¿Qué incluye la previsión funeraria familiar?
-                        <svg class="arrow-icon" viewBox="0 0 24 24">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                        </svg>
-                    </summary>
-                    <div class="faq-content">
-                        Los planes de previsión funeraria le permiten organizar anticipadamente los servicios. Incluyen el cofre (ataúd), traslados locales en Zulia, servicio de capilla velatoria, trámites legales y, si lo desea, la opción de cremación. Esto garantiza tranquilidad financiera y emocional para toda la familia.
-                    </div>
-                </details>
-
-                <!-- Pregunta 3 -->
-                <details class="faq-item">
-                    <summary>
-                        ¿Es posible realizar cremación si el deceso ocurrió fuera de Maracaibo?
-                        <svg class="arrow-icon" viewBox="0 0 24 24">
-                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                        </svg>
-                    </summary>
-                    <div class="faq-content">
-                        Sí, ofrecemos servicios de traslado desde cualquier municipio del Estado Zulia (San Francisco, Cabimas, Ciudad Ojeda, etc.) u otras regiones del país hacia nuestras instalaciones crematorias centrales en Maracaibo, cumpliendo estrictamente con todas las normativas sanitarias y de sanidad vigentes.
-                    </div>
-                </details>
+                <p class="empty-row" id="faqLoading">Cargando preguntas frecuentes...</p>
             </div>
         </div>
     </section>
@@ -638,6 +551,6 @@
     <!-- 12. TOAST NOTIFICATION -->
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="app.js?v=20260626"></script>
+    <script src="app.js?v=20260627"></script>
 </body>
 </html>
