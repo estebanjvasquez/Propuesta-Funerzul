@@ -143,6 +143,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
             <nav>
                 <ul class="nav-links">
                     <li><a href="#servicios" class="active">Servicios</a></li>
+                    <li><a href="crematorios-del-zulia.php">Crematorio</a></li>
                     <li><a href="#prevision">Previsión</a></li>
                     <li><a href="#obituarios">Obituarios</a></li>
                     <li><a href="directorio-medico.php">Directorio Médico</a></li>
@@ -259,6 +260,19 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                     </div>
                     <h3 class="service-title">Capillas Velatorias</h3>
                     <p class="service-desc">Espacios amplios, climatizados y serenos, diseñados con cómodas instalaciones para asegurar el confort y privacidad de la familia durante la vigilia.</p>
+                    <span class="service-card-more">Ver detalle →</span>
+                </a>
+
+                <!-- Servicio 5: Crematorios del Zulia -->
+                <a class="service-card" href="crematorios-del-zulia.php">
+                    <div class="service-icon">
+                        <!-- Icono Urna / Cremación -->
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2c-1.1 0-2 .9-2 2 0 .74.4 1.38 1 1.72V7H8c-1.1 0-2 .9-2 2v1c0 .74.4 1.38 1 1.72V19c0 1.66 1.79 3 4 3s4-1.34 4-3v-6.28c.6-.34 1-.98 1-1.72V9c0-1.1-.9-2-2-2h-3V5.72c.6-.34 1-.98 1-1.72 0-1.1-.9-2-2-2zm-4 8v-.99L8.01 9H16v1H8zm4 10c-1.66 0-3-.67-3-1.5V12h6v6.5c0 .83-1.34 1.5-3 1.5z"/>
+                        </svg>
+                    </div>
+                    <h3 class="service-title">Crematorios del Zulia</h3>
+                    <p class="service-desc">Crematorio propio en Maracaibo para las familias que prefieren la cremación como disposición final, con todos los permisos y sin recorrer largas distancias.</p>
                     <span class="service-card-more">Ver detalle →</span>
                 </a>
             </div>
@@ -447,6 +461,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                     <h4>Enlaces Rápidos</h4>
                     <ul class="footer-links-list">
                         <li><a href="#servicios">Servicios</a></li>
+                        <li><a href="crematorios-del-zulia.php">Crematorios del Zulia</a></li>
                         <li><a href="#obituarios">Obituarios</a></li>
                         <li><a href="directorio-medico.php">Directorio Médico</a></li>
                         <li><a href="recursos.php">Recursos de Lectura</a></li>
