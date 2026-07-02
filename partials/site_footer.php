@@ -15,6 +15,7 @@ $base = ($PAGE['base'] ?? ''); ?>
                     <h4>Enlaces</h4>
                     <ul class="footer-links-list">
                         <li><a href="<?= $base ?>servicios/">Servicios</a></li>
+                        <li><a href="<?= $base ?>crematorios-del-zulia.php">Crematorios del Zulia</a></li>
                         <li><a href="<?= $base ?>planes/">Previsión Familiar</a></li>
                         <li><a href="<?= $base ?>obituarios.php">Obituarios</a></li>
                         <li><a href="<?= $base ?>directorio-medico.php">Directorio Médico</a></li>

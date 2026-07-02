@@ -40,6 +40,7 @@ $base      = $P['base'] ?? '';   // '' en la raíz, '../' en subcarpetas (servic
             <nav>
                 <ul class="nav-links">
                     <li><a href="<?= $base ?>servicios/">Servicios</a></li>
+                    <li><a href="<?= $base ?>crematorios-del-zulia.php">Crematorio</a></li>
                     <li><a href="<?= $base ?>planes/">Previsión</a></li>
                     <li><a href="<?= $base ?>obituarios.php">Obituarios</a></li>
                     <li><a href="<?= $base ?>directorio-medico.php">Directorio Médico</a></li>

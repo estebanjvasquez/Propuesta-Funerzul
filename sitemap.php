@@ -17,6 +17,7 @@ sm_url(site_url('index.php'), null, 'daily', '1.0');
 sm_url(site_url('obituarios.php'), null, 'daily', '0.9');
 sm_url(site_url('directorio-medico.php'), null, 'weekly', '0.8');
 sm_url(site_url('recursos.php'), null, 'weekly', '0.8');
+sm_url(site_url('crematorios-del-zulia.php'), null, 'monthly', '0.8');
 
 // Servicios
 sm_url(site_url('servicios/'), null, 'monthly', '0.9');
