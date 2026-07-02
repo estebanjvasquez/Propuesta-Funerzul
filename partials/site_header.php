@@ -5,6 +5,7 @@ $title     = $P['title'] ?? 'Funeraria del Zulia';
 $desc      = $P['description'] ?? 'Servicios funerarios en Maracaibo, Estado Zulia. Atención inmediata 24/7.';
 $canonical = $P['canonical'] ?? '';
 $headExtra = $P['head'] ?? '';
+$base      = $P['base'] ?? '';   // '' en la raíz, '../' en subcarpetas (servicios/, planes/)
 ?><!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,8 +14,8 @@ $headExtra = $P['head'] ?? '';
     <title><?= esc($title) ?></title>
     <meta name="description" content="<?= esc($desc) ?>">
     <?php if ($canonical): ?><link rel="canonical" href="<?= esc($canonical) ?>"><?php endif; ?>
-    <link rel="icon" href="favicon.png" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20260626">
+    <link rel="icon" href="<?= $base ?>favicon.png" type="image/png">
+    <link rel="stylesheet" href="<?= $base ?>styles.css?v=20260628">
     <?= $headExtra ?>
 </head>
 <body>
@@ -33,18 +34,19 @@ $headExtra = $P['head'] ?? '';
 
     <header class="header">
         <div class="container">
-            <a href="index.php" class="logo" aria-label="Funeraria del Zulia - Inicio">
-                <img src="logo-horizontal-white.png" alt="Funeraria del Zulia" class="header-logo-img">
+            <a href="<?= $base ?>index.php" class="logo" aria-label="Funeraria del Zulia - Inicio">
+                <img src="<?= $base ?>logo-horizontal-white.png" alt="Funeraria del Zulia" class="header-logo-img">
             </a>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="index.php#servicios">Servicios</a></li>
-                    <li><a href="index.php#prevision">Previsión</a></li>
-                    <li><a href="obituarios.php">Obituarios</a></li>
-                    <li><a href="directorio-medico.php">Directorio Médico</a></li>
-                    <li><a href="recursos.php">Recursos</a></li>
-                    <li><a href="index.php#preguntas">Preguntas Frecuentes</a></li>
-                    <li><a href="index.php#contacto">Contacto</a></li>
+                    <li><a href="<?= $base ?>servicios/">Servicios</a></li>
+                    <li><a href="<?= $base ?>crematorios-del-zulia.php">Crematorio</a></li>
+                    <li><a href="<?= $base ?>planes/">Previsión</a></li>
+                    <li><a href="<?= $base ?>obituarios.php">Obituarios</a></li>
+                    <li><a href="<?= $base ?>directorio-medico.php">Directorio Médico</a></li>
+                    <li><a href="<?= $base ?>recursos.php">Recursos</a></li>
+                    <li><a href="<?= $base ?>index.php#preguntas">Preguntas Frecuentes</a></li>
+                    <li><a href="<?= $base ?>index.php#contacto">Contacto</a></li>
                 </ul>
             </nav>
             <div class="header-actions">

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-label="Traslados funerarios nacionales - Funeraria del Zulia">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1F4E79"/>
+      <stop offset="1" stop-color="#163A5F"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <circle cx="600" cy="250" r="185" fill="#2F6DB3" opacity="0.25"/>
+  <circle cx="600" cy="250" r="135" fill="#2F6DB3" opacity="0.20"/>
+  <g transform="translate(600,250) scale(8.5) translate(-12,-12)" fill="#ffffff">
+    <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.27-3.82c.14-.4.52-.68.96-.68h9.54c.44 0 .82.28.96.68L19 11H5z"/>
+  </g>
+  <rect x="540" y="430" width="120" height="4" fill="#b8860b"/>
+  <text x="600" y="498" text-anchor="middle" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="bold">Traslados Nacionales</text>
+  <text x="600" y="543" text-anchor="middle" fill="#C3DAEE" font-family="Arial, Helvetica, sans-serif" font-size="23">Desde y hacia todo el Estado Zulia</text>
+</svg>

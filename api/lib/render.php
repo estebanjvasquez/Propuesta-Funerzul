@@ -112,6 +112,61 @@ function site_url(string $path = ''): string
     return $base . '/' . ltrim($path, '/');
 }
 
+/** Bloque <head> reutilizable: robots + Open Graph + JSON-LD opcional. */
+function page_head_meta(string $title, string $desc, string $canonical, string $image, string $ogType = 'website', string $extraJsonLd = ''): string
+{
+    return '<meta name="robots" content="index, follow">'
+        . '<meta property="og:type" content="' . esc($ogType) . '">'
+        . '<meta property="og:title" content="' . esc($title) . '">'
+        . '<meta property="og:description" content="' . esc($desc) . '">'
+        . '<meta property="og:image" content="' . esc($image) . '">'
+        . '<meta property="og:url" content="' . esc($canonical) . '">'
+        . '<meta name="geo.region" content="VE-V">'
+        . '<meta name="geo.placename" content="Maracaibo, Estado Zulia">'
+        . $extraJsonLd;
+}
+
+/** JSON-LD BreadcrumbList. $items: [['name'=>..,'url'=>..], ...] */
+function breadcrumb_jsonld(array $items): string
+{
+    $list = [];
+    foreach ($items as $i => $it) {
+        $list[] = ['@type' => 'ListItem', 'position' => $i + 1, 'name' => $it['name'], 'item' => $it['url']];
+    }
+    $data = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => $list];
+    return '<script type="application/ld+json">' . json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>';
+}
+
+/** JSON-LD schema.org/Service para una página de servicio o plan funerario. */
+function service_jsonld(string $name, string $desc, string $canonical, string $image, string $serviceType = 'FuneralService'): string
+{
+    $data = [
+        '@context'    => 'https://schema.org',
+        '@type'       => 'Service',
+        'serviceType' => $serviceType,
+        'name'        => $name,
+        'description' => $desc,
+        'url'         => $canonical,
+        'image'       => $image,
+        'areaServed'  => ['@type' => 'AdministrativeArea', 'name' => 'Estado Zulia, Venezuela'],
+        'provider'    => [
+            '@type'     => 'FuneralHome',
+            'name'      => 'Funeraria del Zulia',
+            'telephone' => '+58 424 695-0136',
+            'url'       => site_url(),
+            'address'   => [
+                '@type'           => 'PostalAddress',
+                'streetAddress'   => 'Calle 84 No. 3F-70, Edificio Funeraria del Zulia, Sector Valle Frío',
+                'addressLocality' => 'Maracaibo',
+                'addressRegion'   => 'Zulia',
+                'postalCode'      => '4001',
+                'addressCountry'  => 'VE',
+            ],
+        ],
+    ];
+    return '<script type="application/ld+json">' . json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>';
+}
+
 // ============================================================================
 //  DIRECTORIO MÉDICO
 // ============================================================================

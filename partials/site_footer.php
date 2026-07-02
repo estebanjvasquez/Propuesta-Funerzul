@@ -1,10 +1,11 @@
-<?php if (!defined('OBIT_APP')) { exit('Forbidden'); } ?>
+<?php if (!defined('OBIT_APP')) { exit('Forbidden'); }
+$base = ($PAGE['base'] ?? ''); ?>
     <footer id="contacto" class="footer">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <a href="index.php" class="logo footer-logo">
-                        <img src="logo-seal-footer.png" alt="Sello Funeraria del Zulia - Desde 1942" class="footer-logo-icon">
+                    <a href="<?= $base ?>index.php" class="logo footer-logo">
+                        <img src="<?= $base ?>logo-seal-footer.png" alt="Sello Funeraria del Zulia - Desde 1942" class="footer-logo-icon">
                         <span class="logo-text">Funeraria del Zulia</span>
                     </a>
                     <p>Dignidad, respeto y acompañamiento incondicional para las familias zulianas desde 1942.</p>
@@ -13,12 +14,13 @@
                 <div>
                     <h4>Enlaces</h4>
                     <ul class="footer-links-list">
-                        <li><a href="index.php#servicios">Servicios</a></li>
-                        <li><a href="obituarios.php">Obituarios</a></li>
-                        <li><a href="directorio-medico.php">Directorio Médico</a></li>
-                        <li><a href="recursos.php">Recursos de Lectura</a></li>
-                        <li><a href="index.php#prevision">Previsión Familiar</a></li>
-                        <li><a href="index.php#preguntas">Preguntas Frecuentes</a></li>
+                        <li><a href="<?= $base ?>servicios/">Servicios</a></li>
+                        <li><a href="<?= $base ?>crematorios-del-zulia.php">Crematorios del Zulia</a></li>
+                        <li><a href="<?= $base ?>planes/">Previsión Familiar</a></li>
+                        <li><a href="<?= $base ?>obituarios.php">Obituarios</a></li>
+                        <li><a href="<?= $base ?>directorio-medico.php">Directorio Médico</a></li>
+                        <li><a href="<?= $base ?>recursos.php">Recursos de Lectura</a></li>
+                        <li><a href="<?= $base ?>index.php#preguntas">Preguntas Frecuentes</a></li>
                     </ul>
                 </div>
                 <div>
@@ -44,6 +46,6 @@
     </a>
 
     <div id="toast" class="toast">Notificación</div>
-    <script src="app.js?v=20260628"></script>
+    <script src="<?= $base ?>app.js?v=20260628"></script>
 </body>
 </html>

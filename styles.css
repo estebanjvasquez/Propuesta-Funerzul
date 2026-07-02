@@ -2042,3 +2042,72 @@ textarea.form-control {
     .doctor-detail-head { flex-direction: column; text-align: center; }
     .resource-detail-title { font-size: 26px; }
 }
+
+/* ==========================================================================
+   PÁGINAS DE SERVICIOS Y PLANES (detalle + hubs)
+   ========================================================================== */
+/* Tarjetas de servicio de la portada como enlaces */
+.service-card { text-decoration: none; color: inherit; }
+.service-card-more { display: inline-block; margin-top: 14px; color: var(--color-primary-light); font-weight: 600; font-size: 14px; }
+.section-cta { text-align: center; margin-top: 36px; }
+
+/* Detalle de servicio / plan */
+.service-detail-body { max-width: 860px; margin: 0 auto; }
+.service-hero-img { width: 100%; height: auto; border-radius: var(--radius-lg); margin-bottom: 28px; box-shadow: var(--shadow-sm); }
+.service-detail h1 { font-size: 34px; margin-bottom: 16px; }
+.service-detail h2 { font-size: 23px; margin: 32px 0 12px; }
+.service-lead { font-size: 18px; line-height: 1.8; color: var(--color-text); margin-bottom: 8px; }
+.service-detail p { font-size: 16px; line-height: 1.8; color: var(--color-text); margin-bottom: 14px; }
+.service-list { margin: 0 0 16px 4px; padding: 0; list-style: none; }
+.service-list li { position: relative; padding: 6px 0 6px 30px; font-size: 16px; border-bottom: 1px solid var(--color-surface-high); }
+.service-list li::before { content: "✓"; position: absolute; left: 0; top: 6px; color: var(--color-secondary); font-weight: 700; }
+.inline-badge { display: inline-block; vertical-align: middle; background: var(--color-secondary); color: #fff; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-full); margin-left: 8px; }
+
+.service-related { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--color-surface-high); }
+.service-related h3 { font-size: 18px; margin-bottom: 10px; }
+.service-related ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 24px; }
+.service-related a { color: var(--color-primary-light); font-weight: 600; }
+
+/* Banda CTA (llamar + WhatsApp) */
+.cta-band {
+    display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: #fff; border-radius: var(--radius-lg); padding: 32px 36px; margin: 40px 0;
+}
+.cta-band-text h2 { color: #fff; font-size: 24px; margin: 0 0 6px; }
+.cta-band-text p { color: var(--color-celeste-light); margin: 0; font-size: 15px; }
+.cta-band-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-lg { padding: 14px 22px; font-size: 16px; display: inline-flex; align-items: center; gap: 8px; }
+.btn-whatsapp { background: #25D366; color: #fff; border: none; }
+.btn-whatsapp:hover { background: #1ebe5b; color: #fff; }
+
+/* Hub de servicios */
+.services-detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 28px; }
+.service-link-card {
+    display: flex; flex-direction: column; text-decoration: none; color: inherit;
+    background: var(--color-surface); border: 1px solid var(--color-surface-high);
+    border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition-normal);
+}
+.service-link-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: rgba(184,134,11,0.3); }
+.service-link-card img { width: 100%; height: auto; display: block; }
+.service-link-card-body { padding: 22px; }
+.service-link-card-body h2 { font-size: 20px; margin-bottom: 8px; }
+.service-link-card-body p { font-size: 15px; color: var(--color-text-muted); margin-bottom: 12px; }
+.service-link-more { color: var(--color-primary-light); font-weight: 600; font-size: 14px; }
+
+/* Hub de planes */
+.plans-detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 28px; }
+.plan-detail-card {
+    position: relative; background: var(--color-surface); border: 1px solid var(--color-surface-high);
+    border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); display: flex; flex-direction: column;
+}
+.plan-detail-card.plan-featured { border-color: var(--color-secondary); box-shadow: 0 8px 28px rgba(184,134,11,0.18); }
+.plan-detail-card img { width: 100%; height: auto; display: block; }
+.plan-detail-card-body { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
+.plan-detail-card .plan-cta { margin-top: auto; }
+
+@media (max-width: 768px) {
+    .service-detail h1 { font-size: 26px; }
+    .cta-band { padding: 24px; text-align: center; justify-content: center; }
+    .cta-band-actions { justify-content: center; width: 100%; }
+}

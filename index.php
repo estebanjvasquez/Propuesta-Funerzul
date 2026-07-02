@@ -38,7 +38,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     <title>Funeraria del Zulia | Servicios Funerarios y Previsión Familiar 24 Horas</title>
     <link rel="icon" href="favicon.png" type="image/png">
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Estado Zulia. Atención 24/7, cremación, traslados y planes de previsión familiar con dignidad y respeto eterno.">
-    <link rel="stylesheet" href="styles.css?v=20260627">
+    <link rel="stylesheet" href="styles.css?v=20260628">
     
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -210,7 +210,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
             
             <div class="services-grid">
                 <!-- Servicio 1: Sepelio Tradicional -->
-                <div class="service-card">
+                <a class="service-card" href="servicios/sepelio-tradicional.php">
                     <div class="service-icon">
                         <!-- Icono Iglesia / Templo -->
                         <svg viewBox="0 0 24 24">
@@ -219,10 +219,11 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                     </div>
                     <h3 class="service-title">Sepelio Tradicional</h3>
                     <p class="service-desc">Ceremonias completas que respetan plenamente sus creencias y tradiciones familiares, brindando un espacio de paz y recogimiento para la despedida.</p>
-                </div>
+                    <span class="service-card-more">Ver detalle →</span>
+                </a>
                 
                 <!-- Servicio 2: Cremación -->
-                <div class="service-card">
+                <a class="service-card" href="servicios/cremacion.php">
                     <div class="service-icon">
                         <!-- Icono Crematorio / Llama -->
                         <svg viewBox="0 0 24 24">
@@ -232,10 +233,11 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                     </div>
                     <h3 class="service-title">Cremación en Maracaibo</h3>
                     <p class="service-desc">Servicio de cremación directo o con velación previa en capillas propias, gestionado con absoluta transparencia, rapidez y respeto normativo.</p>
-                </div>
+                    <span class="service-card-more">Ver detalle →</span>
+                </a>
                 
                 <!-- Servicio 3: Traslados -->
-                <div class="service-card">
+                <a class="service-card" href="servicios/traslados.php">
                     <div class="service-icon">
                         <!-- Icono Auto -->
                         <svg viewBox="0 0 24 24">
@@ -244,10 +246,11 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                     </div>
                     <h3 class="service-title">Traslados Nacionales</h3>
                     <p class="service-desc">Logística segura y compasiva para traslados desde o hacia el Estado Zulia, coordinando de extremo a extremo toda la documentación y permisos legales.</p>
-                </div>
+                    <span class="service-card-more">Ver detalle →</span>
+                </a>
                 
                 <!-- Servicio 4: Capillas -->
-                <div class="service-card">
+                <a class="service-card" href="servicios/capillas-velatorias.php">
                     <div class="service-icon">
                         <!-- Icono Edificio / Sala -->
                         <svg viewBox="0 0 24 24">
@@ -256,8 +259,10 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                     </div>
                     <h3 class="service-title">Capillas Velatorias</h3>
                     <p class="service-desc">Espacios amplios, climatizados y serenos, diseñados con cómodas instalaciones para asegurar el confort y privacidad de la familia durante la vigilia.</p>
-                </div>
+                    <span class="service-card-more">Ver detalle →</span>
+                </a>
             </div>
+            <div class="section-cta"><a href="servicios/" class="btn btn-outline">Ver todos los servicios</a></div>
         </div>
     </section>
 
@@ -280,7 +285,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                         <li>Gestión documental</li>
                         <li>Coordinación funeraria</li>
                     </ul>
-                    <a href="https://api.whatsapp.com/send?phone=584146523319&amp;text=Hola%2C%20deseo%20informaci%C3%B3n%20sobre%20el%20Plan%20Esencial" target="_blank" rel="noopener" class="btn btn-outline plan-cta">Más información</a>
+                    <a href="planes/plan-esencial.php" class="btn btn-outline plan-cta">Ver plan en detalle</a>
                 </article>
 
                 <!-- Plan Tradición -->
@@ -293,7 +298,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                         <li>Arreglos florales y cafetería</li>
                         <li>Traslados y gestión administrativa</li>
                     </ul>
-                    <a href="https://api.whatsapp.com/send?phone=584146523319&amp;text=Hola%2C%20deseo%20informaci%C3%B3n%20sobre%20el%20Plan%20Tradici%C3%B3n" target="_blank" rel="noopener" class="btn btn-outline plan-cta">Más información</a>
+                    <a href="planes/plan-tradicion.php" class="btn btn-outline plan-cta">Ver plan en detalle</a>
                 </article>
 
                 <!-- Plan Vanguardia (destacado) -->
@@ -307,7 +312,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                         <li>Cobertura ampliada</li>
                         <li>Acompañamiento integral</li>
                     </ul>
-                    <a href="https://api.whatsapp.com/send?phone=584146523319&amp;text=Hola%2C%20deseo%20informaci%C3%B3n%20sobre%20el%20Plan%20Vanguardia" target="_blank" rel="noopener" class="btn btn-secondary plan-cta">Solicitar asesoría</a>
+                    <a href="planes/plan-vanguardia.php" class="btn btn-secondary plan-cta">Ver plan en detalle</a>
                 </article>
 
                 <!-- Plan Vanguardia Plus -->
@@ -320,11 +325,12 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                         <li>Beneficios especiales</li>
                         <li>Renovación anual</li>
                     </ul>
-                    <a href="https://api.whatsapp.com/send?phone=584146523319&amp;text=Hola%2C%20deseo%20informaci%C3%B3n%20sobre%20el%20Plan%20Vanguardia%20Plus" target="_blank" rel="noopener" class="btn btn-outline plan-cta">Más información</a>
+                    <a href="planes/plan-vanguardia-plus.php" class="btn btn-outline plan-cta">Ver plan en detalle</a>
                 </article>
             </div>
 
             <p class="prevision-note">Todos los planes incluyen cobertura familiar, financiamiento adaptable, atención 24 horas y planificación anticipada. Asesoría de planes: <a href="tel:+584146523319">+58 414 652-3319</a>.</p>
+            <div class="section-cta"><a href="planes/" class="btn btn-outline">Comparar todos los planes</a></div>
         </div>
     </section>
 
