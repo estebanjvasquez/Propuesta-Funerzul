@@ -6,6 +6,9 @@ uploads/obituarios/*
 !uploads/obituarios/_placeholder.webp
 !uploads/obituarios/.htaccess
 
+# --- Respaldo del sistema SIEMPRE (1+ GB, supera el límite de GitHub) ---
+database/SIEMPRE.sql
+
 # --- Sistema ---
 .DS_Store
 Thumbs.db

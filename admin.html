@@ -45,6 +45,7 @@
                     <button class="admin-tab-btn" data-tab="medicos" type="button">Directorio Médico</button>
                     <button class="admin-tab-btn" data-tab="recursos" type="button">Recursos</button>
                     <button class="admin-tab-btn" data-tab="faqs" type="button">Preguntas</button>
+                    <button class="admin-tab-btn" data-tab="prevision" type="button">Previsión</button>
                     <button class="admin-tab-btn admin-only" data-tab="plantillas" type="button" hidden>Plantillas</button>
                     <button class="admin-tab-btn admin-only" data-tab="config" type="button" hidden>Configuración</button>
                     <button class="admin-tab-btn admin-only" data-tab="usuarios" type="button" hidden>Usuarios</button>
@@ -154,6 +155,166 @@
                 </div>
             </section>
 
+            <!-- ---------- PREVISIÓN ---------- -->
+            <section id="tab-prevision" class="admin-tab-panel" hidden>
+                <div class="dashboard-stats">
+                    <div class="stat-card"><span class="stat-label">Contratos activos</span><span class="stat-value" id="pvStatContratos">0</span></div>
+                    <div class="stat-card"><span class="stat-label">Clientes</span><span class="stat-value" id="pvStatClientes">0</span></div>
+                    <div class="stat-card"><span class="stat-label">Cuotas vencidas</span><span class="stat-value" id="pvStatVencidas">0</span><span class="stat-sub" id="pvStatVencidasMonto"></span></div>
+                    <div class="stat-card"><span class="stat-label">Cobrado este mes</span><span class="stat-value" id="pvStatCobrado">0</span><span class="stat-sub" id="pvStatCobradoBs"></span></div>
+                    <div class="stat-card stat-card-action">
+                        <span class="stat-label">Tasa del día (Bs/USD)</span>
+                        <span class="stat-value" id="pvStatTasa">—</span>
+                        <button class="btn btn-outline btn-sm" id="pvTasaBtn" type="button">Actualizar</button>
+                    </div>
+                </div>
+
+                <div class="filter-group prev-subnav" id="pvSubNav">
+                    <button class="filter-btn active" data-sub="contratos" type="button">Contratos</button>
+                    <button class="filter-btn" data-sub="clientes" type="button">Clientes</button>
+                    <button class="filter-btn" data-sub="planes" type="button">Planes</button>
+                    <button class="filter-btn" data-sub="vendedores" type="button">Vendedores</button>
+                    <button class="filter-btn" data-sub="comisiones" type="button">Comisiones</button>
+                    <button class="filter-btn" data-sub="importar" type="button">Importar</button>
+                </div>
+
+                <!-- Contratos -->
+                <div id="pvSub-contratos" class="prev-subpanel">
+                    <div class="admin-toolbar">
+                        <h2>Contratos de Previsión</h2>
+                        <div class="admin-toolbar-actions">
+                            <input type="search" id="pvConSearch" class="form-control" placeholder="Nº contrato, cédula o nombre...">
+                            <select id="pvConEstatus" class="form-control prev-select">
+                                <option value="">Todos</option>
+                                <option value="activo">Activos</option>
+                                <option value="suspendido">Suspendidos</option>
+                                <option value="anulado">Anulados</option>
+                                <option value="renuncia">Renuncias</option>
+                            </select>
+                            <label class="prev-check"><input type="checkbox" id="pvConMorosos"> Con cuotas vencidas</label>
+                            <button class="btn btn-primary" id="pvNewContratoBtn" type="button">+ Nuevo contrato</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead><tr><th>Número</th><th>Titular</th><th>Plan</th><th>Vendedor</th><th>Cuota</th><th>Vencidas</th><th>Estatus</th><th>Acciones</th></tr></thead>
+                            <tbody id="pvConBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="prev-pager" id="pvConPager"></div>
+                </div>
+
+                <!-- Clientes -->
+                <div id="pvSub-clientes" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar">
+                        <h2>Clientes de Previsión</h2>
+                        <div class="admin-toolbar-actions">
+                            <input type="search" id="pvCliSearch" class="form-control" placeholder="Cédula, nombre, teléfono o correo...">
+                            <button class="btn btn-primary" id="pvNewClienteBtn" type="button">+ Nuevo cliente</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead><tr><th>Cédula</th><th>Nombre</th><th>Teléfono</th><th>Ciudad</th><th>Contratos</th><th>Acciones</th></tr></thead>
+                            <tbody id="pvCliBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="prev-pager" id="pvCliPager"></div>
+                </div>
+
+                <!-- Planes -->
+                <div id="pvSub-planes" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar">
+                        <h2>Planes de Previsión</h2>
+                        <button class="btn btn-primary" id="pvNewPlanBtn" type="button">+ Nuevo plan</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead><tr><th>Código</th><th>Nombre</th><th>Cuota</th><th>Inicial</th><th>Contratos</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="pvPlanBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Vendedores -->
+                <div id="pvSub-vendedores" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar">
+                        <h2>Vendedores</h2>
+                        <div class="admin-toolbar-actions">
+                            <input type="search" id="pvVenSearch" class="form-control" placeholder="Nombre o cédula...">
+                            <button class="btn btn-primary" id="pvNewVendedorBtn" type="button">+ Nuevo vendedor</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead><tr><th>Cédula</th><th>Nombre</th><th>Teléfono</th><th>Comisiones % (S/M/A)</th><th>Contratos</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="pvVenBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Comisiones -->
+                <div id="pvSub-comisiones" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar">
+                        <h2>Comisiones de Vendedores</h2>
+                        <div class="admin-toolbar-actions">
+                            <select id="pvComVendedor" class="form-control prev-select"><option value="">Todos los vendedores</option></select>
+                        </div>
+                    </div>
+                    <div class="filter-group" id="pvComFilters">
+                        <button class="filter-btn active" data-vista="pendientes" type="button">Por pagar</button>
+                        <button class="filter-btn" data-vista="pagadas" type="button">Pagadas</button>
+                        <button class="filter-btn" data-vista="resumen" type="button">Resumen</button>
+                    </div>
+                    <p class="setting-help">Etapas de comisión por contrato (esquema SIEMPRE): <strong>Semana 1</strong>, <strong>Fin de mes 1</strong>, <strong>Mes 2</strong> y <strong>Mes 13</strong>.</p>
+                    <div id="pvComContent"></div>
+                </div>
+
+                <!-- Importar -->
+                <div id="pvSub-importar" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar"><h2>Importar desde otros sistemas</h2></div>
+                    <form id="pvImportForm" class="admin-card settings-card">
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Tipo de datos</label>
+                                <select id="pvImpTipo" class="form-control">
+                                    <option value="clientes">Clientes (titulares)</option>
+                                    <option value="vendedores">Vendedores</option>
+                                    <option value="contratos">Contratos</option>
+                                    <option value="beneficiarios">Beneficiarios</option>
+                                    <option value="pagos">Pagos (histórico)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Archivo CSV</label>
+                                <input type="file" id="pvImpFile" class="form-control" accept=".csv,text/csv">
+                            </div>
+                        </div>
+                        <p class="setting-help">
+                            Orden recomendado: 1) clientes, 2) vendedores, 3) contratos, 4) beneficiarios, 5) pagos.
+                            El sistema detecta el separador (coma o punto y coma) y acepta alias comunes de encabezados.
+                            Los clientes y vendedores se actualizan por cédula; los contratos, por número.
+                            <a href="#" id="pvImpPlantilla">Descargar plantilla del tipo seleccionado</a>.
+                        </p>
+                        <div class="setting-row">
+                            <div><strong>Modo simulación</strong><p class="setting-help">Valida el archivo y muestra los errores sin guardar nada.</p></div>
+                            <label class="switch"><input type="checkbox" id="pvImpSim" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="setting-actions">
+                            <button type="submit" class="btn btn-primary" id="pvImpBtn">Importar archivo</button>
+                        </div>
+                    </form>
+                    <div id="pvImpResult"></div>
+                    <h3 class="prev-h3">Importaciones anteriores</h3>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead><tr><th>Fecha</th><th>Tipo</th><th>Archivo</th><th>Filas</th><th>Nuevos</th><th>Actualizados</th><th>Rechazados</th><th>Modo</th></tr></thead>
+                            <tbody id="pvImpLotesBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- ---------- PLANTILLAS ---------- -->
             <section id="tab-plantillas" class="admin-tab-panel" hidden>
                 <div class="admin-toolbar">
@@ -235,6 +396,7 @@
 
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="admin.js?v=20260627"></script>
+    <script src="admin.js?v=20260706"></script>
+    <script src="admin-prevision.js?v=20260706"></script>
 </body>
 </html>

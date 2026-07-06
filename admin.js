@@ -131,6 +131,7 @@ function switchTab(tab, btn) {
     $all('.admin-tab-panel').forEach(p => p.hidden = true);
     $('#tab-' + tab).hidden = false;
     if (tab === 'condolencias') loadCondolences();
+    if (tab === 'prevision' && window.Prevision) Prevision.open();
     if (tab === 'medicos') loadDoctors();
     if (tab === 'recursos') loadArticles();
     if (tab === 'faqs') loadFaqs();

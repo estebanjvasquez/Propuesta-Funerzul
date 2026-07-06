@@ -2111,3 +2111,44 @@ textarea.form-control {
     .cta-band { padding: 24px; text-align: center; justify-content: center; }
     .cta-band-actions { justify-content: center; width: 100%; }
 }
+
+/* ==========================================================================
+   MÓDULO DE PREVISIÓN (panel de administración)
+   ========================================================================== */
+.badge-red { background: rgba(200, 45, 45, 0.12); color: #a03030; }
+
+.stat-sub { display: block; font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+.stat-card-action .btn { margin-top: 8px; }
+
+.prev-subnav { margin: 18px 0 6px; flex-wrap: wrap; }
+.prev-subpanel { margin-top: 10px; }
+.prev-select { max-width: 220px; }
+.prev-check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--color-text-muted); white-space: nowrap; }
+
+.prev-pager { display: flex; align-items: center; gap: 12px; justify-content: flex-end; margin-top: 12px; }
+.prev-pager-info { font-size: 13px; color: var(--color-text-muted); }
+
+.prev-inline { display: flex; gap: 8px; }
+.prev-inline select { max-width: 90px; }
+
+.prev-details { margin: 10px 0; border: 1px solid var(--color-border, #e3e3e3); border-radius: 8px; padding: 8px 12px; }
+.prev-details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.prev-details[open] summary { margin-bottom: 10px; }
+
+.prev-detail .prev-kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 18px; margin-bottom: 12px; }
+.prev-detail .prev-kv > div { font-size: 14px; }
+.prev-detail .prev-kv span { display: block; font-size: 12px; color: var(--color-text-muted); }
+
+.prev-h3 { margin: 24px 0 10px; }
+.prev-h4 { margin: 18px 0 8px; font-size: 15px; }
+
+.admin-table-compact th, .admin-table-compact td { padding: 8px 10px; font-size: 13px; }
+.prev-scroll { max-height: 280px; overflow-y: auto; }
+.prev-row-vencida td { background: rgba(200, 45, 45, 0.05); }
+
+.prev-actions { margin: 4px 0 14px; flex-wrap: wrap; }
+.prev-actions .btn { flex: 0 0 auto; }
+
+.prev-import-result { margin-top: 16px; padding: 16px 20px; }
+.prev-error-text { color: #a03030; font-weight: 600; }
+.prev-error-list { margin: 10px 0 0 18px; font-size: 13px; color: #a03030; max-height: 220px; overflow-y: auto; }

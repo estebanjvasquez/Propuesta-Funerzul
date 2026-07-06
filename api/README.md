@@ -76,6 +76,24 @@ requieren sesión y la cabecera `X-CSRF-Token` (se obtiene al hacer login).
 
 \* `list` con `?scope=admin` requiere sesión y devuelve también inactivos.
 
+### Módulo de Previsión (requiere `database/04_prevision.sql`)
+
+Todos los endpoints de previsión requieren sesión de **staff** (admin/editor);
+las eliminaciones definitivas requieren **admin**.
+
+| Endpoint | Método | Descripción |
+|---|---|---|
+| `prevision_clientes.php?action=list\|get\|create\|update\|delete\|restore` | GET/POST | Clientes titulares (búsqueda paginada por cédula/nombre/teléfono; baja lógica). |
+| `prevision_planes.php?action=list\|get\|create\|update\|toggle\|delete` | GET/POST | Planes de previsión. |
+| `prevision_vendedores.php?action=list\|get\|create\|update\|retirar\|reactivar\|delete` | GET/POST | Vendedores y sus % de comisión. |
+| `prevision_vendedores.php?action=comisiones\|comisiones_resumen\|comisiones_pendientes\|comision_pagar\|comision_delete` | GET/POST | Comisiones por contrato/etapa (semana1, fin_mes1, mes2, mes13). |
+| `prevision_contratos.php?action=list\|get\|create\|update\|set_estatus` | GET/POST | Contratos (estatus: activo/suspendido/anulado/renuncia). |
+| `prevision_contratos.php?action=parentescos\|beneficiario_add\|beneficiario_update\|beneficiario_estatus\|beneficiario_delete` | GET/POST | Beneficiarios del contrato. |
+| `prevision_contratos.php?action=cuotas\|cuotas_generar\|cuota_update\|cuota_anular` | GET/POST | Cuotas por cobrar (generación según frecuencia). |
+| `prevision_contratos.php?action=pagos\|pago_registrar\|pago_delete` | GET/POST | Pagos; se aplican en cascada a las cuotas más antiguas, con conversión Bs/USD por tasa del día. |
+| `prevision_contratos.php?action=stats\|tasa\|tasa_set` | GET/POST | Indicadores del tablero y tasa de cambio diaria. |
+| `prevision_import.php?action=plantilla\|lotes\|importar` | GET/POST | Importación CSV desde otros sistemas (clientes, vendedores, contratos, beneficiarios, pagos) con modo simulación. |
+
 ## Seguridad
 
 - Contraseñas con **bcrypt** (`password_hash`/`password_verify`).

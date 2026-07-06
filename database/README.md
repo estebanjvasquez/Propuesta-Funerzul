@@ -8,6 +8,32 @@ disco y backend PHP, todo junto).
 
 - **`01_schema.sql`** — Esquema completo: 7 tablas, índices, claves foráneas y
   datos semilla (admin inicial, configuración de purga y plantillas).
+- **`02_directorio_recursos.sql`** — Tablas `doctors` y `articles` (Directorio
+  Médico y Recursos de Lectura).
+- **`03_faqs.sql`** — Tabla `faqs` (Preguntas Frecuentes de la portada).
+- **`04_prevision.sql`** — **Módulo de Previsión**: 11 tablas `prev_*` modeladas
+  sobre la base de datos del sistema administrativo SIEMPRE (`SIEMPRE.sql`):
+  clientes, contratos, beneficiarios, planes, vendedores y comisiones, cuotas
+  por cobrar, pagos, tasas de cambio y lotes de importación. Incluye los
+  catálogos reales de SIEMPRE (18 parentescos y los 9 planes vigentes).
+- **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
+  importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
+
+### Módulo de Previsión (`04_prevision.sql`)
+
+| Tabla | Propósito | Equivale en SIEMPRE |
+|---|---|---|
+| `prev_clientes` | Titulares de contratos (cédula única, datos personales y de contacto). | `clientes` |
+| `prev_planes` | Planes de previsión con cuota, moneda y cobertura. | `planes` / `planesunidos` |
+| `prev_vendedores` | Vendedores con % de comisión y datos bancarios. | `vendedores` + `vendedores_bancos` |
+| `prev_contratos` | Contratos: plan, vendedor, frecuencia, forma de cobro, estatus (activo/suspendido/anulado/renuncia). | `contratos` + `cmestadoscontrato` |
+| `prev_beneficiarios` | Beneficiarios por contrato con parentesco, exclusión y defunción. | `cmbeneficiarios` |
+| `prev_parentescos` | Catálogo de parentescos con rangos de edad. | `parentesco` |
+| `prev_cuotas` | Cuotas por cobrar con vencimiento, saldo y estado. | `cuotascxc` |
+| `prev_pagos` | Pagos/abonos aplicados a cuotas (con tasa del día). | `abonoscxc` + `caja1` |
+| `prev_comisiones` | Comisiones pagadas por contrato/etapa (semana1, fin_mes1, mes2, mes13). | `comisiones_pagadas` |
+| `prev_tasas` | Tasa de cambio Bs/USD por día. | `tasas_diarias` |
+| `prev_import_lotes` | Bitácora de importaciones desde otros sistemas. | — |
 
 > El control de acceso (roles) y la **auditoría** se implementan en la capa **PHP**
 > (Fase 2/3), ya que MySQL no tiene RLS ni autenticación integrada como Supabase.
@@ -47,6 +73,9 @@ disco y backend PHP, todo junto).
 1. cPanel → **phpMyAdmin** → selecciona la base recién creada (panel izquierdo).
 2. Pestaña **Importar** → **Seleccionar archivo** → `database/01_schema.sql` → **Continuar**.
 3. Verifica que aparezcan las **7 tablas**.
+4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql` y
+   `04_prevision.sql` (módulo de Previsión). El `04` requiere que `users`
+   (del `01`) ya exista.
 
 ### 3. Iniciar sesión y asegurar el admin
 

@@ -54,6 +54,8 @@ Propuesta Funerzul/
 │  styles.css              Estilos globales
 │  .cpanel.yml             Despliegue automático en cPanel
 │
+│  admin-prevision.js      Lógica del módulo de Previsión del panel
+│
 ├─ api/                    Backend PHP
 │   config.example.php     Plantilla de configuración (copiar a config.php)
 │   auth.php               Login / logout / sesión
@@ -63,9 +65,14 @@ Propuesta Funerzul/
 │   settings.php           Configuración (purga, portada, moderación)
 │   users.php              Gestión de usuarios
 │   upload.php             Subida de fotos al disco
+│   prevision_clientes.php    Previsión: clientes titulares
+│   prevision_planes.php      Previsión: planes
+│   prevision_vendedores.php  Previsión: vendedores y comisiones
+│   prevision_contratos.php   Previsión: contratos, beneficiarios, cuotas y pagos
+│   prevision_import.php      Previsión: importación CSV desde otros sistemas
 │   diag.php               Diagnóstico de instalación (protegido)
 │   cron/purge_photos.php  Rutina de purga de fotos
-│   lib/                   Núcleo (BD, auth, helpers, render)
+│   lib/                   Núcleo (BD, auth, helpers, render, previsión)
 │
 ├─ partials/               Cabecera, pie y banda de contacto compartidos (PHP)
 ├─ servicios/img/          Imágenes SVG de cada servicio
@@ -265,6 +272,54 @@ Lo administra todo el personal.
 > (crea la tabla `faqs` con las preguntas que ya estaban en la portada, incluida la de
 > atención 24 horas que solo figuraba en los datos estructurados).
 
+### 14. Módulo de Previsión (pestaña Previsión)
+
+Administración completa de los **planes de previsión funeraria**, modelada sobre la
+base de datos del sistema administrativo **SIEMPRE** (`database/SIEMPRE.sql`).
+Lo usa todo el personal (editor y admin); las eliminaciones definitivas y las
+reversiones de pagos son solo del admin.
+
+**Para activarlo**: importe `database/04_prevision.sql` en phpMyAdmin (crea las
+11 tablas `prev_*` con los catálogos de SIEMPRE: 18 parentescos y los 9 planes
+vigentes — Tradición, Esencial, Vanguardia, etc.).
+
+Al entrar se ven los indicadores del módulo: **contratos activos**, **clientes**,
+**cuotas vencidas** (con su monto), **cobrado en el mes** y la **tasa del día**
+(Bs/USD, con botón para actualizarla). Debajo, seis sub-pestañas:
+
+- **Contratos** — buscar por número/cédula/nombre, filtrar por estatus o por
+  contratos con cuotas vencidas. **“+ Nuevo contrato”**: se busca al titular por su
+  cédula, se elige plan (autocompleta cuota y moneda), vendedor, frecuencia
+  (semanal/quincenal/mensual/trimestral/semestral/anual), forma de cobro, plazo de
+  espera y, opcionalmente, se generan las primeras cuotas. El titular queda
+  registrado automáticamente como primer beneficiario.
+  Desde **“Ver”** se maneja todo el contrato:
+  - *Beneficiarios*: agregar (con validación de edad según el parentesco), editar,
+    excluir, registrar defunción o reactivar.
+  - *Cuotas*: generar por lote según la frecuencia, cobrar o anular.
+  - *Pagos*: se aplican a las cuotas pendientes más antiguas (o a una específica);
+    si el pago viene en otra moneda se convierte con la tasa del día y el
+    excedente queda como abono a favor.
+  - *Estatus*: activo, suspendido, anulado o renuncia (con fecha y motivo; al
+    anular se liquidan las cuotas pendientes).
+- **Clientes** — ficha completa del titular (cédula única, contacto, dirección,
+  empleador). “Ver” muestra sus contratos; la baja es lógica (restaurable).
+- **Planes** — catálogo de planes con cuota, moneda, cuota inicial y cobertura;
+  activar/desactivar sin afectar contratos existentes.
+- **Vendedores** — datos personales, porcentajes de comisión
+  (semanal/mensual/anual) y cuenta bancaria para el pago; retiro y reactivación.
+- **Comisiones** — el sistema calcula qué etapas están **por pagar** por contrato
+  según el esquema de SIEMPRE (**Semana 1**, **Fin de mes 1**, **Mes 2** y
+  **Mes 13**) con un monto sugerido; se registra el pago en USD y/o Bs con su
+  tasa. Vistas de pagadas e historial y resumen por vendedor. Una etapa no puede
+  pagarse dos veces para el mismo contrato.
+- **Importar** — migración desde otros sistemas por **CSV** (clientes,
+  vendedores, contratos, beneficiarios y pagos históricos). Detecta el separador,
+  acepta alias de encabezados y fechas DD/MM/AAAA, actualiza por cédula/número
+  (sin duplicar) y tiene **modo simulación** para validar antes de guardar.
+  Plantillas CSV descargables y bitácora de importaciones con errores por fila.
+  Orden recomendado: clientes → vendedores → contratos → beneficiarios → pagos.
+
 ---
 
 ## Cómo se ve en el sitio público
@@ -292,6 +347,8 @@ Resumen (guías detalladas en `database/README.md` y `api/README.md`):
 1. **Base de datos**: crear la BD MySQL en cPanel e importar
    [`database/01_schema.sql`](database/01_schema.sql) y, para el Directorio Médico y
    los Recursos, [`database/02_directorio_recursos.sql`](database/02_directorio_recursos.sql), con phpMyAdmin.
+   Para el **módulo de Previsión**, importar además
+   [`database/04_prevision.sql`](database/04_prevision.sql).
 2. **Backend**: copiar `api/config.example.php` → `api/config.php` y poner las
    credenciales de MySQL y un `cron_secret` aleatorio.
 3. **Extensiones PHP** (cPanel → *Select PHP Version → Extensions*): activar
