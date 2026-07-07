@@ -162,6 +162,7 @@
                     <div class="stat-card"><span class="stat-label">Clientes</span><span class="stat-value" id="pvStatClientes">0</span></div>
                     <div class="stat-card"><span class="stat-label">Cuotas vencidas</span><span class="stat-value" id="pvStatVencidas">0</span><span class="stat-sub" id="pvStatVencidasMonto"></span></div>
                     <div class="stat-card"><span class="stat-label">Cobrado este mes</span><span class="stat-value" id="pvStatCobrado">0</span><span class="stat-sub" id="pvStatCobradoBs"></span></div>
+                    <div class="stat-card"><span class="stat-label">Siniestros abiertos</span><span class="stat-value" id="pvStatSiniestros">0</span></div>
                     <div class="stat-card stat-card-action">
                         <span class="stat-label">Tasa del día (Bs/USD)</span>
                         <span class="stat-value" id="pvStatTasa">—</span>
@@ -172,9 +173,12 @@
                 <div class="filter-group prev-subnav" id="pvSubNav">
                     <button class="filter-btn active" data-sub="contratos" type="button">Contratos</button>
                     <button class="filter-btn" data-sub="clientes" type="button">Clientes</button>
+                    <button class="filter-btn" data-sub="siniestros" type="button">Siniestros</button>
+                    <button class="filter-btn" data-sub="cobranza" type="button">Cobranza</button>
                     <button class="filter-btn" data-sub="planes" type="button">Planes</button>
                     <button class="filter-btn" data-sub="vendedores" type="button">Vendedores</button>
                     <button class="filter-btn" data-sub="comisiones" type="button">Comisiones</button>
+                    <button class="filter-btn" data-sub="catalogos" type="button">Catálogos</button>
                     <button class="filter-btn" data-sub="importar" type="button">Importar</button>
                 </div>
 
@@ -220,6 +224,43 @@
                         </table>
                     </div>
                     <div class="prev-pager" id="pvCliPager"></div>
+                </div>
+
+                <!-- Siniestros -->
+                <div id="pvSub-siniestros" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar">
+                        <h2>Siniestros / Reclamos</h2>
+                        <div class="admin-toolbar-actions">
+                            <input type="search" id="pvSinSearch" class="form-control" placeholder="Contrato, cédula o nombre del fallecido...">
+                            <select id="pvSinEstado" class="form-control prev-select">
+                                <option value="">Todos</option>
+                                <option value="abierto">Abiertos</option>
+                                <option value="liquidado">Liquidados</option>
+                                <option value="cerrado">Cerrados</option>
+                                <option value="rechazado">Rechazados</option>
+                            </select>
+                            <button class="btn btn-primary" id="pvNewSiniestroBtn" type="button">+ Registrar siniestro</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead><tr><th>Nº</th><th>Fallecido</th><th>Contrato</th><th>Defunción</th><th>Cobertura</th><th>Monto</th><th>Estado</th><th>Acciones</th></tr></thead>
+                            <tbody id="pvSinBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="prev-pager" id="pvSinPager"></div>
+                </div>
+
+                <!-- Cobranza -->
+                <div id="pvSub-cobranza" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar"><h2>Cobranza</h2></div>
+                    <div class="filter-group" id="pvCobFilters">
+                        <button class="filter-btn active" data-vista="morosos" type="button">Morosos</button>
+                        <button class="filter-btn" data-vista="gestiones" type="button">Gestiones</button>
+                        <button class="filter-btn" data-vista="lapsado" type="button">Auto-lapsado</button>
+                        <button class="filter-btn" data-vista="hoja" type="button">Hoja de cobro</button>
+                    </div>
+                    <div id="pvCobContent"></div>
                 </div>
 
                 <!-- Planes -->
@@ -268,6 +309,13 @@
                     </div>
                     <p class="setting-help">Etapas de comisión por contrato (esquema SIEMPRE): <strong>Semana 1</strong>, <strong>Fin de mes 1</strong>, <strong>Mes 2</strong> y <strong>Mes 13</strong>.</p>
                     <div id="pvComContent"></div>
+                </div>
+
+                <!-- Catálogos -->
+                <div id="pvSub-catalogos" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar"><h2>Catálogos del módulo</h2></div>
+                    <p class="setting-help">Sucursales, servicios adicionales (bóveda, cremación, traslados...), cobradores y rutas de cobranza.</p>
+                    <div id="pvCatContent"></div>
                 </div>
 
                 <!-- Importar -->
@@ -396,7 +444,7 @@
 
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="admin.js?v=20260706"></script>
-    <script src="admin-prevision.js?v=20260706"></script>
+    <script src="admin.js?v=20260707"></script>
+    <script src="admin-prevision.js?v=20260707"></script>
 </body>
 </html>

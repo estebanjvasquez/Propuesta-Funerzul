@@ -2152,3 +2152,13 @@ textarea.form-control {
 .prev-import-result { margin-top: 16px; padding: 16px 20px; }
 .prev-error-text { color: #a03030; font-weight: 600; }
 .prev-error-list { margin: 10px 0 0 18px; font-size: 13px; color: #a03030; max-height: 220px; overflow-y: auto; }
+
+/* Previsión v2: siniestros y cobranza */
+.prev-checks { list-style: none; margin: 0 0 12px; padding: 0; font-size: 13px; }
+.prev-checks li { padding: 3px 0; }
+.prev-checks-mini { margin: 0 0 14px 28px; font-size: 12px; }
+.prev-check-ok  { color: #1a7a43; }
+.prev-check-bad { color: #a03030; }
+.prev-radio-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--color-border, #e3e3e3); border-radius: 8px; margin-bottom: 6px; cursor: pointer; }
+.prev-radio-row:hover { background: var(--color-surface-high, #f5f5f5); }
+.prev-radio-row span { flex: 1; font-size: 14px; }

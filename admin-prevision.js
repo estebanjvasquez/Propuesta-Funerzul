@@ -13,7 +13,10 @@ const Prevision = {
     parentescos: [],
     con: { q: '', estatus: '', morosos: false, offset: 0, limit: 25, total: 0 },
     cli: { q: '', offset: 0, limit: 25, total: 0 },
+    sin: { q: '', estado: '', offset: 0, limit: 25, total: 0 },
     comVista: 'pendientes',
+    cobVista: 'morosos',
+    cat: { sucursales: [], servicios: [], cobradores: [], rutas: [] },
 
     async open() {
         if (!this.wired) { this.wire(); this.wired = true; }
@@ -44,6 +47,19 @@ const Prevision = {
             clearTimeout(t2); t2 = setTimeout(() => { this.cli.q = $('#pvCliSearch').value.trim(); this.cli.offset = 0; pvLoadClientes(); }, 300);
         });
         $('#pvNewClienteBtn').addEventListener('click', () => pvFormCliente());
+        // Siniestros
+        let t4; $('#pvSinSearch').addEventListener('input', () => {
+            clearTimeout(t4); t4 = setTimeout(() => { this.sin.q = $('#pvSinSearch').value.trim(); this.sin.offset = 0; pvLoadSiniestros(); }, 300);
+        });
+        $('#pvSinEstado').addEventListener('change', () => { this.sin.estado = $('#pvSinEstado').value; this.sin.offset = 0; pvLoadSiniestros(); });
+        $('#pvNewSiniestroBtn').addEventListener('click', () => pvNuevoSiniestro(''));
+        // Cobranza
+        $all('#pvCobFilters .filter-btn').forEach(btn => btn.addEventListener('click', () => {
+            $all('#pvCobFilters .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.cobVista = btn.dataset.vista;
+            pvLoadCobranza();
+        }));
         // Planes / Vendedores
         $('#pvNewPlanBtn').addEventListener('click', () => pvFormPlan());
         let t3; $('#pvVenSearch').addEventListener('input', () => {
@@ -72,9 +88,12 @@ const Prevision = {
     loadSub() {
         if (this.sub === 'contratos') pvLoadContratos();
         if (this.sub === 'clientes') pvLoadClientes();
+        if (this.sub === 'siniestros') pvLoadSiniestros();
+        if (this.sub === 'cobranza') pvLoadCobranza();
         if (this.sub === 'planes') pvLoadPlanes();
         if (this.sub === 'vendedores') pvLoadVendedores();
         if (this.sub === 'comisiones') pvLoadComisiones();
+        if (this.sub === 'catalogos') pvLoadCatalogosTab();
         if (this.sub === 'importar') pvLoadImportacion();
     },
 
@@ -89,6 +108,7 @@ const Prevision = {
             $('#pvStatCobrado').innerText = pvMoney(s.cobrado_mes_usd, 'USD');
             $('#pvStatCobradoBs').innerText = s.cobrado_mes_bs > 0 ? pvMoney(s.cobrado_mes_bs, 'BS') : '';
             $('#pvStatTasa').innerText = s.tasa_dia > 0 ? pvNum(s.tasa_dia) : '—';
+            $('#pvStatSiniestros').innerText = s.siniestros_abiertos ?? 0;
         } catch (e) {
             if (/prev_/.test(e.message) || /doesn'?t exist/i.test(e.message)) {
                 toast('Importe database/04_prevision.sql para activar el módulo de Previsión.');
@@ -105,6 +125,11 @@ const Prevision = {
                 API.req('prevision_contratos.php?action=parentescos'),
             ]);
             this.planes = p.items; this.vendedores = v.items; this.parentescos = pa.items;
+            try {
+                const cat = await API.req('prevision_catalogos.php?action=all');
+                this.cat = { sucursales: cat.sucursales, servicios: cat.servicios,
+                             cobradores: cat.cobradores, rutas: cat.rutas };
+            } catch (e2) { /* v2 sin instalar (importe database/05_prevision_v2.sql) */ }
             const sel = $('#pvComVendedor');
             sel.innerHTML = '<option value="">Todos los vendedores</option>' +
                 this.vendedores.map(x => `<option value="${x.id}">${escapeHtml(x.nombre)}</option>`).join('');
@@ -119,12 +144,25 @@ function pvHoy() { return new Date().toISOString().slice(0, 10); }
 
 const PV_ESTATUS_BADGE = {
     activo: 'badge-green', suspendido: 'badge-amber', anulado: 'badge-red',
-    renuncia: 'badge-gray', excluido: 'badge-gray', fallecido: 'badge-red',
+    renuncia: 'badge-gray', excluido: 'badge-gray', fallecido: 'badge-red', finalizado: 'badge-blue',
     pendiente: 'badge-amber', parcial: 'badge-blue', cobrada: 'badge-green', anulada: 'badge-gray',
+    abierto: 'badge-amber', liquidado: 'badge-blue', cerrado: 'badge-green', rechazado: 'badge-red',
 };
 function pvBadge(estatus) {
     return `<span class="status-badge ${PV_ESTATUS_BADGE[estatus] || 'badge-gray'}">${escapeHtml(estatus)}</span>`;
 }
+const PV_COBERTURA = {
+    cubierto: ['badge-green', 'Cubierto'],
+    con_observaciones: ['badge-amber', 'Con observaciones'],
+    sin_cobertura: ['badge-red', 'Sin cobertura'],
+};
+function pvCoberturaBadge(c) {
+    const [cls, txt] = PV_COBERTURA[c] || ['badge-gray', c];
+    return `<span class="status-badge ${cls}">${escapeHtml(txt)}</span>`;
+}
+const PV_TIPOS_GESTION = { llamada: 'Llamada', visita: 'Visita', whatsapp: 'WhatsApp', sms: 'SMS', email: 'Correo', otro: 'Otro' };
+const PV_RESULTADOS_GESTION = { contactado: 'Contactado', no_contactado: 'No contactado', promesa_pago: 'Promesa de pago', reclamo: 'Reclamo', otro: 'Otro' };
+const PV_TIPOS_SIN_DETALLE = { servicio: 'Servicio funerario', pago: 'Pago/Indemnización', reintegro: 'Reintegro', otro: 'Otro' };
 const PV_FRECUENCIAS = ['semanal', 'quincenal', 'mensual', 'trimestral', 'semestral', 'anual'];
 const PV_FORMAS_CONTRATO = { caja: 'Caja/Taquilla', domiciliacion: 'Domiciliación', transferencia: 'Transferencia', pago_movil: 'Pago móvil', cobrador: 'Cobrador', otro: 'Otro' };
 const PV_FORMAS_PAGO = { efectivo: 'Efectivo', transferencia: 'Transferencia', pago_movil: 'Pago móvil', punto: 'Punto de venta', zelle: 'Zelle', divisa: 'Divisa en efectivo', otro: 'Otro' };
@@ -222,6 +260,20 @@ function pvContratoFormHtml(c = {}, cliente = null) {
                 <select id="pf_vendedor" class="form-control">
                     <option value="">— Sin vendedor —</option>
                     ${vends.map(v => `<option value="${v.id}" ${c.vendedor_id === v.id ? 'selected' : ''}>${escapeHtml(v.nombre)}</option>`).join('')}
+                </select></div>
+        </div>
+        <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">Sucursal</label>
+                <select id="pf_sucursal" class="form-control">
+                    <option value="">—</option>
+                    ${Prevision.cat.sucursales.filter(s => Number(s.activo) || s.id == c.sucursal_id).map(s =>
+                        `<option value="${s.id}" ${c.sucursal_id == s.id ? 'selected' : ''}>${escapeHtml(s.nombre)}</option>`).join('')}
+                </select></div>
+            <div class="form-group"><label class="form-label">Ruta de cobro</label>
+                <select id="pf_ruta" class="form-control">
+                    <option value="">— Sin ruta —</option>
+                    ${Prevision.cat.rutas.filter(r => Number(r.activo) || r.id == c.ruta_id).map(r =>
+                        `<option value="${r.id}" ${c.ruta_id == r.id ? 'selected' : ''}>${escapeHtml(r.nombre)}${r.cobrador_nombre ? ' · ' + escapeHtml(r.cobrador_nombre) : ''}</option>`).join('')}
                 </select></div>
         </div>
         <div class="form-grid-2">
@@ -330,6 +382,8 @@ async function pvSubmitContrato(e) {
         cliente_id: Number($('#pf_cliente_id').value || 0),
         plan_id: $('#pf_plan').value || null,
         vendedor_id: $('#pf_vendedor').value || null,
+        sucursal_id: $('#pf_sucursal').value || null,
+        ruta_id: $('#pf_ruta').value || null,
         fecha_ingreso: $('#pf_fecha_ingreso').value,
         moneda: $('#pf_moneda').value,
         monto_cuota: $('#pf_monto_cuota').value,
@@ -422,6 +476,8 @@ async function pvVerContrato(id) {
                     <div><span>Titular</span><strong>${escapeHtml(c.cliente_nombre || '')} (${escapeHtml(c.cliente_cedula || '')})</strong></div>
                     <div><span>Plan</span><strong>${escapeHtml(c.plan_nombre || '—')}</strong></div>
                     <div><span>Vendedor</span><strong>${escapeHtml(c.vendedor_nombre || '—')}</strong></div>
+                    <div><span>Sucursal</span><strong>${escapeHtml(c.sucursal_nombre || '—')}</strong></div>
+                    <div><span>Ruta de cobro</span><strong>${escapeHtml(c.ruta_nombre || '—')}</strong></div>
                     <div><span>Estatus</span>${pvBadge(c.estatus)}${c.motivo_estatus ? ` <span class="row-sub">${escapeHtml(c.motivo_estatus)}</span>` : ''}</div>
                     <div><span>Ingreso</span><strong>${fmtDate(c.fecha_ingreso)}</strong></div>
                     <div><span>Vigente desde</span><strong>${fmtDate(c.vigente_desde)}</strong></div>
@@ -435,9 +491,50 @@ async function pvVerContrato(id) {
                     <button class="btn btn-outline btn-sm" onclick="pvGenerarCuotas(${c.id})">Generar cuotas</button>
                     <button class="btn btn-outline btn-sm" onclick="pvAddBeneficiario(${c.id})">+ Beneficiario</button>
                     <button class="btn btn-outline btn-sm" onclick="pvPagarComisionForm(${c.id}, '', ${c.vendedor_id || 0}, 0)">Pagar comisión</button>
+                    <button class="btn btn-outline btn-sm" onclick="pvContratoServicioAdd(${c.id})">+ Servicio</button>
+                    <button class="btn btn-outline btn-sm" onclick="pvGestionForm(${c.id}, true)">+ Gestión</button>
+                    <button class="btn btn-outline btn-sm" onclick="pvNuevoSiniestro('${escapeHtml(c.numero)}')">Registrar siniestro</button>
                     <button class="btn btn-outline btn-sm" onclick="pvEditContrato(${c.id})">Editar</button>
                     <button class="btn btn-outline btn-sm" onclick="pvEstatusContrato(${c.id}, '${c.estatus}')">Cambiar estatus</button>
                 </div>
+                ${(r.siniestros || []).length ? `
+                <h4 class="prev-h4">Siniestros</h4>
+                <div class="table-responsive"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Fallecido</th><th>Defunción</th><th>Cobertura</th><th>Estado</th><th></th></tr></thead>
+                    <tbody>${r.siniestros.map(s => `
+                        <tr>
+                            <td>${escapeHtml(s.nombre_fallecido)}</td>
+                            <td>${fmtDate(s.fecha_defuncion)}</td>
+                            <td>${pvCoberturaBadge(s.cobertura)}</td>
+                            <td>${pvBadge(s.estado)}</td>
+                            <td><button class="btn btn-outline btn-sm" onclick="pvVerSiniestro(${s.id})">Ver</button></td>
+                        </tr>`).join('')}</tbody></table></div>` : ''}
+                ${(r.servicios || []).length ? `
+                <h4 class="prev-h4">Servicios adicionales</h4>
+                <div class="table-responsive"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Servicio</th><th>Precio</th><th>Tipo</th><th>Desde</th><th></th></tr></thead>
+                    <tbody>${r.servicios.map(s => `
+                        <tr>
+                            <td>${escapeHtml(s.nombre)}${s.notas ? `<div class="row-sub">${escapeHtml(s.notas)}</div>` : ''}</td>
+                            <td>${pvMoney(s.precio, s.moneda)}</td>
+                            <td>${s.recurrente ? 'Recurrente' : 'Cargo único'}${s.activo ? '' : ' · <span class="status-badge badge-gray">inactivo</span>'}</td>
+                            <td>${fmtDate(s.fecha)}</td>
+                            <td><div class="admin-actions">
+                                <button class="btn btn-outline btn-sm" onclick="pvContratoServicioToggle(${s.id}, ${c.id}, ${s.activo ? 0 : 1})">${s.activo ? 'Desactivar' : 'Activar'}</button>
+                                <button class="btn btn-danger btn-sm" onclick="pvContratoServicioDelete(${s.id}, ${c.id})">Quitar</button>
+                            </div></td>
+                        </tr>`).join('')}</tbody></table></div>` : ''}
+                ${(r.gestiones || []).length ? `
+                <h4 class="prev-h4">Gestiones de cobranza recientes</h4>
+                <div class="table-responsive"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Fecha</th><th>Tipo</th><th>Resultado</th><th>Notas</th></tr></thead>
+                    <tbody>${r.gestiones.map(g => `
+                        <tr>
+                            <td>${fmtDate(g.fecha)}</td>
+                            <td>${escapeHtml(PV_TIPOS_GESTION[g.tipo] || g.tipo)}</td>
+                            <td>${escapeHtml(PV_RESULTADOS_GESTION[g.resultado] || g.resultado)}${g.promesa_fecha ? `<div class="row-sub">Promete pagar el ${fmtDate(g.promesa_fecha)}${g.promesa_monto ? ' (' + pvMoney(g.promesa_monto, c.moneda) + ')' : ''}</div>` : ''}</td>
+                            <td class="row-sub">${escapeHtml(g.notas || '—')}</td>
+                        </tr>`).join('')}</tbody></table></div>` : ''}
                 <h4 class="prev-h4">Beneficiarios (${r.beneficiarios.filter(b => b.estatus === 'activo').length} activos)</h4>
                 <div class="table-responsive"><table class="admin-table admin-table-compact">
                     <thead><tr><th>Nombre</th><th>Parentesco</th><th>Edad</th><th>Cargo adic.</th><th>Estatus</th><th></th></tr></thead>
@@ -462,7 +559,7 @@ function pvEstatusContrato(id, actual) {
     openModal('Cambiar estatus del contrato', `
         <form id="pvEstForm">
             <div class="form-group"><label class="form-label">Nuevo estatus</label>
-                ${pvSelect('pe_estatus', { activo: 'Activo', suspendido: 'Suspendido', anulado: 'Anulado', renuncia: 'Renuncia' }, actual)}</div>
+                ${pvSelect('pe_estatus', { activo: 'Activo', suspendido: 'Suspendido', anulado: 'Anulado', renuncia: 'Renuncia', finalizado: 'Finalizado (servicio cumplido)' }, actual)}</div>
             <div class="form-group"><label class="form-label">Fecha</label>
                 <input type="date" id="pe_fecha" class="form-control" value="${pvHoy()}"></div>
             <div class="form-group"><label class="form-label">Motivo</label>
@@ -1022,6 +1119,12 @@ function pvFormVendedor(v = {}) {
                 <div class="form-group"><label class="form-label">Fecha de ingreso</label>
                     <input type="date" id="pw_ingreso" class="form-control" value="${v.fecha_ingreso || pvHoy()}"></div>
             </div>
+            <div class="form-group"><label class="form-label">Sucursal</label>
+                <select id="pw_sucursal" class="form-control">
+                    <option value="">—</option>
+                    ${Prevision.cat.sucursales.filter(s => Number(s.activo) || s.id == v.sucursal_id).map(s =>
+                        `<option value="${s.id}" ${v.sucursal_id == s.id ? 'selected' : ''}>${escapeHtml(s.nombre)}</option>`).join('')}
+                </select></div>
             <div class="form-group"><label class="form-label">Porcentajes de comisión (semanal / mensual / anual)</label>
                 <div class="prev-inline">
                     <input type="number" step="0.01" min="0" max="100" id="pw_com_s" class="form-control" value="${v.comision_semanal ?? 0}">
@@ -1062,6 +1165,7 @@ function pvFormVendedor(v = {}) {
             telefono2: $('#pw_tel2').value.trim(),
             email: $('#pw_email').value.trim(),
             fecha_ingreso: $('#pw_ingreso').value,
+            sucursal_id: $('#pw_sucursal').value || null,
             comision_semanal: $('#pw_com_s').value,
             comision_mensual: $('#pw_com_m').value,
             comision_anual: $('#pw_com_a').value,
@@ -1299,6 +1403,741 @@ function pvSetTasa() {
             closeModal(); toast('Tasa registrada.'); Prevision.loadStats();
         } catch (ex) { toast(ex.message); }
     });
+}
+
+// ==========================================================================
+//  SINIESTROS / RECLAMOS
+// ==========================================================================
+async function pvLoadSiniestros() {
+    const st = Prevision.sin;
+    try {
+        const params = new URLSearchParams({ action: 'list', limit: st.limit, offset: st.offset });
+        if (st.q) params.set('q', st.q);
+        if (st.estado) params.set('estado', st.estado);
+        const r = await API.req('prevision_siniestros.php?' + params);
+        st.total = r.total;
+        const tb = $('#pvSinBody');
+        if (!r.items.length) {
+            tb.innerHTML = `<tr><td colspan="8" class="empty-row">Sin siniestros registrados.</td></tr>`;
+        } else {
+            tb.innerHTML = r.items.map(s => `
+                <tr>
+                    <td><strong>#${s.id}</strong><div class="row-sub">${fmtDate(s.fecha_reporte)}</div></td>
+                    <td><div class="row-name">${escapeHtml(s.nombre_fallecido)}</div>
+                        <div class="row-sub">${escapeHtml(s.parentesco || '')}${s.es_titular ? ' (titular)' : ''}</div></td>
+                    <td><a href="#" onclick="pvVerContrato(${s.contrato_id});return false;">${escapeHtml(s.contrato_numero)}</a>
+                        <div class="row-sub">${escapeHtml(s.cliente_nombre || '')}</div></td>
+                    <td>${fmtDate(s.fecha_defuncion)}</td>
+                    <td>${pvCoberturaBadge(s.cobertura)}</td>
+                    <td>${s.monto_total > 0 ? pvMoney(s.monto_total, s.moneda) : '—'}</td>
+                    <td>${pvBadge(s.estado)}</td>
+                    <td><button class="btn btn-outline btn-sm" onclick="pvVerSiniestro(${s.id})">Ver</button></td>
+                </tr>`).join('');
+        }
+        pvPager($('#pvSinPager'), st, pvLoadSiniestros);
+    } catch (e) { toast(e.message); }
+}
+
+function pvNuevoSiniestro(numeroPrefill) {
+    openModal('Registrar siniestro — Paso 1 de 2', `
+        <form id="pvSinPrepForm">
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Nº de contrato *</label>
+                    <input type="text" id="ps_numero" class="form-control" value="${escapeHtml(numeroPrefill || '')}" required></div>
+                <div class="form-group"><label class="form-label">Fecha de defunción *</label>
+                    <input type="date" id="ps_fecha" class="form-control" value="${pvHoy()}" required></div>
+            </div>
+            <p class="setting-help">El sistema verificará la cobertura del contrato (estatus, plazo de espera y solvencia) para cada beneficiario.</p>
+            <p id="ps_error" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Continuar</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+            </div>
+        </form>`);
+    $('#pvSinPrepForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#ps_error'); err.hidden = true;
+        try {
+            const r = await API.req('prevision_siniestros.php?action=preparar&numero=' +
+                encodeURIComponent($('#ps_numero').value.trim()) + '&fecha=' + $('#ps_fecha').value);
+            pvSiniestroPaso2(r);
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+function pvSiniestroPaso2(prep) {
+    const opciones = prep.beneficiarios.map((b, i) => `
+        <label class="prev-radio-row">
+            <input type="radio" name="ps_benef" value="${b.id}" ${i === 0 ? 'checked' : ''}>
+            <span><strong>${escapeHtml(b.nombre)}</strong> · ${escapeHtml(b.parentesco)}${b.es_titular ? ' (titular)' : ''}
+                ${b.cedula ? ' · ' + escapeHtml(b.cedula) : ''}${b.edad !== null ? ' · ' + b.edad + ' años' : ''}</span>
+            ${pvCoberturaBadge(b.cobertura)}
+        </label>
+        <ul class="prev-checks prev-checks-mini">${b.checks.map(ch => `
+            <li class="${ch.ok ? 'prev-check-ok' : 'prev-check-bad'}">${ch.ok ? '✓' : '✗'} ${escapeHtml(ch.detalle)}</li>`).join('')}
+        </ul>`).join('');
+
+    openModal(`Registrar siniestro — Contrato ${escapeHtml(prep.contrato.numero)}`, `
+        <form id="pvSinForm">
+            <p class="setting-help">Titular: <strong>${escapeHtml(prep.contrato.cliente_nombre || '')}</strong> ·
+               Defunción: <strong>${fmtDate(prep.fecha)}</strong></p>
+            <div class="form-group"><label class="form-label">¿Quién falleció? *</label>
+                ${opciones || '<p class="prev-error-text">Este contrato no tiene beneficiarios disponibles.</p>'}
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Reportado por</label>
+                    <input type="text" id="ps_reporta" class="form-control" maxlength="100"></div>
+                <div class="form-group"><label class="form-label">Teléfono de contacto</label>
+                    <input type="text" id="ps_telefono" class="form-control" maxlength="20"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Observaciones</label>
+                <textarea id="ps_obs" class="form-control" maxlength="500"></textarea></div>
+            <p id="ps_error2" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Registrar siniestro</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+            </div>
+        </form>`);
+    $('#pvSinForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#ps_error2'); err.hidden = true;
+        const sel = document.querySelector('input[name="ps_benef"]:checked');
+        if (!sel) { err.innerText = 'Seleccione el beneficiario fallecido.'; err.hidden = false; return; }
+        try {
+            const r = await API.req('prevision_siniestros.php?action=create', { method: 'POST', json: {
+                contrato_id: prep.contrato.id, beneficiario_id: Number(sel.value),
+                fecha_defuncion: prep.fecha,
+                reportado_por: $('#ps_reporta').value.trim(),
+                telefono_reporta: $('#ps_telefono').value.trim(),
+                observaciones: $('#ps_obs').value.trim(),
+            }});
+            toast('Siniestro registrado.');
+            Prevision.loadStats();
+            if (Prevision.sub === 'siniestros') pvLoadSiniestros();
+            pvVerSiniestro(r.id);
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+async function pvVerSiniestro(id) {
+    try {
+        const r = await API.req('prevision_siniestros.php?action=get&id=' + id);
+        const s = r.item;
+        const admin = pvEsAdmin();
+        const abierto = ['abierto', 'liquidado'].includes(s.estado);
+
+        const checks = (s.validacion || []).map(ch => `
+            <li class="${ch.ok ? 'prev-check-ok' : 'prev-check-bad'}">${ch.ok ? '✓' : '✗'}
+                <strong>${escapeHtml(ch.check)}:</strong> ${escapeHtml(ch.detalle)}</li>`).join('');
+
+        const detalles = r.detalles.map(d => `
+            <tr>
+                <td>${escapeHtml(PV_TIPOS_SIN_DETALLE[d.tipo] || d.tipo)}</td>
+                <td>${escapeHtml(d.descripcion)}${d.proveedor ? `<div class="row-sub">${escapeHtml(d.proveedor)}</div>` : ''}</td>
+                <td>${pvMoney(d.monto, d.moneda)}</td>
+                <td>${d.pagado ? `<span class="status-badge badge-green">pagado ${fmtDate(d.fecha_pago)}</span>` : '<span class="status-badge badge-amber">por pagar</span>'}</td>
+                <td><div class="admin-actions">
+                    ${abierto ? `<button class="btn btn-outline btn-sm" onclick="pvSinDetallePagado(${d.id}, ${s.id}, ${d.pagado ? 0 : 1})">${d.pagado ? 'No pagado' : 'Pagado'}</button>` : ''}
+                    ${abierto ? `<button class="btn btn-danger btn-sm" onclick="pvSinDetalleDelete(${d.id}, ${s.id})">Quitar</button>` : ''}
+                </div></td>
+            </tr>`).join('') || `<tr><td colspan="5" class="empty-row">Sin partidas registradas. Agregue el servicio o pago a liquidar.</td></tr>`;
+
+        openModal(`Siniestro #${s.id} — ${escapeHtml(s.nombre_fallecido)}`, `
+            <div class="prev-detail">
+                <div class="prev-kv">
+                    <div><span>Fallecido</span><strong>${escapeHtml(s.nombre_fallecido)}${s.es_titular ? ' (titular)' : ''}</strong></div>
+                    <div><span>Parentesco</span><strong>${escapeHtml(s.parentesco || '—')}</strong></div>
+                    <div><span>Contrato</span><strong><a href="#" onclick="pvVerContrato(${s.contrato_id});return false;">${escapeHtml(s.contrato_numero)}</a> · ${escapeHtml(s.cliente_nombre || '')}</strong></div>
+                    <div><span>Plan</span><strong>${escapeHtml(s.plan_nombre || '—')}</strong></div>
+                    <div><span>Defunción</span><strong>${fmtDate(s.fecha_defuncion)}</strong></div>
+                    <div><span>Reportado</span><strong>${fmtDate(s.fecha_reporte)}${s.reportado_por ? ' por ' + escapeHtml(s.reportado_por) : ''}${s.telefono_reporta ? ' (' + escapeHtml(s.telefono_reporta) + ')' : ''}</strong></div>
+                    <div><span>Cobertura</span>${pvCoberturaBadge(s.cobertura)}</div>
+                    <div><span>Estado</span>${pvBadge(s.estado)}${s.motivo_rechazo ? ` <span class="row-sub">${escapeHtml(s.motivo_rechazo)}</span>` : ''}</div>
+                    <div><span>Monto liquidado</span><strong>${pvMoney(s.monto_total, s.moneda)}</strong></div>
+                </div>
+                ${s.observaciones ? `<p class="setting-help">${escapeHtml(s.observaciones)}</p>` : ''}
+                <h4 class="prev-h4">Validación de cobertura (al registrar)</h4>
+                <ul class="prev-checks">${checks || '<li>Sin datos de validación.</li>'}</ul>
+                <div class="modal-actions prev-actions">
+                    ${abierto ? `<button class="btn btn-primary btn-sm" onclick="pvSinDetalleForm(${s.id}, '${s.moneda}')">+ Servicio / pago</button>` : ''}
+                    ${s.estado === 'abierto' ? `<button class="btn btn-outline btn-sm" onclick="pvSiniestroEstado(${s.id}, 'liquidado', ${s.es_titular ? 1 : 0})">Marcar liquidado</button>` : ''}
+                    ${abierto ? `<button class="btn btn-outline btn-sm" onclick="pvSiniestroEstado(${s.id}, 'cerrado', ${s.es_titular ? 1 : 0})">Cerrar expediente</button>` : ''}
+                    ${abierto ? `<button class="btn btn-outline btn-sm" onclick="pvSiniestroEstado(${s.id}, 'rechazado', ${s.es_titular ? 1 : 0})">Rechazar</button>` : ''}
+                    ${!abierto ? `<button class="btn btn-outline btn-sm" onclick="pvSiniestroEstado(${s.id}, 'abierto', ${s.es_titular ? 1 : 0})">Reabrir</button>` : ''}
+                    ${admin ? `<button class="btn btn-danger btn-sm" onclick="pvSiniestroDelete(${s.id})">Eliminar expediente</button>` : ''}
+                </div>
+                <h4 class="prev-h4">Liquidación (servicios y pagos)</h4>
+                <div class="table-responsive"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Tipo</th><th>Descripción</th><th>Monto</th><th>Estado</th><th></th></tr></thead>
+                    <tbody>${detalles}</tbody></table></div>
+            </div>`);
+    } catch (e) { toast(e.message); }
+}
+
+function pvSiniestroEstado(id, estado, esTitular) {
+    if (estado === 'rechazado') {
+        openModal('Rechazar siniestro', `
+            <form id="pvSinRechazo">
+                <div class="form-group"><label class="form-label">Motivo del rechazo *</label>
+                    <input type="text" id="psr_motivo" class="form-control" maxlength="255" required></div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-danger">Rechazar</button>
+                    <button type="button" class="btn btn-outline" onclick="pvVerSiniestro(${id})">Volver</button>
+                </div>
+            </form>`);
+        $('#pvSinRechazo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await API.req('prevision_siniestros.php?action=set_estado', { method: 'POST', json: {
+                    id, estado: 'rechazado', motivo: $('#psr_motivo').value.trim(),
+                }});
+                toast('Siniestro rechazado.'); pvVerSiniestro(id); Prevision.loadStats();
+                if (Prevision.sub === 'siniestros') pvLoadSiniestros();
+            } catch (ex) { toast(ex.message); }
+        });
+        return;
+    }
+    const avisos = {
+        liquidado: '¿Marcar el siniestro como liquidado (servicios/pagos ejecutados)?',
+        cerrado: esTitular
+            ? 'Al cerrar el expediente del TITULAR, el contrato pasará a FINALIZADO y se anularán las cuotas pendientes. ¿Continuar?'
+            : '¿Cerrar definitivamente el expediente?',
+        abierto: '¿Reabrir el expediente?',
+    };
+    if (!confirmAction(avisos[estado] || '¿Cambiar el estado?')) return;
+    API.req('prevision_siniestros.php?action=set_estado', { method: 'POST', json: { id, estado } })
+        .then(() => {
+            toast('Estado actualizado.'); pvVerSiniestro(id); Prevision.loadStats();
+            if (Prevision.sub === 'siniestros') pvLoadSiniestros();
+        })
+        .catch(e => toast(e.message));
+}
+
+function pvSinDetalleForm(sinId, moneda) {
+    openModal('Agregar servicio / pago al siniestro', `
+        <form id="pvSinDetForm">
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Tipo</label>
+                    ${pvSelect('pd_tipo', PV_TIPOS_SIN_DETALLE, 'servicio')}</div>
+                <div class="form-group"><label class="form-label">Monto *</label>
+                    <input type="number" step="0.01" min="0" id="pd_monto" class="form-control" required></div>
+            </div>
+            <div class="form-group"><label class="form-label">Descripción *</label>
+                <input type="text" id="pd_desc" class="form-control" maxlength="200" placeholder="Servicio de cremación, ataúd, traslado..." required></div>
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Proveedor (si aplica)</label>
+                    <input type="text" id="pd_prov" class="form-control" maxlength="150"></div>
+                <div class="form-group"><label class="form-label">Moneda</label>
+                    ${pvSelect('pd_moneda', { USD: 'USD ($)', BS: 'Bolívares (Bs)' }, moneda || 'USD')}</div>
+            </div>
+            <div class="form-group"><label class="form-label">Notas</label>
+                <input type="text" id="pd_notas" class="form-control" maxlength="255"></div>
+            <p id="pd_error" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Agregar</button>
+                <button type="button" class="btn btn-outline" onclick="pvVerSiniestro(${sinId})">Volver</button>
+            </div>
+        </form>`);
+    $('#pvSinDetForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#pd_error'); err.hidden = true;
+        try {
+            await API.req('prevision_siniestros.php?action=detalle_add', { method: 'POST', json: {
+                siniestro_id: sinId, tipo: $('#pd_tipo').value,
+                descripcion: $('#pd_desc').value.trim(), proveedor: $('#pd_prov').value.trim(),
+                moneda: $('#pd_moneda').value, monto: $('#pd_monto').value,
+                notas: $('#pd_notas').value.trim(),
+            }});
+            toast('Partida agregada.'); pvVerSiniestro(sinId);
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+async function pvSinDetallePagado(id, sinId, pagado) {
+    try {
+        await API.req('prevision_siniestros.php?action=detalle_pagado', { method: 'POST', json: { id, pagado } });
+        pvVerSiniestro(sinId);
+    } catch (e) { toast(e.message); }
+}
+
+async function pvSinDetalleDelete(id, sinId) {
+    if (!confirmAction('¿Quitar esta partida de la liquidación?')) return;
+    try {
+        await API.req('prevision_siniestros.php?action=detalle_delete', { method: 'POST', json: { id } });
+        pvVerSiniestro(sinId);
+    } catch (e) { toast(e.message); }
+}
+
+async function pvSiniestroDelete(id) {
+    if (!confirmAction('¿Eliminar el expediente completo? El beneficiario se restaurará como activo.')) return;
+    try {
+        await API.req('prevision_siniestros.php?action=delete', { method: 'POST', json: { id } });
+        closeModal(); toast('Expediente eliminado.'); Prevision.loadStats();
+        if (Prevision.sub === 'siniestros') pvLoadSiniestros();
+    } catch (e) { toast(e.message); }
+}
+
+// ==========================================================================
+//  COBRANZA (morosos, gestiones, auto-lapsado, hoja de cobro)
+// ==========================================================================
+async function pvLoadCobranza() {
+    const cont = $('#pvCobContent');
+    try {
+        if (Prevision.cobVista === 'morosos') {
+            const r = await API.req('prevision_cobranza.php?action=morosos');
+            cont.innerHTML = `
+                <div class="table-responsive"><table class="admin-table">
+                    <thead><tr><th>Contrato</th><th>Cliente</th><th>Teléfono</th><th>Vencidas</th><th>Saldo</th><th>Mora</th><th>Última gestión</th><th>Acciones</th></tr></thead>
+                    <tbody>${r.items.map(m => `
+                        <tr>
+                            <td><a href="#" onclick="pvVerContrato(${m.contrato_id});return false;"><strong>${escapeHtml(m.numero)}</strong></a> ${pvBadge(m.estatus)}</td>
+                            <td>${escapeHtml(m.cliente_nombre)}</td>
+                            <td>${escapeHtml(m.telefono || '—')}</td>
+                            <td><span class="status-badge badge-red">${m.cuotas_vencidas}</span></td>
+                            <td>${pvMoney(m.saldo_vencido, m.moneda)}</td>
+                            <td>${m.dias_mora} días</td>
+                            <td>${m.ultima_gestion ? fmtDate(m.ultima_gestion) : '<span class="row-sub">nunca</span>'}</td>
+                            <td><div class="admin-actions">
+                                <button class="btn btn-outline btn-sm" onclick="pvGestionForm(${m.contrato_id}, false)">Gestión</button>
+                                <button class="btn btn-outline btn-sm" onclick="pvRegistrarPago(${m.contrato_id}, 0)">Cobrar</button>
+                            </div></td>
+                        </tr>`).join('') || `<tr><td colspan="8" class="empty-row">No hay contratos con cuotas vencidas. 🎉</td></tr>`}
+                    </tbody></table></div>`;
+        } else if (Prevision.cobVista === 'gestiones') {
+            const r = await API.req('prevision_cobranza.php?action=gestiones');
+            cont.innerHTML = `
+                <div class="table-responsive"><table class="admin-table">
+                    <thead><tr><th>Fecha</th><th>Contrato</th><th>Cliente</th><th>Tipo</th><th>Resultado</th><th>Notas</th><th></th></tr></thead>
+                    <tbody>${r.items.map(g => `
+                        <tr>
+                            <td>${fmtDate(g.fecha)}</td>
+                            <td><a href="#" onclick="pvVerContrato(${g.contrato_id});return false;">${escapeHtml(g.contrato_numero)}</a></td>
+                            <td>${escapeHtml(g.cliente_nombre || '')}</td>
+                            <td>${escapeHtml(PV_TIPOS_GESTION[g.tipo] || g.tipo)}</td>
+                            <td>${escapeHtml(PV_RESULTADOS_GESTION[g.resultado] || g.resultado)}${g.promesa_fecha ? `<div class="row-sub">Promesa: ${fmtDate(g.promesa_fecha)}${g.promesa_monto ? ' · ' + pvNum(g.promesa_monto) : ''}</div>` : ''}</td>
+                            <td class="row-sub">${escapeHtml(g.notas || '—')}</td>
+                            <td>${pvEsAdmin() ? `<button class="btn btn-danger btn-sm" onclick="pvGestionDelete(${g.id})">Eliminar</button>` : ''}</td>
+                        </tr>`).join('') || `<tr><td colspan="7" class="empty-row">Sin gestiones registradas.</td></tr>`}
+                    </tbody></table></div>`;
+        } else if (Prevision.cobVista === 'lapsado') {
+            const cfg = await API.req('prevision_cobranza.php?action=lapsado_config');
+            cont.innerHTML = `
+                <div class="admin-card settings-card">
+                    <div class="setting-row">
+                        <div><strong>Suspensión automática de morosos</strong>
+                            <p class="setting-help">El cron diario suspende los contratos activos que acumulen el número de cuotas vencidas indicado.
+                            Programe en cPanel: <code>api/cron/prevision_lapsar.php</code></p></div>
+                        <label class="switch"><input type="checkbox" id="pvLapEnabled" ${cfg.enabled ? 'checked' : ''} ${pvEsAdmin() ? '' : 'disabled'}><span class="slider"></span></label>
+                    </div>
+                    <div class="form-group"><label class="form-label">Cuotas vencidas para suspender</label>
+                        <input type="number" min="1" max="24" id="pvLapCuotas" class="form-control prev-select" value="${cfg.cuotas}" ${pvEsAdmin() ? '' : 'disabled'}></div>
+                    <div class="setting-actions">
+                        ${pvEsAdmin() ? `<button class="btn btn-primary" onclick="pvLapsadoGuardar()">Guardar configuración</button>` : ''}
+                        <button class="btn btn-outline" onclick="pvLapsadoPreview()">Vista previa</button>
+                        ${pvEsAdmin() ? `<button class="btn btn-danger" onclick="pvLapsadoEjecutar()">Ejecutar ahora</button>` : ''}
+                    </div>
+                </div>
+                <div id="pvLapResult"></div>`;
+        } else if (Prevision.cobVista === 'hoja') {
+            const rutas = Prevision.cat.rutas.filter(r => Number(r.activo));
+            cont.innerHTML = `
+                <div class="admin-card settings-card">
+                    <div class="form-group"><label class="form-label">Ruta de cobro</label>
+                        <select id="pvHojaRuta" class="form-control prev-select">
+                            ${rutas.map(r => `<option value="${r.id}">${escapeHtml(r.nombre)}${r.cobrador_nombre ? ' · ' + escapeHtml(r.cobrador_nombre) : ''} (${r.contratos} contratos)</option>`).join('')}
+                        </select></div>
+                    <div class="setting-actions">
+                        <button class="btn btn-primary" onclick="pvHojaGenerar()">Generar hoja de cobro</button>
+                    </div>
+                    ${rutas.length ? '' : '<p class="setting-help">No hay rutas activas. Créelas en la sub-pestaña Catálogos y asígnelas a los contratos.</p>'}
+                </div>
+                <div id="pvHojaResult"></div>`;
+        }
+    } catch (e) { toast(e.message); }
+}
+
+function pvGestionForm(contratoId, fromDetail) {
+    openModal('Registrar gestión de cobranza', `
+        <form id="pvGesForm">
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Fecha</label>
+                    <input type="date" id="pg_fecha2" class="form-control" value="${pvHoy()}"></div>
+                <div class="form-group"><label class="form-label">Tipo de contacto</label>
+                    ${pvSelect('pg_tipo', PV_TIPOS_GESTION, 'llamada')}</div>
+            </div>
+            <div class="form-group"><label class="form-label">Resultado</label>
+                ${pvSelect('pg_resultado', PV_RESULTADOS_GESTION, 'contactado')}</div>
+            <div class="form-grid-2" id="pg_promesa_row" hidden>
+                <div class="form-group"><label class="form-label">Fecha prometida</label>
+                    <input type="date" id="pg_promesa_fecha" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Monto prometido</label>
+                    <input type="number" step="0.01" min="0" id="pg_promesa_monto" class="form-control"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Notas</label>
+                <textarea id="pg_notas" class="form-control" maxlength="500"></textarea></div>
+            <p id="pg_error" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Guardar gestión</button>
+                <button type="button" class="btn btn-outline" onclick="${fromDetail ? `pvVerContrato(${contratoId})` : 'closeModal()'}">Volver</button>
+            </div>
+        </form>`);
+    $('#pg_resultado').addEventListener('change', () => {
+        $('#pg_promesa_row').hidden = $('#pg_resultado').value !== 'promesa_pago';
+    });
+    $('#pvGesForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#pg_error'); err.hidden = true;
+        try {
+            await API.req('prevision_cobranza.php?action=gestion_add', { method: 'POST', json: {
+                contrato_id: contratoId, fecha: $('#pg_fecha2').value,
+                tipo: $('#pg_tipo').value, resultado: $('#pg_resultado').value,
+                promesa_fecha: $('#pg_promesa_fecha').value, promesa_monto: $('#pg_promesa_monto').value,
+                notas: $('#pg_notas').value.trim(),
+            }});
+            toast('Gestión registrada.');
+            if (fromDetail) pvVerContrato(contratoId);
+            else { closeModal(); if (Prevision.sub === 'cobranza') pvLoadCobranza(); }
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+async function pvGestionDelete(id) {
+    if (!confirmAction('¿Eliminar esta gestión?')) return;
+    try {
+        await API.req('prevision_cobranza.php?action=gestion_delete', { method: 'POST', json: { id } });
+        toast('Gestión eliminada.'); pvLoadCobranza();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvLapsadoGuardar() {
+    try {
+        const r = await API.req('prevision_cobranza.php?action=lapsado_config_set', { method: 'POST', json: {
+            enabled: $('#pvLapEnabled').checked ? 1 : 0, cuotas: $('#pvLapCuotas').value,
+        }});
+        toast('Configuración guardada (' + (r.enabled ? 'activado' : 'desactivado') + ', ' + r.cuotas + ' cuotas).');
+    } catch (e) { toast(e.message); }
+}
+
+function pvLapsadoTabla(items) {
+    return `
+        <div class="table-responsive"><table class="admin-table">
+            <thead><tr><th>Contrato</th><th>Cliente</th><th>Cuotas vencidas</th><th>Saldo</th><th>En mora desde</th></tr></thead>
+            <tbody>${items.map(c => `
+                <tr>
+                    <td><a href="#" onclick="pvVerContrato(${c.contrato_id});return false;"><strong>${escapeHtml(c.numero)}</strong></a></td>
+                    <td>${escapeHtml(c.cliente_nombre)}</td>
+                    <td><span class="status-badge badge-red">${c.cuotas_vencidas}</span></td>
+                    <td>${pvMoney(c.saldo_vencido, c.moneda)}</td>
+                    <td>${fmtDate(c.vencida_desde)}</td>
+                </tr>`).join('') || `<tr><td colspan="5" class="empty-row">Ningún contrato alcanza el umbral. 🎉</td></tr>`}
+            </tbody></table></div>`;
+}
+
+async function pvLapsadoPreview() {
+    try {
+        const r = await API.req('prevision_cobranza.php?action=lapsado_preview&cuotas=' + $('#pvLapCuotas').value);
+        $('#pvLapResult').innerHTML = `
+            <h4 class="prev-h4">Vista previa: ${r.items.length} contrato(s) se suspenderían con ≥ ${r.cuotas} cuotas vencidas</h4>
+            ${pvLapsadoTabla(r.items)}`;
+    } catch (e) { toast(e.message); }
+}
+
+async function pvLapsadoEjecutar() {
+    if (!confirmAction('¿Suspender AHORA todos los contratos que alcanzan el umbral de cuotas vencidas?')) return;
+    try {
+        const r = await API.req('prevision_cobranza.php?action=lapsado_ejecutar', { method: 'POST', json: {
+            cuotas: $('#pvLapCuotas').value,
+        }});
+        toast(r.suspendidos + ' contrato(s) suspendido(s).');
+        $('#pvLapResult').innerHTML = `
+            <h4 class="prev-h4">Suspendidos: ${r.suspendidos}</h4>${pvLapsadoTabla(r.items)}`;
+        Prevision.loadStats();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvHojaGenerar() {
+    const rutaId = $('#pvHojaRuta') ? $('#pvHojaRuta').value : '';
+    if (!rutaId) return toast('Seleccione una ruta.');
+    try {
+        const r = await API.req('prevision_cobranza.php?action=hoja_cobro&ruta_id=' + rutaId);
+        window.pvHojaData = r;
+        $('#pvHojaResult').innerHTML = `
+            <div class="admin-toolbar prev-h3">
+                <h3>Ruta ${escapeHtml(r.ruta.nombre)}${r.ruta.cobrador ? ' — ' + escapeHtml(r.ruta.cobrador) : ''}</h3>
+                <button class="btn btn-outline" onclick="pvHojaImprimir()">🖨 Imprimir</button>
+            </div>
+            <div class="table-responsive"><table class="admin-table admin-table-compact">
+                <thead><tr><th>Contrato</th><th>Cliente</th><th>Dirección</th><th>Teléfono</th><th>Cuota</th><th>Vencidas</th><th>Saldo vencido</th></tr></thead>
+                <tbody>${r.items.map(x => `
+                    <tr class="${x.cuotas_vencidas > 0 ? 'prev-row-vencida' : ''}">
+                        <td><strong>${escapeHtml(x.numero)}</strong></td>
+                        <td>${escapeHtml(x.cliente_nombre)}</td>
+                        <td class="row-sub">${escapeHtml(x.direccion || '—')}</td>
+                        <td>${escapeHtml(x.telefono || '—')}</td>
+                        <td>${pvMoney(x.monto_cuota, x.moneda)} <span class="row-sub">${escapeHtml(x.frecuencia)}</span></td>
+                        <td>${x.cuotas_vencidas || '—'}</td>
+                        <td>${x.saldo_vencido > 0 ? pvMoney(x.saldo_vencido, x.moneda) : '—'}</td>
+                    </tr>`).join('') || `<tr><td colspan="7" class="empty-row">La ruta no tiene contratos asignados.</td></tr>`}
+                </tbody></table></div>`;
+    } catch (e) { toast(e.message); }
+}
+
+function pvHojaImprimir() {
+    const r = window.pvHojaData;
+    if (!r) return;
+    const filas = r.items.map(x => `
+        <tr>
+            <td>${escapeHtml(x.numero)}</td><td>${escapeHtml(x.cliente_nombre)}</td>
+            <td>${escapeHtml(x.direccion || '')}</td><td>${escapeHtml(x.telefono || '')}</td>
+            <td style="text-align:right">${pvMoney(x.monto_cuota, x.moneda)}</td>
+            <td style="text-align:center">${x.cuotas_vencidas || ''}</td>
+            <td style="text-align:right">${x.saldo_vencido > 0 ? pvMoney(x.saldo_vencido, x.moneda) : ''}</td>
+            <td style="width:90px"></td>
+        </tr>`).join('');
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
+        <title>Hoja de cobro — Ruta ${escapeHtml(r.ruta.nombre)}</title>
+        <style>
+            body { font-family: Arial, sans-serif; font-size: 12px; margin: 24px; }
+            h1 { font-size: 16px; margin: 0 0 4px; } .sub { color: #555; margin: 0 0 16px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #999; padding: 4px 6px; text-align: left; }
+            th { background: #eee; }
+        </style></head><body>
+        <h1>FUNERARIA DEL ZULIA — Hoja de cobro</h1>
+        <p class="sub">Ruta: <strong>${escapeHtml(r.ruta.nombre)}</strong>
+           ${r.ruta.zona ? ' · Zona: ' + escapeHtml(r.ruta.zona) : ''}
+           ${r.ruta.dia_cobro ? ' · Día: ' + escapeHtml(r.ruta.dia_cobro) : ''}
+           ${r.ruta.cobrador ? ' · Cobrador: ' + escapeHtml(r.ruta.cobrador) : ''}
+           · Emitida: ${fmtDate(pvHoy())}</p>
+        <table><thead><tr>
+            <th>Contrato</th><th>Cliente</th><th>Dirección</th><th>Teléfono</th>
+            <th>Cuota</th><th>Venc.</th><th>Saldo vencido</th><th>Cobrado / Firma</th>
+        </tr></thead><tbody>${filas}</tbody></table>
+        <script>window.print();<\/script></body></html>`);
+    w.document.close();
+}
+
+// ==========================================================================
+//  SERVICIOS ADICIONALES DE UN CONTRATO
+// ==========================================================================
+function pvContratoServicioAdd(contratoId) {
+    const servicios = Prevision.cat.servicios.filter(s => s.activo);
+    if (!servicios.length) {
+        return toast('No hay servicios en el catálogo. Créelos en la sub-pestaña Catálogos.');
+    }
+    openModal('Agregar servicio adicional', `
+        <form id="pvCsForm">
+            <div class="form-group"><label class="form-label">Servicio *</label>
+                <select id="cs_servicio" class="form-control">
+                    ${servicios.map(s => `<option value="${s.id}" data-precio="${s.precio}">${escapeHtml(s.nombre)} (${pvMoney(s.precio, s.moneda)}${s.recurrente ? ' recurrente' : ''})</option>`).join('')}
+                </select></div>
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Precio pactado</label>
+                    <input type="number" step="0.01" min="0" id="cs_precio" class="form-control" value="${servicios[0].precio}"></div>
+                <div class="form-group"><label class="form-label">Desde</label>
+                    <input type="date" id="cs_fecha" class="form-control" value="${pvHoy()}"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Notas</label>
+                <input type="text" id="cs_notas" class="form-control" maxlength="255"></div>
+            <p id="cs_error" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Agregar servicio</button>
+                <button type="button" class="btn btn-outline" onclick="pvVerContrato(${contratoId})">Volver</button>
+            </div>
+        </form>`);
+    $('#cs_servicio').addEventListener('change', (e) => {
+        $('#cs_precio').value = e.target.selectedOptions[0].dataset.precio;
+    });
+    $('#pvCsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#cs_error'); err.hidden = true;
+        try {
+            await API.req('prevision_catalogos.php?action=contrato_servicio_add', { method: 'POST', json: {
+                contrato_id: contratoId, servicio_id: $('#cs_servicio').value,
+                precio: $('#cs_precio').value, fecha: $('#cs_fecha').value,
+                notas: $('#cs_notas').value.trim(),
+            }});
+            toast('Servicio agregado.'); pvVerContrato(contratoId);
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+async function pvContratoServicioToggle(id, contratoId, activo) {
+    try {
+        await API.req('prevision_catalogos.php?action=contrato_servicio_toggle', { method: 'POST', json: { id, activo } });
+        pvVerContrato(contratoId);
+    } catch (e) { toast(e.message); }
+}
+
+async function pvContratoServicioDelete(id, contratoId) {
+    if (!confirmAction('¿Quitar este servicio del contrato?')) return;
+    try {
+        await API.req('prevision_catalogos.php?action=contrato_servicio_delete', { method: 'POST', json: { id } });
+        toast('Servicio quitado.'); pvVerContrato(contratoId);
+    } catch (e) { toast(e.message); }
+}
+
+// ==========================================================================
+//  CATÁLOGOS (sucursales, servicios, cobradores, rutas)
+// ==========================================================================
+const PV_CAT = {
+    sucursales: {
+        titulo: 'Sucursales', accionLista: 'sucursales', accionSave: 'sucursal_save',
+        accionToggle: 'sucursal_toggle', accionDelete: 'sucursal_delete',
+        columnas: ['Nombre', 'Dirección', 'Teléfono', 'Contratos'],
+        fila: s => `<td><strong>${escapeHtml(s.nombre)}</strong></td><td class="row-sub">${escapeHtml(s.direccion || '—')}</td>
+                    <td>${escapeHtml(s.telefono || '—')}</td><td>${s.contratos ?? 0}</td>`,
+        usado: s => Number(s.contratos) > 0,
+        campos: s => `
+            <div class="form-group"><label class="form-label">Nombre *</label>
+                <input type="text" id="cf_nombre" class="form-control" value="${escapeHtml(s.nombre || '')}" required></div>
+            <div class="form-group"><label class="form-label">Dirección</label>
+                <input type="text" id="cf_direccion" class="form-control" maxlength="255" value="${escapeHtml(s.direccion || '')}"></div>
+            <div class="form-group"><label class="form-label">Teléfono</label>
+                <input type="text" id="cf_telefono" class="form-control" maxlength="20" value="${escapeHtml(s.telefono || '')}"></div>`,
+        leer: () => ({ nombre: $('#cf_nombre').value.trim(), direccion: $('#cf_direccion').value.trim(),
+                       telefono: $('#cf_telefono').value.trim() }),
+    },
+    servicios: {
+        titulo: 'Servicios adicionales', accionLista: 'servicios', accionSave: 'servicio_save',
+        accionToggle: 'servicio_toggle', accionDelete: 'servicio_delete',
+        columnas: ['Nombre', 'Precio', 'Tipo', ''],
+        fila: s => `<td><strong>${escapeHtml(s.nombre)}</strong>${s.descripcion ? `<div class="row-sub">${escapeHtml(s.descripcion)}</div>` : ''}</td>
+                    <td>${pvMoney(s.precio, s.moneda)}</td><td>${s.recurrente ? 'Recurrente (por cuota)' : 'Cargo único'}</td><td></td>`,
+        usado: () => false,
+        campos: s => `
+            <div class="form-group"><label class="form-label">Nombre *</label>
+                <input type="text" id="cf_nombre" class="form-control" value="${escapeHtml(s.nombre || '')}" placeholder="Bóveda, cremación, traslado..." required></div>
+            <div class="form-group"><label class="form-label">Descripción</label>
+                <input type="text" id="cf_descripcion" class="form-control" maxlength="255" value="${escapeHtml(s.descripcion || '')}"></div>
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Moneda</label>
+                    ${pvSelect('cf_moneda', { USD: 'USD ($)', BS: 'Bolívares (Bs)' }, s.moneda || 'USD')}</div>
+                <div class="form-group"><label class="form-label">Precio</label>
+                    <input type="number" step="0.01" min="0" id="cf_precio" class="form-control" value="${s.precio ?? 0}"></div>
+            </div>
+            <div class="setting-row"><div><strong>Recurrente</strong><p class="setting-help">Se suma a cada cuota (si no, es un cargo único).</p></div>
+                <label class="switch"><input type="checkbox" id="cf_recurrente" ${s.recurrente ? 'checked' : ''}><span class="slider"></span></label></div>`,
+        leer: () => ({ nombre: $('#cf_nombre').value.trim(), descripcion: $('#cf_descripcion').value.trim(),
+                       moneda: $('#cf_moneda').value, precio: $('#cf_precio').value,
+                       recurrente: $('#cf_recurrente').checked ? 1 : 0 }),
+    },
+    cobradores: {
+        titulo: 'Cobradores', accionLista: 'cobradores', accionSave: 'cobrador_save',
+        accionToggle: 'cobrador_toggle', accionDelete: 'cobrador_delete',
+        columnas: ['Nombre', 'Cédula', 'Teléfono', 'Rutas'],
+        fila: c => `<td><strong>${escapeHtml(c.nombre)}</strong></td><td>${escapeHtml(c.cedula || '—')}</td>
+                    <td>${escapeHtml(c.telefono || '—')}</td><td>${c.rutas ?? 0}</td>`,
+        usado: c => Number(c.rutas) > 0,
+        campos: c => `
+            <div class="form-group"><label class="form-label">Nombre *</label>
+                <input type="text" id="cf_nombre" class="form-control" value="${escapeHtml(c.nombre || '')}" required></div>
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Cédula</label>
+                    <input type="text" id="cf_cedula" class="form-control" maxlength="15" value="${escapeHtml(c.cedula || '')}"></div>
+                <div class="form-group"><label class="form-label">Teléfono</label>
+                    <input type="text" id="cf_telefono" class="form-control" maxlength="20" value="${escapeHtml(c.telefono || '')}"></div>
+            </div>`,
+        leer: () => ({ nombre: $('#cf_nombre').value.trim(), cedula: $('#cf_cedula').value.trim(),
+                       telefono: $('#cf_telefono').value.trim() }),
+    },
+    rutas: {
+        titulo: 'Rutas de cobranza', accionLista: 'rutas', accionSave: 'ruta_save',
+        accionToggle: 'ruta_toggle', accionDelete: 'ruta_delete',
+        columnas: ['Nombre', 'Zona', 'Día', 'Cobrador', 'Contratos'],
+        fila: r => `<td><strong>${escapeHtml(r.nombre)}</strong></td><td class="row-sub">${escapeHtml(r.zona || '—')}</td>
+                    <td>${escapeHtml(r.dia_cobro || '—')}</td><td>${escapeHtml(r.cobrador_nombre || '—')}</td><td>${r.contratos ?? 0}</td>`,
+        usado: r => Number(r.contratos) > 0,
+        campos: r => `
+            <div class="form-group"><label class="form-label">Nombre *</label>
+                <input type="text" id="cf_nombre" class="form-control" value="${escapeHtml(r.nombre || '')}" required></div>
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Zona / sector</label>
+                    <input type="text" id="cf_zona" class="form-control" maxlength="150" value="${escapeHtml(r.zona || '')}"></div>
+                <div class="form-group"><label class="form-label">Día de cobro</label>
+                    <input type="text" id="cf_dia" class="form-control" maxlength="20" value="${escapeHtml(r.dia_cobro || '')}" placeholder="lunes, 1 y 15..."></div>
+            </div>
+            <div class="form-group"><label class="form-label">Cobrador</label>
+                <select id="cf_cobrador" class="form-control">
+                    <option value="">—</option>
+                    ${Prevision.cat.cobradores.filter(c => Number(c.activo) || c.id == r.cobrador_id).map(c =>
+                        `<option value="${c.id}" ${r.cobrador_id == c.id ? 'selected' : ''}>${escapeHtml(c.nombre)}</option>`).join('')}
+                </select></div>`,
+        leer: () => ({ nombre: $('#cf_nombre').value.trim(), zona: $('#cf_zona').value.trim(),
+                       dia_cobro: $('#cf_dia').value.trim(), cobrador_id: $('#cf_cobrador').value || null }),
+    },
+};
+
+async function pvLoadCatalogosTab() {
+    const cont = $('#pvCatContent');
+    try {
+        const datos = {};
+        for (const tipo of Object.keys(PV_CAT)) {
+            datos[tipo] = (await API.req('prevision_catalogos.php?action=' + PV_CAT[tipo].accionLista)).items;
+        }
+        window.pvCatData = datos;
+        cont.innerHTML = Object.entries(PV_CAT).map(([tipo, cfg]) => `
+            <div class="admin-toolbar prev-h3">
+                <h3>${cfg.titulo}</h3>
+                <button class="btn btn-primary btn-sm" onclick="pvCatForm('${tipo}', 0)">+ Agregar</button>
+            </div>
+            <div class="table-responsive"><table class="admin-table admin-table-compact">
+                <thead><tr>${cfg.columnas.map(c => `<th>${c}</th>`).join('')}<th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody>${datos[tipo].map(item => `
+                    <tr>
+                        ${cfg.fila(item)}
+                        <td>${Number(item.activo) ? '<span class="status-badge badge-green">activo</span>' : '<span class="status-badge badge-gray">inactivo</span>'}</td>
+                        <td><div class="admin-actions">
+                            <button class="btn btn-outline btn-sm" onclick="pvCatForm('${tipo}', ${item.id})">Editar</button>
+                            <button class="btn btn-outline btn-sm" onclick="pvCatToggle('${tipo}', ${item.id}, ${Number(item.activo) ? 0 : 1})">${Number(item.activo) ? 'Desactivar' : 'Activar'}</button>
+                            ${pvEsAdmin() && !cfg.usado(item) ? `<button class="btn btn-danger btn-sm" onclick="pvCatDelete('${tipo}', ${item.id})">Eliminar</button>` : ''}
+                        </div></td>
+                    </tr>`).join('') || `<tr><td colspan="${cfg.columnas.length + 2}" class="empty-row">Sin registros.</td></tr>`}
+                </tbody></table></div>`).join('');
+    } catch (e) {
+        cont.innerHTML = `<p class="setting-help">Importe <strong>database/05_prevision_v2.sql</strong> para activar sucursales, servicios, siniestros y cobranza.</p>`;
+    }
+}
+
+function pvCatForm(tipo, id) {
+    const cfg = PV_CAT[tipo];
+    const item = id ? (window.pvCatData[tipo] || []).find(x => Number(x.id) === Number(id)) || {} : {};
+    openModal((id ? 'Editar — ' : 'Nuevo — ') + cfg.titulo, `
+        <form id="pvCatFormEl">
+            ${cfg.campos(item)}
+            <p id="cf_error" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+            </div>
+        </form>`);
+    $('#pvCatFormEl').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#cf_error'); err.hidden = true;
+        try {
+            const json = cfg.leer();
+            if (id) json.id = id;
+            await API.req('prevision_catalogos.php?action=' + cfg.accionSave, { method: 'POST', json });
+            closeModal(); toast('Guardado.');
+            pvLoadCatalogosTab(); Prevision.loadCatalogos(true);
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+async function pvCatToggle(tipo, id, activo) {
+    try {
+        await API.req('prevision_catalogos.php?action=' + PV_CAT[tipo].accionToggle, { method: 'POST', json: { id, activo } });
+        pvLoadCatalogosTab(); Prevision.loadCatalogos(true);
+    } catch (e) { toast(e.message); }
+}
+
+async function pvCatDelete(tipo, id) {
+    if (!confirmAction('¿Eliminar definitivamente este registro?')) return;
+    try {
+        await API.req('prevision_catalogos.php?action=' + PV_CAT[tipo].accionDelete, { method: 'POST', json: { id } });
+        toast('Eliminado.'); pvLoadCatalogosTab(); Prevision.loadCatalogos(true);
+    } catch (e) { toast(e.message); }
 }
 
 // Exponer el módulo para el hook de pestañas de admin.js

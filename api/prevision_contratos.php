@@ -39,6 +39,8 @@ const CONTRATO_SELECT = "
            CONCAT(cl.nacionalidad, '-', cl.cedula) AS cliente_cedula,
            p.nombre AS plan_nombre,
            v.nombre AS vendedor_nombre,
+           su.nombre AS sucursal_nombre,
+           ru.nombre AS ruta_nombre,
            (SELECT COUNT(*) FROM prev_beneficiarios b WHERE b.contrato_id = c.id AND b.estatus = 'activo') AS beneficiarios,
            (SELECT COUNT(*) FROM prev_cuotas q WHERE q.contrato_id = c.id
               AND q.estado IN ('pendiente','parcial') AND q.fecha_vencimiento < CURDATE()) AS cuotas_vencidas,
@@ -47,7 +49,9 @@ const CONTRATO_SELECT = "
     FROM prev_contratos c
     JOIN prev_clientes cl ON cl.id = c.cliente_id
     LEFT JOIN prev_planes p ON p.id = c.plan_id
-    LEFT JOIN prev_vendedores v ON v.id = c.vendedor_id";
+    LEFT JOIN prev_vendedores v ON v.id = c.vendedor_id
+    LEFT JOIN prev_sucursales su ON su.id = c.sucursal_id
+    LEFT JOIN prev_rutas ru ON ru.id = c.ruta_id";
 
 /** Carga un contrato (fila cruda) o responde 404. */
 function contrato_row(int $id): array
@@ -85,6 +89,19 @@ function contrato_input(array $b): array
         if (!$st->fetchColumn()) json_out(['ok' => false, 'error' => 'Vendedor no encontrado.'], 422);
     }
 
+    $sucursalId = (int)($b['sucursal_id'] ?? 0) ?: null;
+    if ($sucursalId) {
+        $st = db()->prepare("SELECT id FROM prev_sucursales WHERE id = ?");
+        $st->execute([$sucursalId]);
+        if (!$st->fetchColumn()) json_out(['ok' => false, 'error' => 'Sucursal no encontrada.'], 422);
+    }
+    $rutaId = (int)($b['ruta_id'] ?? 0) ?: null;
+    if ($rutaId) {
+        $st = db()->prepare("SELECT id FROM prev_rutas WHERE id = ?");
+        $st->execute([$rutaId]);
+        if (!$st->fetchColumn()) json_out(['ok' => false, 'error' => 'Ruta no encontrada.'], 422);
+    }
+
     $fechaIngreso = prev_date($b['fecha_ingreso'] ?? '') ?: date('Y-m-d');
     $plazo = max(0, min(60, (int)($b['plazo_espera_meses'] ?? 4)));
     $vigenteDesde = prev_date($b['vigente_desde'] ?? '')
@@ -101,6 +118,8 @@ function contrato_input(array $b): array
         'cliente_id'         => $clienteId,
         'plan_id'            => $planId,
         'vendedor_id'        => $vendedorId,
+        'sucursal_id'        => $sucursalId,
+        'ruta_id'            => $rutaId,
         'origen'             => clean_str($b['origen'] ?? '', 60) ?: null,
         'fecha_solicitud'    => prev_date($b['fecha_solicitud'] ?? ''),
         'fecha_ingreso'      => $fechaIngreso,
@@ -170,6 +189,8 @@ switch ($action) {
         if ($e = prev_enum($_GET['estatus'] ?? '', PREV_ESTATUS_CONTRATO)) { $where .= " AND c.estatus = ?"; $params[] = $e; }
         if (($pid = (int)($_GET['plan_id'] ?? 0)) > 0)     { $where .= " AND c.plan_id = ?";     $params[] = $pid; }
         if (($vid = (int)($_GET['vendedor_id'] ?? 0)) > 0) { $where .= " AND c.vendedor_id = ?"; $params[] = $vid; }
+        if (($sid = (int)($_GET['sucursal_id'] ?? 0)) > 0) { $where .= " AND c.sucursal_id = ?"; $params[] = $sid; }
+        if (($rid = (int)($_GET['ruta_id'] ?? 0)) > 0)     { $where .= " AND c.ruta_id = ?";     $params[] = $rid; }
         if ($fp = prev_enum($_GET['forma_pago'] ?? '', PREV_FORMAS_PAGO_CONTRATO)) { $where .= " AND c.forma_pago = ?"; $params[] = $fp; }
 
         if (($_GET['morosos'] ?? '') === '1') {
@@ -247,6 +268,38 @@ switch ($action) {
         $res->execute([$id]);
         $totales = $res->fetch();
 
+        // Servicios adicionales, gestiones de cobranza y siniestros (v2)
+        $srv = db()->prepare(
+            "SELECT cs.*, s.nombre FROM prev_contrato_servicios cs
+             JOIN prev_servicios s ON s.id = cs.servicio_id
+             WHERE cs.contrato_id = ? ORDER BY cs.activo DESC, cs.id ASC"
+        );
+        $srv->execute([$id]);
+        $servicios = array_map(fn($x) => [
+            'id'         => (int)$x['id'],
+            'servicio_id' => (int)$x['servicio_id'],
+            'nombre'     => $x['nombre'],
+            'moneda'     => $x['moneda'],
+            'precio'     => (float)$x['precio'],
+            'recurrente' => (bool)$x['recurrente'],
+            'fecha'      => $x['fecha'],
+            'notas'      => $x['notas'],
+            'activo'     => (bool)$x['activo'],
+        ], $srv->fetchAll());
+
+        $ges = db()->prepare(
+            "SELECT g.*, NULL AS contrato_numero, NULL AS cliente_nombre, u.email AS usuario
+             FROM prev_gestiones g LEFT JOIN users u ON u.id = g.usuario_id
+             WHERE g.contrato_id = ? ORDER BY g.fecha DESC LIMIT 5"
+        );
+        $ges->execute([$id]);
+
+        $sin = db()->prepare(
+            "SELECT id, nombre_fallecido, fecha_defuncion, estado, cobertura FROM prev_siniestros
+             WHERE contrato_id = ? ORDER BY id DESC"
+        );
+        $sin->execute([$id]);
+
         json_out([
             'ok'            => true,
             'item'          => prev_contrato_out($r),
@@ -255,6 +308,13 @@ switch ($action) {
             'cuotas'        => array_map('prev_cuota_out', $cuo->fetchAll()),
             'pagos'         => array_map('prev_pago_out', $pag->fetchAll()),
             'comisiones'    => array_map('prev_comision_out', $com->fetchAll()),
+            'servicios'     => $servicios,
+            'gestiones'     => array_map('prev_gestion_out', $ges->fetchAll()),
+            'siniestros'    => array_map(fn($x) => [
+                'id' => (int)$x['id'], 'nombre_fallecido' => $x['nombre_fallecido'],
+                'fecha_defuncion' => $x['fecha_defuncion'], 'estado' => $x['estado'],
+                'cobertura' => $x['cobertura'],
+            ], $sin->fetchAll()),
             'totales'       => [
                 'cobrado'    => (float)$totales['cobrado'],
                 'por_cobrar' => (float)$totales['por_cobrar'],
@@ -786,7 +846,16 @@ switch ($action) {
         $comisionesSt = $pdo->prepare("SELECT COALESCE(SUM(monto_usd),0) FROM prev_comisiones WHERE fecha_pago >= ?");
         $comisionesSt->execute([$mes]);
 
+        // Siniestros abiertos (0 si aún no se importó database/05_prevision_v2.sql)
+        $siniestrosAbiertos = 0;
+        try {
+            $siniestrosAbiertos = (int)$pdo->query(
+                "SELECT COUNT(*) FROM prev_siniestros WHERE estado IN ('abierto','liquidado')"
+            )->fetchColumn();
+        } catch (\Throwable $e) { /* módulo v2 sin instalar */ }
+
         json_out(['ok' => true, 'stats' => [
+            'siniestros_abiertos'  => $siniestrosAbiertos,
             'contratos_total'      => (int)$contratos['total'],
             'contratos_activos'    => (int)$contratos['activos'],
             'contratos_suspendidos' => (int)$contratos['suspendidos'],

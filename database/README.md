@@ -16,6 +16,11 @@ disco y backend PHP, todo junto).
   clientes, contratos, beneficiarios, planes, vendedores y comisiones, cuotas
   por cobrar, pagos, tasas de cambio y lotes de importación. Incluye los
   catálogos reales de SIEMPRE (18 parentescos y los 9 planes vigentes).
+- **`05_prevision_v2.sql`** — **Previsión, Ronda 2**: sucursales, servicios
+  adicionales (bóveda, cremación, traslados), cobradores y rutas de cobranza,
+  **siniestros/reclamos** con validación de cobertura (equivale a
+  `cm_siniestros` de SIEMPRE), gestiones de mora y configuración del
+  **auto-lapsado**. Requiere `04_prevision.sql` importado previamente.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -73,9 +78,10 @@ disco y backend PHP, todo junto).
 1. cPanel → **phpMyAdmin** → selecciona la base recién creada (panel izquierdo).
 2. Pestaña **Importar** → **Seleccionar archivo** → `database/01_schema.sql` → **Continuar**.
 3. Verifica que aparezcan las **7 tablas**.
-4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql` y
-   `04_prevision.sql` (módulo de Previsión). El `04` requiere que `users`
-   (del `01`) ya exista.
+4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
+   `04_prevision.sql` y `05_prevision_v2.sql` (módulo de Previsión, en ese
+   orden). El `04` requiere que `users` (del `01`) ya exista; el `05`
+   requiere el `04`.
 
 ### 3. Iniciar sesión y asegurar el admin
 

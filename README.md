@@ -70,6 +70,9 @@ Propuesta Funerzul/
 │   prevision_vendedores.php  Previsión: vendedores y comisiones
 │   prevision_contratos.php   Previsión: contratos, beneficiarios, cuotas y pagos
 │   prevision_import.php      Previsión: importación CSV desde otros sistemas
+│   prevision_siniestros.php  Previsión: siniestros/reclamos con validación de cobertura
+│   prevision_cobranza.php    Previsión: morosos, gestiones, auto-lapsado, hoja de cobro
+│   prevision_catalogos.php   Previsión: sucursales, servicios, cobradores y rutas
 │   diag.php               Diagnóstico de instalación (protegido)
 │   cron/purge_photos.php  Rutina de purga de fotos
 │   lib/                   Núcleo (BD, auth, helpers, render, previsión)
@@ -279,9 +282,10 @@ base de datos del sistema administrativo **SIEMPRE** (`database/SIEMPRE.sql`).
 Lo usa todo el personal (editor y admin); las eliminaciones definitivas y las
 reversiones de pagos son solo del admin.
 
-**Para activarlo**: importe `database/04_prevision.sql` en phpMyAdmin (crea las
-11 tablas `prev_*` con los catálogos de SIEMPRE: 18 parentescos y los 9 planes
-vigentes — Tradición, Esencial, Vanguardia, etc.).
+**Para activarlo**: importe `database/04_prevision.sql` y luego
+`database/05_prevision_v2.sql` en phpMyAdmin (crean las tablas `prev_*` con los
+catálogos de SIEMPRE: 18 parentescos y los 9 planes vigentes — Tradición,
+Esencial, Vanguardia, etc. — más sucursales, servicios, siniestros y cobranza).
 
 Al entrar se ven los indicadores del módulo: **contratos activos**, **clientes**,
 **cuotas vencidas** (con su monto), **cobrado en el mes** y la **tasa del día**
@@ -313,6 +317,24 @@ Al entrar se ven los indicadores del módulo: **contratos activos**, **clientes*
   **Mes 13**) con un monto sugerido; se registra el pago en USD y/o Bs con su
   tasa. Vistas de pagadas e historial y resumen por vendedor. Una etapa no puede
   pagarse dos veces para el mismo contrato.
+- **Siniestros** — el corazón del servicio: al fallecer un titular o
+  beneficiario se registra el siniestro en dos pasos (contrato + quién
+  falleció) y el sistema **valida la cobertura automáticamente** (contrato
+  activo, plazo de espera cumplido, beneficiario vigente y solvencia),
+  dejando constancia de los chequeos en el expediente. Luego se liquida por
+  partidas (servicio funerario, pagos, reintegros, proveedores) y se cierra:
+  si el fallecido es el titular, el contrato pasa a **finalizado** y se
+  anulan las cuotas pendientes. Estados: abierto → liquidado → cerrado, o
+  rechazado con motivo.
+- **Cobranza** — vista de **morosos** (cuotas vencidas, días de mora, última
+  gestión) con acciones de cobro y gestión; **bitácora de gestiones**
+  (llamada/visita/WhatsApp, con promesas de pago); **auto-lapsado**
+  configurable (suspende contratos con ≥ N cuotas vencidas, con vista previa,
+  ejecución manual y cron diario `api/cron/prevision_lapsar.php`); y **hoja de
+  cobro imprimible** por ruta para el cobrador.
+- **Catálogos** — sucursales, **servicios adicionales** (bóveda, cremación,
+  traslados; recurrentes o de cargo único, contratables por contrato),
+  cobradores y **rutas de cobranza** (zona, día de cobro, cobrador asignado).
 - **Importar** — migración desde otros sistemas por **CSV** (clientes,
   vendedores, contratos, beneficiarios y pagos históricos). Detecta el separador,
   acepta alias de encabezados y fechas DD/MM/AAAA, actualiza por cédula/número
@@ -348,7 +370,8 @@ Resumen (guías detalladas en `database/README.md` y `api/README.md`):
    [`database/01_schema.sql`](database/01_schema.sql) y, para el Directorio Médico y
    los Recursos, [`database/02_directorio_recursos.sql`](database/02_directorio_recursos.sql), con phpMyAdmin.
    Para el **módulo de Previsión**, importar además
-   [`database/04_prevision.sql`](database/04_prevision.sql).
+   [`database/04_prevision.sql`](database/04_prevision.sql) y
+   [`database/05_prevision_v2.sql`](database/05_prevision_v2.sql).
 2. **Backend**: copiar `api/config.example.php` → `api/config.php` y poner las
    credenciales de MySQL y un `cron_secret` aleatorio.
 3. **Extensiones PHP** (cPanel → *Select PHP Version → Extensions*): activar

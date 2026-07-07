@@ -30,6 +30,13 @@ function vendedor_input(array $b): array
     if ($nombre === '') json_out(['ok' => false, 'error' => 'El nombre del vendedor es obligatorio.'], 422);
     $pct = fn($v) => max(0.0, min(100.0, round((float)$v, 2)));
 
+    $sucursalId = (int)($b['sucursal_id'] ?? 0) ?: null;
+    if ($sucursalId) {
+        $st = db()->prepare("SELECT id FROM prev_sucursales WHERE id = ?");
+        $st->execute([$sucursalId]);
+        if (!$st->fetchColumn()) json_out(['ok' => false, 'error' => 'Sucursal no encontrada.'], 422);
+    }
+
     return [
         'cedula'           => prev_cedula($b['cedula'] ?? '') ?: null,
         'nombre'           => $nombre,
@@ -37,6 +44,7 @@ function vendedor_input(array $b): array
         'telefono2'        => clean_str($b['telefono2'] ?? '', 20) ?: null,
         'email'            => clean_str($b['email'] ?? '', 190) ?: null,
         'direccion'        => clean_str($b['direccion'] ?? '', 255) ?: null,
+        'sucursal_id'      => $sucursalId,
         'fecha_ingreso'    => prev_date($b['fecha_ingreso'] ?? ''),
         'fecha_retiro'     => prev_date($b['fecha_retiro'] ?? ''),
         'comision_semanal' => $pct($b['comision_semanal'] ?? 0),
@@ -78,8 +86,11 @@ switch ($action) {
             array_push($params, "%$q%", "%$q%");
         }
         $st = db()->prepare(
-            "SELECT v.*, (SELECT COUNT(*) FROM prev_contratos c WHERE c.vendedor_id = v.id) AS contratos
-             FROM prev_vendedores v WHERE $where ORDER BY v.activo DESC, v.nombre ASC"
+            "SELECT v.*, su.nombre AS sucursal_nombre,
+                    (SELECT COUNT(*) FROM prev_contratos c WHERE c.vendedor_id = v.id) AS contratos
+             FROM prev_vendedores v
+             LEFT JOIN prev_sucursales su ON su.id = v.sucursal_id
+             WHERE $where ORDER BY v.activo DESC, v.nombre ASC"
         );
         $st->execute($params);
         json_out(['ok' => true, 'items' => array_map('prev_vendedor_out', $st->fetchAll())]);
@@ -89,7 +100,10 @@ switch ($action) {
         require_method('GET');
         require_role('admin', 'editor');
         $id = (int)($_GET['id'] ?? 0);
-        $st = db()->prepare("SELECT * FROM prev_vendedores WHERE id = ?");
+        $st = db()->prepare(
+            "SELECT v.*, su.nombre AS sucursal_nombre FROM prev_vendedores v
+             LEFT JOIN prev_sucursales su ON su.id = v.sucursal_id WHERE v.id = ?"
+        );
         $st->execute([$id]);
         $r = $st->fetch();
         if (!$r) json_out(['ok' => false, 'error' => 'Vendedor no encontrado.'], 404);
@@ -130,14 +144,14 @@ switch ($action) {
         }
         $st = db()->prepare(
             "INSERT INTO prev_vendedores
-             (cedula, nombre, telefono1, telefono2, email, direccion, fecha_ingreso, fecha_retiro,
-              comision_semanal, comision_mensual, comision_anual,
+             (cedula, nombre, telefono1, telefono2, email, direccion, sucursal_id,
+              fecha_ingreso, fecha_retiro, comision_semanal, comision_mensual, comision_anual,
               banco, numero_cuenta, titular_cuenta, cedula_cuenta, notas, activo)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
         );
         $st->execute([
             $in['cedula'], $in['nombre'], $in['telefono1'], $in['telefono2'], $in['email'],
-            $in['direccion'], $in['fecha_ingreso'], $in['fecha_retiro'],
+            $in['direccion'], $in['sucursal_id'], $in['fecha_ingreso'], $in['fecha_retiro'],
             $in['comision_semanal'], $in['comision_mensual'], $in['comision_anual'],
             $in['banco'], $in['numero_cuenta'], $in['titular_cuenta'], $in['cedula_cuenta'],
             $in['notas'], $in['activo'],
@@ -162,14 +176,14 @@ switch ($action) {
         }
         $st = db()->prepare(
             "UPDATE prev_vendedores SET
-               cedula=?, nombre=?, telefono1=?, telefono2=?, email=?, direccion=?,
+               cedula=?, nombre=?, telefono1=?, telefono2=?, email=?, direccion=?, sucursal_id=?,
                fecha_ingreso=?, fecha_retiro=?, comision_semanal=?, comision_mensual=?, comision_anual=?,
                banco=?, numero_cuenta=?, titular_cuenta=?, cedula_cuenta=?, notas=?, activo=?
              WHERE id=?"
         );
         $st->execute([
             $in['cedula'], $in['nombre'], $in['telefono1'], $in['telefono2'], $in['email'],
-            $in['direccion'], $in['fecha_ingreso'], $in['fecha_retiro'],
+            $in['direccion'], $in['sucursal_id'], $in['fecha_ingreso'], $in['fecha_retiro'],
             $in['comision_semanal'], $in['comision_mensual'], $in['comision_anual'],
             $in['banco'], $in['numero_cuenta'], $in['titular_cuenta'], $in['cedula_cuenta'],
             $in['notas'], $in['activo'], $id,

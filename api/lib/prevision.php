@@ -11,10 +11,14 @@ const PREV_FRECUENCIAS         = ['semanal', 'quincenal', 'mensual', 'trimestral
 const PREV_FORMAS_PAGO_CONTRATO = ['caja', 'domiciliacion', 'transferencia', 'pago_movil', 'cobrador', 'otro'];
 const PREV_FORMAS_PAGO_PAGO    = ['efectivo', 'transferencia', 'pago_movil', 'punto', 'zelle', 'divisa', 'otro'];
 const PREV_TIPOS_CUENTA        = ['corriente', 'ahorro', 'otra'];
-const PREV_ESTATUS_CONTRATO    = ['activo', 'suspendido', 'anulado', 'renuncia'];
+const PREV_ESTATUS_CONTRATO    = ['activo', 'suspendido', 'anulado', 'renuncia', 'finalizado'];
 const PREV_ESTATUS_BENEFICIARIO = ['activo', 'suspendido', 'excluido', 'fallecido'];
 const PREV_TIPOS_CUOTA         = ['inicial', 'programada', 'especial', 'mora', 'final'];
 const PREV_ETAPAS_COMISION     = ['semana1', 'fin_mes1', 'mes2', 'mes13'];
+const PREV_ESTADOS_SINIESTRO   = ['abierto', 'liquidado', 'cerrado', 'rechazado'];
+const PREV_TIPOS_SIN_DETALLE   = ['servicio', 'pago', 'reintegro', 'otro'];
+const PREV_TIPOS_GESTION       = ['llamada', 'visita', 'whatsapp', 'sms', 'email', 'otro'];
+const PREV_RESULTADOS_GESTION  = ['contactado', 'no_contactado', 'promesa_pago', 'reclamo', 'otro'];
 
 /** Valor dentro de una lista permitida, o $default. */
 function prev_enum($v, array $allowed, ?string $default = null): ?string
@@ -101,6 +105,138 @@ function prev_edad(?string $fechaNac, ?string $al = null): ?int
 }
 
 // ---------------------------------------------------------------------------
+// Siniestros: validación de cobertura
+// ---------------------------------------------------------------------------
+
+/**
+ * Evalúa la cobertura de un siniestro para un beneficiario de un contrato.
+ * Devuelve ['cobertura' => cubierto|con_observaciones|sin_cobertura,
+ *           'checks' => [[check, ok, detalle], ...]]
+ */
+function prev_validar_cobertura(array $contrato, array $beneficiario, string $fechaDefuncion): array
+{
+    $checks = [];
+    $fatal = false;   // impide la cobertura
+    $obs   = false;   // cobertura con observaciones
+
+    // 1. Estatus del contrato
+    $estC = $contrato['estatus'];
+    if ($estC === 'activo') {
+        $checks[] = ['check' => 'Contrato activo', 'ok' => true, 'detalle' => 'El contrato está activo.'];
+    } elseif ($estC === 'suspendido') {
+        $obs = true;
+        $checks[] = ['check' => 'Contrato activo', 'ok' => false,
+                     'detalle' => 'El contrato está SUSPENDIDO; revisar antes de aprobar.'];
+    } else {
+        $fatal = true;
+        $checks[] = ['check' => 'Contrato activo', 'ok' => false,
+                     'detalle' => 'El contrato está ' . strtoupper($estC) . '; sin cobertura.'];
+    }
+
+    // 2. Estatus del beneficiario
+    $estB = $beneficiario['estatus'];
+    if ($estB === 'activo') {
+        $checks[] = ['check' => 'Beneficiario activo', 'ok' => true, 'detalle' => 'El beneficiario está activo en el contrato.'];
+    } elseif ($estB === 'suspendido') {
+        $obs = true;
+        $checks[] = ['check' => 'Beneficiario activo', 'ok' => false,
+                     'detalle' => 'El beneficiario está SUSPENDIDO; revisar antes de aprobar.'];
+    } else {
+        $fatal = true;
+        $checks[] = ['check' => 'Beneficiario activo', 'ok' => false,
+                     'detalle' => 'El beneficiario figura como ' . strtoupper($estB) . '; sin cobertura.'];
+    }
+
+    // 3. Plazo de espera cumplido (el del beneficiario si lo tiene; si no, el del contrato)
+    $vigencia = null;
+    if ($beneficiario['plazo_espera_meses'] !== null && $beneficiario['fecha_inclusion']) {
+        $vigencia = (new DateTime($beneficiario['fecha_inclusion']))
+            ->modify('+' . (int)$beneficiario['plazo_espera_meses'] . ' months')->format('Y-m-d');
+    } elseif (!empty($contrato['vigente_desde'])) {
+        $vigencia = $contrato['vigente_desde'];
+    }
+    if ($vigencia === null || $fechaDefuncion >= $vigencia) {
+        $checks[] = ['check' => 'Plazo de espera', 'ok' => true,
+                     'detalle' => $vigencia ? "Cobertura vigente desde $vigencia." : 'Sin plazo de espera registrado.'];
+    } else {
+        $fatal = true;
+        $checks[] = ['check' => 'Plazo de espera', 'ok' => false,
+                     'detalle' => "La cobertura inicia el $vigencia y la defunción fue el $fechaDefuncion; plazo de espera NO cumplido."];
+    }
+
+    // 4. Morosidad del contrato
+    $st = db()->prepare(
+        "SELECT COUNT(*) AS n, COALESCE(SUM(saldo),0) AS monto FROM prev_cuotas
+         WHERE contrato_id = ? AND estado IN ('pendiente','parcial') AND fecha_vencimiento < CURDATE()"
+    );
+    $st->execute([(int)$contrato['id']]);
+    $mora = $st->fetch();
+    if ((int)$mora['n'] === 0) {
+        $checks[] = ['check' => 'Solvencia', 'ok' => true, 'detalle' => 'El contrato no tiene cuotas vencidas.'];
+    } else {
+        $obs = true;
+        $checks[] = ['check' => 'Solvencia', 'ok' => false,
+                     'detalle' => "Tiene {$mora['n']} cuota(s) vencida(s) por " .
+                                  number_format((float)$mora['monto'], 2, ',', '.') . ' ' . $contrato['moneda'] . '.'];
+    }
+
+    $cobertura = $fatal ? 'sin_cobertura' : ($obs ? 'con_observaciones' : 'cubierto');
+    return ['cobertura' => $cobertura, 'checks' => $checks];
+}
+
+// ---------------------------------------------------------------------------
+// Cobranza: auto-lapsado (suspensión automática por cuotas vencidas)
+// ---------------------------------------------------------------------------
+
+/**
+ * Contratos activos con >= $minCuotas cuotas vencidas. Si $dryRun es false,
+ * los suspende (estatus 'suspendido' + motivo) y audita. Devuelve la lista.
+ */
+function prev_lapsar(int $minCuotas, bool $dryRun = true): array
+{
+    $minCuotas = max(1, $minCuotas);
+    $st = db()->prepare(
+        "SELECT c.id, c.numero, c.moneda, CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente_nombre,
+                COUNT(q.id) AS cuotas_vencidas, COALESCE(SUM(q.saldo),0) AS saldo_vencido,
+                MIN(q.fecha_vencimiento) AS vencida_desde
+         FROM prev_contratos c
+         JOIN prev_clientes cl ON cl.id = c.cliente_id
+         JOIN prev_cuotas q ON q.contrato_id = c.id
+              AND q.estado IN ('pendiente','parcial') AND q.fecha_vencimiento < CURDATE()
+         WHERE c.estatus = 'activo'
+         GROUP BY c.id, c.numero, c.moneda, cliente_nombre
+         HAVING COUNT(q.id) >= ?
+         ORDER BY cuotas_vencidas DESC, saldo_vencido DESC"
+    );
+    $st->execute([$minCuotas]);
+    $afectados = $st->fetchAll();
+
+    if (!$dryRun && $afectados) {
+        $upd = db()->prepare(
+            "UPDATE prev_contratos SET estatus = 'suspendido', fecha_estatus = CURDATE(),
+                    motivo_estatus = ? WHERE id = ? AND estatus = 'activo'"
+        );
+        foreach ($afectados as $c) {
+            $motivo = "Suspensión automática: {$c['cuotas_vencidas']} cuotas vencidas";
+            $upd->execute([$motivo, (int)$c['id']]);
+            audit('prev_contrato.auto_lapse', 'prev_contratos', (int)$c['id'],
+                  ['numero' => $c['numero'], 'cuotas_vencidas' => (int)$c['cuotas_vencidas'],
+                   'saldo_vencido' => (float)$c['saldo_vencido']]);
+        }
+    }
+
+    return array_map(fn($c) => [
+        'contrato_id'     => (int)$c['id'],
+        'numero'          => $c['numero'],
+        'cliente_nombre'  => $c['cliente_nombre'],
+        'moneda'          => $c['moneda'],
+        'cuotas_vencidas' => (int)$c['cuotas_vencidas'],
+        'saldo_vencido'   => (float)$c['saldo_vencido'],
+        'vencida_desde'   => $c['vencida_desde'],
+    ], $afectados);
+}
+
+// ---------------------------------------------------------------------------
 // Formateadores de salida (compartidos entre endpoints)
 // ---------------------------------------------------------------------------
 
@@ -170,6 +306,8 @@ function prev_vendedor_out(array $r): array
         'telefono2'        => $r['telefono2'],
         'email'            => $r['email'],
         'direccion'        => $r['direccion'],
+        'sucursal_id'      => isset($r['sucursal_id']) && $r['sucursal_id'] !== null ? (int)$r['sucursal_id'] : null,
+        'sucursal_nombre'  => $r['sucursal_nombre'] ?? null,
         'fecha_ingreso'    => $r['fecha_ingreso'],
         'fecha_retiro'     => $r['fecha_retiro'],
         'comision_semanal' => (float)$r['comision_semanal'],
@@ -197,6 +335,10 @@ function prev_contrato_out(array $r): array
         'plan_nombre'        => $r['plan_nombre'] ?? null,
         'vendedor_id'        => $r['vendedor_id'] !== null ? (int)$r['vendedor_id'] : null,
         'vendedor_nombre'    => $r['vendedor_nombre'] ?? null,
+        'sucursal_id'        => isset($r['sucursal_id']) && $r['sucursal_id'] !== null ? (int)$r['sucursal_id'] : null,
+        'sucursal_nombre'    => $r['sucursal_nombre'] ?? null,
+        'ruta_id'            => isset($r['ruta_id']) && $r['ruta_id'] !== null ? (int)$r['ruta_id'] : null,
+        'ruta_nombre'        => $r['ruta_nombre'] ?? null,
         'origen'             => $r['origen'],
         'fecha_solicitud'    => $r['fecha_solicitud'],
         'fecha_ingreso'      => $r['fecha_ingreso'],
@@ -290,6 +432,80 @@ function prev_pago_out(array $r): array
         'banco'         => $r['banco'],
         'observaciones' => $r['observaciones'],
         'created_at'    => $r['created_at'] ?? null,
+    ];
+}
+
+function prev_siniestro_out(array $r): array
+{
+    return [
+        'id'               => (int)$r['id'],
+        'contrato_id'      => (int)$r['contrato_id'],
+        'contrato_numero'  => $r['contrato_numero'] ?? null,
+        'beneficiario_id'  => (int)$r['beneficiario_id'],
+        'cedula_fallecido' => $r['cedula_fallecido'],
+        'nombre_fallecido' => $r['nombre_fallecido'],
+        'es_titular'       => (bool)$r['es_titular'],
+        'parentesco'       => $r['parentesco'] ?? null,
+        'fecha_defuncion'  => $r['fecha_defuncion'],
+        'fecha_reporte'    => $r['fecha_reporte'],
+        'reportado_por'    => $r['reportado_por'],
+        'telefono_reporta' => $r['telefono_reporta'],
+        'cobertura'        => $r['cobertura'],
+        'validacion'       => $r['validacion'] ? json_decode($r['validacion'], true) : [],
+        'estado'           => $r['estado'],
+        'motivo_rechazo'   => $r['motivo_rechazo'],
+        'moneda'           => $r['moneda'],
+        'monto_total'      => (float)$r['monto_total'],
+        'observaciones'    => $r['observaciones'],
+        'cliente_nombre'   => $r['cliente_nombre'] ?? null,
+        'plan_nombre'      => $r['plan_nombre'] ?? null,
+        'created_at'       => $r['created_at'] ?? null,
+    ];
+}
+
+function prev_sin_detalle_out(array $r): array
+{
+    return [
+        'id'           => (int)$r['id'],
+        'siniestro_id' => (int)$r['siniestro_id'],
+        'tipo'         => $r['tipo'],
+        'descripcion'  => $r['descripcion'],
+        'proveedor'    => $r['proveedor'],
+        'moneda'       => $r['moneda'],
+        'monto'        => (float)$r['monto'],
+        'pagado'       => (bool)$r['pagado'],
+        'fecha_pago'   => $r['fecha_pago'],
+        'notas'        => $r['notas'],
+    ];
+}
+
+function prev_gestion_out(array $r): array
+{
+    return [
+        'id'              => (int)$r['id'],
+        'contrato_id'     => (int)$r['contrato_id'],
+        'contrato_numero' => $r['contrato_numero'] ?? null,
+        'cliente_nombre'  => $r['cliente_nombre'] ?? null,
+        'fecha'           => $r['fecha'],
+        'tipo'            => $r['tipo'],
+        'resultado'       => $r['resultado'],
+        'promesa_fecha'   => $r['promesa_fecha'],
+        'promesa_monto'   => $r['promesa_monto'] !== null ? (float)$r['promesa_monto'] : null,
+        'notas'           => $r['notas'],
+        'usuario'         => $r['usuario'] ?? null,
+    ];
+}
+
+function prev_servicio_out(array $r): array
+{
+    return [
+        'id'          => (int)$r['id'],
+        'nombre'      => $r['nombre'],
+        'descripcion' => $r['descripcion'],
+        'moneda'      => $r['moneda'],
+        'precio'      => (float)$r['precio'],
+        'recurrente'  => (bool)$r['recurrente'],
+        'activo'      => (bool)$r['activo'],
     ];
 }
 

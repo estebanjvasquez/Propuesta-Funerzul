@@ -93,6 +93,10 @@ las eliminaciones definitivas requieren **admin**.
 | `prevision_contratos.php?action=pagos\|pago_registrar\|pago_delete` | GET/POST | Pagos; se aplican en cascada a las cuotas más antiguas, con conversión Bs/USD por tasa del día. |
 | `prevision_contratos.php?action=stats\|tasa\|tasa_set` | GET/POST | Indicadores del tablero y tasa de cambio diaria. |
 | `prevision_import.php?action=plantilla\|lotes\|importar` | GET/POST | Importación CSV desde otros sistemas (clientes, vendedores, contratos, beneficiarios, pagos) con modo simulación. |
+| `prevision_siniestros.php?action=list\|preparar\|create\|get\|detalle_add\|detalle_pagado\|detalle_delete\|set_estado\|delete` | GET/POST | Siniestros/reclamos con validación automática de cobertura (estatus, plazo de espera, solvencia) y liquidación por partidas. Requiere `05_prevision_v2.sql`. |
+| `prevision_cobranza.php?action=morosos\|gestiones\|gestion_add\|gestion_delete\|lapsado_config\|lapsado_config_set\|lapsado_preview\|lapsado_ejecutar\|hoja_cobro` | GET/POST | Morosidad, bitácora de gestiones/promesas de pago, auto-lapsado configurable y hoja de cobro por ruta. |
+| `prevision_catalogos.php?action=all\|sucursales\|servicios\|cobradores\|rutas\|*_save\|*_toggle\|*_delete\|contrato_servicio_*` | GET/POST | Catálogos del módulo (sucursales, servicios adicionales, cobradores, rutas) y servicios contratados por contrato. |
+| `cron/prevision_lapsar.php` | CLI/URL+token | Cron diario: suspende contratos activos con ≥ N cuotas vencidas (`prev_lapse_enabled` / `prev_lapse_cuotas`). |
 
 ## Seguridad
 
