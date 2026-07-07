@@ -15,19 +15,19 @@ SET NAMES utf8mb4;
 --    cada contrato/plan/cuota tocado, lo que permite revertirla por completo.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS prev_ajustes (
-    id              INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     descripcion     VARCHAR(255) NOT NULL,
     tipo            ENUM('porcentaje','monto') NOT NULL DEFAULT 'porcentaje',
     valor           DECIMAL(12,4) NOT NULL,               -- % (p.ej. 10 = +10%) o monto delta; admite negativos
     redondeo        ENUM('centimos','entero') NOT NULL DEFAULT 'centimos',
-    plan_id         INT UNSIGNED NULL,                    -- NULL = todos los planes
+    plan_id         BIGINT UNSIGNED NULL,                 -- NULL = todos los planes
     moneda          ENUM('BS','USD') NULL,                -- NULL = ambas monedas
     aplicar_planes  TINYINT(1) NOT NULL DEFAULT 0,        -- actualizar cuota_mensual del plan
     aplicar_cuotas  TINYINT(1) NOT NULL DEFAULT 0,        -- actualizar cuotas pendientes futuras
     afectados       INT UNSIGNED NOT NULL DEFAULT 0,
     estado          ENUM('aplicado','revertido') NOT NULL DEFAULT 'aplicado',
-    usuario_id      INT UNSIGNED NULL,
-    revertido_por   INT UNSIGNED NULL,
+    usuario_id      BIGINT UNSIGNED NULL,
+    revertido_por   BIGINT UNSIGNED NULL,
     revertido_en    DATETIME NULL,
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -38,10 +38,10 @@ CREATE TABLE IF NOT EXISTS prev_ajustes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS prev_ajuste_detalles (
-    id             INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    ajuste_id      INT UNSIGNED NOT NULL,
+    id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    ajuste_id      BIGINT UNSIGNED NOT NULL,
     objeto         ENUM('contrato','plan','cuota') NOT NULL,
-    objeto_id      INT UNSIGNED NOT NULL,                 -- id del contrato/plan/cuota
+    objeto_id      BIGINT UNSIGNED NOT NULL,              -- id del contrato/plan/cuota
     valor_anterior DECIMAL(12,2) NOT NULL,
     valor_nuevo    DECIMAL(12,2) NOT NULL,
     PRIMARY KEY (id),
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS prev_ajuste_detalles (
 --    configura por canal en app_settings (manual, whatsapp_cloud, twilio, http).
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS prev_msg_plantillas (
-    id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     clave      VARCHAR(40)  NOT NULL,
     nombre     VARCHAR(120) NOT NULL,
     canal      ENUM('whatsapp','sms') NOT NULL DEFAULT 'whatsapp',
@@ -69,18 +69,18 @@ CREATE TABLE IF NOT EXISTS prev_msg_plantillas (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS prev_msg_envios (
-    id           INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    contrato_id  INT UNSIGNED NULL,
-    cliente_id   INT UNSIGNED NULL,
+    id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    contrato_id  BIGINT UNSIGNED NULL,
+    cliente_id   BIGINT UNSIGNED NULL,
     canal        ENUM('whatsapp','sms') NOT NULL,
     destinatario VARCHAR(30) NOT NULL,                    -- teléfono normalizado (58412...)
-    plantilla_id INT UNSIGNED NULL,
+    plantilla_id BIGINT UNSIGNED NULL,
     cuerpo       TEXT NOT NULL,                           -- mensaje ya renderizado
     estado       ENUM('enviado','fallido','manual') NOT NULL DEFAULT 'manual',
     proveedor    VARCHAR(30) NOT NULL DEFAULT 'manual',
     respuesta    TEXT NULL,                               -- respuesta cruda del proveedor (JSON)
     error        VARCHAR(255) NULL,
-    usuario_id   INT UNSIGNED NULL,
+    usuario_id   BIGINT UNSIGNED NULL,
     created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_msg_contrato (contrato_id),
