@@ -16,7 +16,11 @@ const Prevision = {
     sin: { q: '', estado: '', offset: 0, limit: 25, total: 0 },
     comVista: 'pendientes',
     cobVista: 'morosos',
+    repVista: 'aging',
+    msgVista: 'enviar',
+    env: { offset: 0, limit: 25, total: 0 },
     cat: { sucursales: [], servicios: [], cobradores: [], rutas: [] },
+    msgPlantillas: [],
 
     async open() {
         if (!this.wired) { this.wire(); this.wired = true; }
@@ -60,6 +64,21 @@ const Prevision = {
             this.cobVista = btn.dataset.vista;
             pvLoadCobranza();
         }));
+        // Reportes
+        $all('#pvRepFilters .filter-btn').forEach(btn => btn.addEventListener('click', () => {
+            $all('#pvRepFilters .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.repVista = btn.dataset.vista;
+            pvLoadReportes();
+        }));
+        // Mensajes
+        $all('#pvMsgFilters .filter-btn').forEach(btn => btn.addEventListener('click', () => {
+            $all('#pvMsgFilters .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.msgVista = btn.dataset.vista;
+            this.env.offset = 0;
+            pvLoadMensajes();
+        }));
         // Planes / Vendedores
         $('#pvNewPlanBtn').addEventListener('click', () => pvFormPlan());
         let t3; $('#pvVenSearch').addEventListener('input', () => {
@@ -93,6 +112,9 @@ const Prevision = {
         if (this.sub === 'planes') pvLoadPlanes();
         if (this.sub === 'vendedores') pvLoadVendedores();
         if (this.sub === 'comisiones') pvLoadComisiones();
+        if (this.sub === 'reportes') pvLoadReportes();
+        if (this.sub === 'mensajes') pvLoadMensajes();
+        if (this.sub === 'ajustes') pvLoadAjustes();
         if (this.sub === 'catalogos') pvLoadCatalogosTab();
         if (this.sub === 'importar') pvLoadImportacion();
     },
@@ -493,6 +515,7 @@ async function pvVerContrato(id) {
                     <button class="btn btn-outline btn-sm" onclick="pvPagarComisionForm(${c.id}, '', ${c.vendedor_id || 0}, 0)">Pagar comisión</button>
                     <button class="btn btn-outline btn-sm" onclick="pvContratoServicioAdd(${c.id})">+ Servicio</button>
                     <button class="btn btn-outline btn-sm" onclick="pvGestionForm(${c.id}, true)">+ Gestión</button>
+                    <button class="btn btn-outline btn-sm" onclick="pvMsgEnviarForm(${c.id})">Mensaje</button>
                     <button class="btn btn-outline btn-sm" onclick="pvNuevoSiniestro('${escapeHtml(c.numero)}')">Registrar siniestro</button>
                     <button class="btn btn-outline btn-sm" onclick="pvEditContrato(${c.id})">Editar</button>
                     <button class="btn btn-outline btn-sm" onclick="pvEstatusContrato(${c.id}, '${c.estatus}')">Cambiar estatus</button>
@@ -1699,6 +1722,7 @@ async function pvLoadCobranza() {
                             <td>${m.ultima_gestion ? fmtDate(m.ultima_gestion) : '<span class="row-sub">nunca</span>'}</td>
                             <td><div class="admin-actions">
                                 <button class="btn btn-outline btn-sm" onclick="pvGestionForm(${m.contrato_id}, false)">Gestión</button>
+                                <button class="btn btn-outline btn-sm" onclick="pvMsgEnviarForm(${m.contrato_id})">Mensaje</button>
                                 <button class="btn btn-outline btn-sm" onclick="pvRegistrarPago(${m.contrato_id}, 0)">Cobrar</button>
                             </div></td>
                         </tr>`).join('') || `<tr><td colspan="8" class="empty-row">No hay contratos con cuotas vencidas. 🎉</td></tr>`}
@@ -2137,6 +2161,624 @@ async function pvCatDelete(tipo, id) {
     try {
         await API.req('prevision_catalogos.php?action=' + PV_CAT[tipo].accionDelete, { method: 'POST', json: { id } });
         toast('Eliminado.'); pvLoadCatalogosTab(); Prevision.loadCatalogos(true);
+    } catch (e) { toast(e.message); }
+}
+
+// ==========================================================================
+//  REPORTES (aging CxC, producción, cobranza, cartera)
+// ==========================================================================
+function pvRepPeriodoHtml() {
+    const inicioMes = pvHoy().slice(0, 8) + '01';
+    return `
+        <div class="admin-toolbar prev-inline">
+            <div class="form-group"><label class="form-label">Desde</label>
+                <input type="date" id="pvRepDesde" class="form-control prev-select" value="${inicioMes}"></div>
+            <div class="form-group"><label class="form-label">Hasta</label>
+                <input type="date" id="pvRepHasta" class="form-control prev-select" value="${pvHoy()}"></div>
+            <button class="btn btn-primary" onclick="pvRepCargar()">Generar</button>
+        </div>`;
+}
+
+function pvRepCsvLink(params) {
+    return `<div class="setting-actions"><button class="btn btn-outline btn-sm"
+        onclick="window.open('api/prevision_reportes.php?${params}&formato=csv', '_blank')">⬇ Descargar CSV</button></div>`;
+}
+
+async function pvLoadReportes() {
+    const cont = $('#pvRepContent');
+    const v = Prevision.repVista;
+    cont.innerHTML = (v === 'produccion' || v === 'cobranza') ? pvRepPeriodoHtml() + '<div id="pvRepResult"></div>'
+                                                              : '<div id="pvRepResult"></div>';
+    pvRepCargar();
+}
+
+async function pvRepCargar() {
+    const v = Prevision.repVista;
+    const res = $('#pvRepResult');
+    const desde = $('#pvRepDesde') ? $('#pvRepDesde').value : '';
+    const hasta = $('#pvRepHasta') ? $('#pvRepHasta').value : '';
+    const periodo = desde ? `&desde=${desde}&hasta=${hasta}` : '';
+    try {
+        if (v === 'aging') {
+            const r = await API.req('prevision_reportes.php?action=aging');
+            const tot = Object.entries(r.totales || {});
+            res.innerHTML = `
+                ${pvRepCsvLink('action=aging')}
+                <div class="table-responsive"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Contrato</th><th>Cliente</th><th>Plan</th><th>Al día</th><th>1-30</th><th>31-60</th><th>61-90</th><th>+90</th><th>Total</th></tr></thead>
+                    <tbody>
+                    ${r.items.map(i => `
+                        <tr class="${i.d90_mas > 0 ? 'prev-row-vencida' : ''}">
+                            <td><a href="#" onclick="pvVerContrato(${i.contrato_id});return false;">${escapeHtml(i.numero)}</a> ${pvBadge(i.estatus)}</td>
+                            <td>${escapeHtml(i.cliente_nombre)}</td>
+                            <td class="row-sub">${escapeHtml(i.plan_nombre || '—')}</td>
+                            <td>${i.al_dia ? pvMoney(i.al_dia, i.moneda) : '—'}</td>
+                            <td>${i.d1_30 ? pvMoney(i.d1_30, i.moneda) : '—'}</td>
+                            <td>${i.d31_60 ? pvMoney(i.d31_60, i.moneda) : '—'}</td>
+                            <td>${i.d61_90 ? pvMoney(i.d61_90, i.moneda) : '—'}</td>
+                            <td>${i.d90_mas ? pvMoney(i.d90_mas, i.moneda) : '—'}</td>
+                            <td><strong>${pvMoney(i.total, i.moneda)}</strong></td>
+                        </tr>`).join('') || '<tr><td colspan="9" class="empty-row">No hay saldos por cobrar. 🎉</td></tr>'}
+                    ${tot.map(([m, t]) => `
+                        <tr>
+                            <td colspan="3"><strong>TOTAL ${m}</strong></td>
+                            <td><strong>${pvMoney(t.al_dia, m)}</strong></td>
+                            <td><strong>${pvMoney(t.d1_30, m)}</strong></td>
+                            <td><strong>${pvMoney(t.d31_60, m)}</strong></td>
+                            <td><strong>${pvMoney(t.d61_90, m)}</strong></td>
+                            <td><strong>${pvMoney(t.d90_mas, m)}</strong></td>
+                            <td><strong>${pvMoney(t.total, m)}</strong></td>
+                        </tr>`).join('')}
+                    </tbody></table></div>`;
+        } else if (v === 'produccion') {
+            const r = await API.req('prevision_reportes.php?action=produccion' + periodo);
+            res.innerHTML = `
+                ${pvRepCsvLink('action=produccion' + periodo)}
+                <div class="table-responsive"><table class="admin-table">
+                    <thead><tr><th>Vendedor</th><th>Contratos</th><th>Activos</th><th>Iniciales USD</th><th>Iniciales Bs</th><th>Cuotas USD</th><th>Cuotas Bs</th></tr></thead>
+                    <tbody>${r.items.map(i => `
+                        <tr>
+                            <td><strong>${escapeHtml(i.vendedor_nombre)}</strong></td>
+                            <td>${i.contratos}</td><td>${i.activos}</td>
+                            <td>${pvMoney(i.iniciales_usd, 'USD')}</td><td>${pvMoney(i.iniciales_bs, 'BS')}</td>
+                            <td>${pvMoney(i.cuotas_usd, 'USD')}</td><td>${pvMoney(i.cuotas_bs, 'BS')}</td>
+                        </tr>`).join('') || '<tr><td colspan="7" class="empty-row">Sin contratos en el período.</td></tr>'}
+                    </tbody></table></div>`;
+        } else if (v === 'cobranza') {
+            const r = await API.req('prevision_reportes.php?action=cobranza' + periodo);
+            res.innerHTML = `
+                ${pvRepCsvLink('action=cobranza' + periodo)}
+                <h3 class="prev-h4">Por forma de pago</h3>
+                <div class="table-responsive"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Forma de pago</th><th>Abonos</th><th>Total USD</th><th>Total Bs</th></tr></thead>
+                    <tbody>${r.formas.map(f => `
+                        <tr><td>${escapeHtml(PV_FORMAS_PAGO[f.forma_pago] || f.forma_pago)}</td>
+                            <td>${f.operaciones}</td>
+                            <td>${pvMoney(f.total_usd, 'USD')}</td><td>${pvMoney(f.total_bs, 'BS')}</td></tr>`).join('')
+                        || '<tr><td colspan="4" class="empty-row">Sin pagos en el período.</td></tr>'}
+                    </tbody></table></div>
+                <h3 class="prev-h4">Por día</h3>
+                <div class="table-responsive prev-scroll"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Fecha</th><th>Total USD</th><th>Total Bs</th></tr></thead>
+                    <tbody>${r.dias.map(d => `
+                        <tr><td>${fmtDate(d.fecha)}</td>
+                            <td>${pvMoney(d.total_usd, 'USD')}</td><td>${pvMoney(d.total_bs, 'BS')}</td></tr>`).join('')
+                        || '<tr><td colspan="3" class="empty-row">Sin pagos en el período.</td></tr>'}
+                    </tbody></table></div>`;
+        } else if (v === 'cartera') {
+            const r = await API.req('prevision_reportes.php?action=cartera');
+            res.innerHTML = `
+                ${pvRepCsvLink('action=cartera')}
+                <div class="table-responsive"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Plan</th><th>Total</th><th>Activos</th><th>Suspendidos</th><th>Anulados</th><th>Renuncias</th><th>Finalizados</th><th>Facturación (activos)</th></tr></thead>
+                    <tbody>${r.items.map(i => `
+                        <tr>
+                            <td><strong>${escapeHtml(i.plan_nombre)}</strong></td>
+                            <td>${i.total}</td><td>${i.activos}</td><td>${i.suspendidos}</td>
+                            <td>${i.anulados}</td><td>${i.renuncias}</td><td>${i.finalizados}</td>
+                            <td>${pvMoney(i.facturacion, i.moneda)}</td>
+                        </tr>`).join('') || '<tr><td colspan="8" class="empty-row">Sin contratos registrados.</td></tr>'}
+                    </tbody></table></div>`;
+        }
+    } catch (e) { res.innerHTML = ''; toast(e.message); }
+}
+
+// ==========================================================================
+//  MENSAJES (WhatsApp / SMS con proveedor configurable)
+// ==========================================================================
+const PV_MSG_CANAL = { whatsapp: 'WhatsApp', sms: 'SMS' };
+const PV_MSG_PROVEEDOR = {
+    manual: 'Manual (solo registrar / abrir WhatsApp Web)',
+    whatsapp_cloud: 'WhatsApp Cloud API (Meta)',
+    twilio: 'Twilio',
+    http: 'API HTTP genérica (gateway local)',
+};
+const PV_MSG_VARIABLES = '{{cliente}} {{contrato}} {{plan}} {{monto_cuota}} {{cuotas_vencidas}} {{saldo_vencido}} {{moneda}} {{empresa}} {{fecha}}';
+PV_ESTATUS_BADGE.enviado = 'badge-green';
+PV_ESTATUS_BADGE.fallido = 'badge-red';
+PV_ESTATUS_BADGE.manual = 'badge-blue';
+PV_ESTATUS_BADGE.aplicado = 'badge-green';
+PV_ESTATUS_BADGE.revertido = 'badge-gray';
+
+async function pvMsgPlantillas(force = false) {
+    if (Prevision.msgPlantillas.length && !force) return Prevision.msgPlantillas;
+    const r = await API.req('prevision_mensajes.php?action=plantillas');
+    Prevision.msgPlantillas = r.items;
+    return r.items;
+}
+
+function pvMsgPlantillaSelect(id, canal, valor) {
+    const items = Prevision.msgPlantillas.filter(p => p.activo && p.canal === canal);
+    return `<select id="${id}" class="form-control">
+        <option value="">— Texto libre —</option>
+        ${items.map(p => `<option value="${p.id}" ${String(valor) === String(p.id) ? 'selected' : ''}>${escapeHtml(p.nombre)}</option>`).join('')}
+    </select>`;
+}
+
+async function pvLoadMensajes() {
+    const cont = $('#pvMsgContent');
+    const v = Prevision.msgVista;
+    try {
+        if (v === 'enviar') {
+            await pvMsgPlantillas();
+            cont.innerHTML = `
+                <div class="admin-card settings-card">
+                    <h3 class="prev-h4">Envío masivo a morosos</h3>
+                    <p class="setting-help">Envía la plantilla seleccionada a todos los contratos con cuotas vencidas (máx. 300 por corrida). En modo <strong>manual</strong> los mensajes quedan registrados y se generan enlaces de WhatsApp para enviarlos uno a uno.</p>
+                    <div class="form-grid-2">
+                        <div class="form-group"><label class="form-label">Canal</label>
+                            ${pvSelect('pm_canal', PV_MSG_CANAL, 'whatsapp')}</div>
+                        <div class="form-group"><label class="form-label">Cuotas vencidas mínimas</label>
+                            <input type="number" min="1" max="24" id="pm_min" class="form-control" value="1"></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Plantilla *</label>
+                        <span id="pm_plantilla_wrap">${pvMsgPlantillaSelect('pm_plantilla', 'whatsapp', '')}</span></div>
+                    <div class="setting-actions">
+                        <button class="btn btn-primary" onclick="pvMsgEnviarMorosos()">Enviar a morosos</button>
+                    </div>
+                    <p class="setting-help">Para enviar a un cliente puntual use el botón <strong>Mensaje</strong> en Cobranza → Morosos, o desde el detalle del contrato.</p>
+                </div>
+                <div id="pvMsgResult"></div>`;
+            $('#pm_canal').addEventListener('change', () => {
+                $('#pm_plantilla_wrap').innerHTML = pvMsgPlantillaSelect('pm_plantilla', $('#pm_canal').value, '');
+            });
+        } else if (v === 'plantillas') {
+            const items = await pvMsgPlantillas(true);
+            cont.innerHTML = `
+                <div class="admin-toolbar prev-h3">
+                    <h3>Plantillas de mensajes</h3>
+                    <button class="btn btn-primary btn-sm" onclick="pvMsgPlantillaForm(0)">+ Nueva plantilla</button>
+                </div>
+                <p class="setting-help">Variables disponibles: <code>${PV_MSG_VARIABLES}</code></p>
+                <div class="table-responsive"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Nombre</th><th>Canal</th><th>Mensaje</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <tbody>${items.map(p => `
+                        <tr>
+                            <td><strong>${escapeHtml(p.nombre)}</strong></td>
+                            <td>${PV_MSG_CANAL[p.canal] || p.canal}</td>
+                            <td class="row-sub">${escapeHtml(p.cuerpo.length > 120 ? p.cuerpo.slice(0, 120) + '…' : p.cuerpo)}</td>
+                            <td>${p.activo ? '<span class="status-badge badge-green">activa</span>' : '<span class="status-badge badge-gray">inactiva</span>'}</td>
+                            <td><div class="admin-actions">
+                                <button class="btn btn-outline btn-sm" onclick="pvMsgPlantillaForm(${p.id})">Editar</button>
+                                <button class="btn btn-outline btn-sm" onclick="pvMsgPlantillaToggle(${p.id}, ${p.activo ? 0 : 1})">${p.activo ? 'Desactivar' : 'Activar'}</button>
+                                ${pvEsAdmin() ? `<button class="btn btn-danger btn-sm" onclick="pvMsgPlantillaDelete(${p.id})">Eliminar</button>` : ''}
+                            </div></td>
+                        </tr>`).join('') || '<tr><td colspan="5" class="empty-row">Sin plantillas.</td></tr>'}
+                    </tbody></table></div>`;
+        } else if (v === 'historial') {
+            const st = Prevision.env;
+            const params = new URLSearchParams({ action: 'envios', limit: st.limit, offset: st.offset });
+            const r = await API.req('prevision_mensajes.php?' + params);
+            st.total = r.total;
+            cont.innerHTML = `
+                <div class="table-responsive"><table class="admin-table admin-table-compact">
+                    <thead><tr><th>Fecha</th><th>Contrato</th><th>Cliente</th><th>Canal</th><th>Teléfono</th><th>Mensaje</th><th>Estado</th></tr></thead>
+                    <tbody>${r.items.map(m => `
+                        <tr>
+                            <td>${fmtDate(m.created_at)}</td>
+                            <td>${m.contrato_id ? `<a href="#" onclick="pvVerContrato(${m.contrato_id});return false;">${escapeHtml(m.contrato_numero || '')}</a>` : '—'}</td>
+                            <td>${escapeHtml(m.cliente_nombre || '—')}</td>
+                            <td>${PV_MSG_CANAL[m.canal] || m.canal}</td>
+                            <td>${escapeHtml(m.destinatario)}</td>
+                            <td class="row-sub">${escapeHtml(m.cuerpo.length > 90 ? m.cuerpo.slice(0, 90) + '…' : m.cuerpo)}</td>
+                            <td>${pvBadge(m.estado)}${m.error ? `<div class="row-sub">${escapeHtml(m.error)}</div>` : ''}</td>
+                        </tr>`).join('') || '<tr><td colspan="7" class="empty-row">Sin mensajes registrados.</td></tr>'}
+                    </tbody></table></div>
+                <div class="prev-pager" id="pvEnvPager"></div>`;
+            pvPager($('#pvEnvPager'), st, pvLoadMensajes);
+        } else if (v === 'config') {
+            if (!pvEsAdmin()) { cont.innerHTML = '<p class="setting-help">Solo el administrador puede ver la configuración de mensajería.</p>'; return; }
+            const r = await API.req('prevision_mensajes.php?action=config');
+            const c = r.config;
+            const sec = (k, label, ph) => `
+                <div class="form-group"><label class="form-label">${label}</label>
+                    <input type="password" id="mc_${k}" class="form-control" autocomplete="new-password"
+                           data-set="${c['prev_msg_' + k] === '__set__' ? '1' : '0'}"
+                           placeholder="${c['prev_msg_' + k] === '__set__' ? '•••••• (ya configurado — dejar vacío para mantener)' : (ph || '')}"></div>`;
+            const txt = (k, label, ph) => `
+                <div class="form-group"><label class="form-label">${label}</label>
+                    <input type="text" id="mc_${k}" class="form-control" value="${escapeHtml(c['prev_msg_' + k] || '')}" placeholder="${ph || ''}"></div>`;
+            cont.innerHTML = `
+                <form id="pvMsgConfigForm" class="admin-card settings-card">
+                    <h3 class="prev-h4">Proveedor por canal</h3>
+                    <p class="setting-help">Mientras no tenga proveedor contratado deje <strong>Manual</strong>: los mensajes quedan registrados y WhatsApp se abre listo para enviar. Cuando contrate el servicio, seleccione el proveedor y cargue sus credenciales aquí — sin tocar código.</p>
+                    <div class="form-grid-2">
+                        <div class="form-group"><label class="form-label">WhatsApp</label>
+                            ${pvSelect('mc_proveedor_whatsapp', PV_MSG_PROVEEDOR, c.prev_msg_proveedor_whatsapp || 'manual')}</div>
+                        <div class="form-group"><label class="form-label">SMS</label>
+                            ${pvSelect('mc_proveedor_sms', { manual: PV_MSG_PROVEEDOR.manual, twilio: PV_MSG_PROVEEDOR.twilio, http: PV_MSG_PROVEEDOR.http }, c.prev_msg_proveedor_sms || 'manual')}</div>
+                    </div>
+                    <div class="form-grid-2">
+                        ${txt('empresa', 'Nombre de la empresa ({{empresa}})', 'Funeraria del Zulia')}
+                        ${txt('pais', 'Código de país para teléfonos', '58')}
+                    </div>
+                    <h3 class="prev-h4">WhatsApp Cloud API (Meta)</h3>
+                    <div class="form-grid-2">
+                        ${sec('wa_token', 'Token de acceso permanente')}
+                        ${txt('wa_phone_id', 'Phone Number ID', '1234567890')}
+                    </div>
+                    <h3 class="prev-h4">Twilio</h3>
+                    <div class="form-grid-2">
+                        ${txt('twilio_sid', 'Account SID', 'ACxxxxxxxx')}
+                        ${sec('twilio_token', 'Auth Token')}
+                        ${txt('twilio_from_sms', 'Número origen SMS', '+1786...')}
+                        ${txt('twilio_from_wa', 'Número origen WhatsApp', '+1415...')}
+                    </div>
+                    <h3 class="prev-h4">API HTTP genérica (gateway local de SMS u otro)</h3>
+                    <p class="setting-help">POST envía JSON <code>{to, message, channel}</code>. En la URL puede usar <code>{to}</code> y <code>{message}</code> (útil con método GET). El token va como <code>Authorization: Bearer</code>.</p>
+                    <div class="form-grid-2">
+                        ${txt('http_url', 'URL del servicio', 'https://api.miproveedor.com/send')}
+                        <div class="form-group"><label class="form-label">Método</label>
+                            ${pvSelect('mc_http_metodo', { POST: 'POST (JSON)', GET: 'GET (marcadores en URL)' }, c.prev_msg_http_metodo || 'POST')}</div>
+                        ${sec('http_token', 'Token / API key')}
+                    </div>
+                    <div class="setting-actions">
+                        <button type="submit" class="btn btn-primary">Guardar configuración</button>
+                        <button type="button" class="btn btn-outline" onclick="pvMsgTest()">Enviar mensaje de prueba</button>
+                    </div>
+                </form>`;
+            $('#pvMsgConfigForm').addEventListener('submit', pvMsgConfigGuardar);
+        }
+    } catch (e) {
+        cont.innerHTML = `<p class="setting-help">Importe <strong>database/06_prevision_v3.sql</strong> para activar mensajes, ajustes de tarifas y reportes.</p>`;
+    }
+}
+
+async function pvMsgConfigGuardar(e) {
+    e.preventDefault();
+    const val = k => $('#mc_' + k) ? $('#mc_' + k).value.trim() : '';
+    const secreto = k => {
+        const el = $('#mc_' + k);
+        return el.value !== '' ? el.value : (el.dataset.set === '1' ? '__set__' : '');
+    };
+    try {
+        await API.req('prevision_mensajes.php?action=config_set', { method: 'POST', json: {
+            prev_msg_proveedor_whatsapp: val('proveedor_whatsapp'),
+            prev_msg_proveedor_sms: val('proveedor_sms'),
+            prev_msg_empresa: val('empresa'),
+            prev_msg_pais: val('pais'),
+            prev_msg_wa_token: secreto('wa_token'),
+            prev_msg_wa_phone_id: val('wa_phone_id'),
+            prev_msg_twilio_sid: val('twilio_sid'),
+            prev_msg_twilio_token: secreto('twilio_token'),
+            prev_msg_twilio_from_sms: val('twilio_from_sms'),
+            prev_msg_twilio_from_wa: val('twilio_from_wa'),
+            prev_msg_http_url: val('http_url'),
+            prev_msg_http_metodo: val('http_metodo'),
+            prev_msg_http_token: secreto('http_token'),
+        }});
+        toast('Configuración de mensajería guardada.');
+        pvLoadMensajes();
+    } catch (ex) { toast(ex.message); }
+}
+
+function pvMsgTest() {
+    openModal('Mensaje de prueba', `
+        <form id="pvMsgTestForm">
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Canal</label>
+                    ${pvSelect('mt_canal', PV_MSG_CANAL, 'whatsapp')}</div>
+                <div class="form-group"><label class="form-label">Teléfono</label>
+                    <input type="text" id="mt_tel" class="form-control" placeholder="0412-1234567" required></div>
+            </div>
+            <p class="setting-help">Guarde la configuración antes de probar. El resultado queda en el Historial.</p>
+            <p id="mt_error" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Enviar prueba</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+            </div>
+        </form>`);
+    $('#pvMsgTestForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#mt_error'); err.hidden = true;
+        try {
+            const r = await API.req('prevision_mensajes.php?action=test', { method: 'POST', json: {
+                canal: $('#mt_canal').value, telefono: $('#mt_tel').value.trim(),
+            }});
+            if (r.wa_link) window.open(r.wa_link, '_blank');
+            closeModal();
+            toast(r.estado === 'enviado' ? 'Mensaje de prueba enviado por ' + r.proveedor + '.'
+                : r.estado === 'manual' ? 'Registrado en modo manual' + (r.wa_link ? ' (se abrió WhatsApp).' : '.')
+                : 'Falló el envío: ' + (r.error || ''));
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+function pvMsgPlantillaForm(id) {
+    const p = id ? Prevision.msgPlantillas.find(x => Number(x.id) === Number(id)) || {} : {};
+    openModal(id ? 'Editar plantilla' : 'Nueva plantilla', `
+        <form id="pvMsgPlaForm">
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Nombre *</label>
+                    <input type="text" id="mp_nombre" class="form-control" maxlength="120" value="${escapeHtml(p.nombre || '')}" required></div>
+                <div class="form-group"><label class="form-label">Canal</label>
+                    ${pvSelect('mp_canal', PV_MSG_CANAL, p.canal || 'whatsapp')}</div>
+            </div>
+            <div class="form-group"><label class="form-label">Mensaje *</label>
+                <textarea id="mp_cuerpo" class="form-control" rows="5" maxlength="2000" required>${escapeHtml(p.cuerpo || '')}</textarea></div>
+            <p class="setting-help">Variables: <code>${PV_MSG_VARIABLES}</code></p>
+            <p id="mp_error" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+            </div>
+        </form>`);
+    $('#pvMsgPlaForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#mp_error'); err.hidden = true;
+        try {
+            await API.req('prevision_mensajes.php?action=plantilla_save', { method: 'POST', json: {
+                id: id || 0, nombre: $('#mp_nombre').value.trim(),
+                canal: $('#mp_canal').value, cuerpo: $('#mp_cuerpo').value.trim(),
+            }});
+            closeModal(); toast('Plantilla guardada.');
+            await pvMsgPlantillas(true);
+            pvLoadMensajes();
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+async function pvMsgPlantillaToggle(id, activo) {
+    try {
+        await API.req('prevision_mensajes.php?action=plantilla_toggle', { method: 'POST', json: { id, activo } });
+        await pvMsgPlantillas(true);
+        pvLoadMensajes();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvMsgPlantillaDelete(id) {
+    if (!confirmAction('¿Eliminar esta plantilla?')) return;
+    try {
+        await API.req('prevision_mensajes.php?action=plantilla_delete', { method: 'POST', json: { id } });
+        toast('Plantilla eliminada.');
+        await pvMsgPlantillas(true);
+        pvLoadMensajes();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvMsgEnviarForm(contratoId) {
+    try { await pvMsgPlantillas(); } catch (e) { toast('Importe database/06_prevision_v3.sql para activar los mensajes.'); return; }
+    openModal('Enviar mensaje al cliente', `
+        <form id="pvMsgEnvForm">
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Canal</label>
+                    ${pvSelect('me_canal', PV_MSG_CANAL, 'whatsapp')}</div>
+                <div class="form-group"><label class="form-label">Teléfono (vacío = el del cliente)</label>
+                    <input type="text" id="me_tel" class="form-control" placeholder="0412-1234567"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Plantilla</label>
+                <span id="me_plantilla_wrap">${pvMsgPlantillaSelect('me_plantilla', 'whatsapp', '')}</span></div>
+            <div class="form-group"><label class="form-label">Texto libre (si no usa plantilla)</label>
+                <textarea id="me_cuerpo" class="form-control" rows="4" maxlength="2000" placeholder="Puede usar ${PV_MSG_VARIABLES}"></textarea></div>
+            <p id="me_error" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Enviar</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+            </div>
+        </form>`);
+    $('#me_canal').addEventListener('change', () => {
+        $('#me_plantilla_wrap').innerHTML = pvMsgPlantillaSelect('me_plantilla', $('#me_canal').value, '');
+    });
+    $('#pvMsgEnvForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#me_error'); err.hidden = true;
+        try {
+            const r = await API.req('prevision_mensajes.php?action=enviar', { method: 'POST', json: {
+                contrato_id: contratoId, canal: $('#me_canal').value,
+                plantilla_id: $('#me_plantilla').value || 0,
+                cuerpo: $('#me_cuerpo').value.trim(), telefono: $('#me_tel').value.trim(),
+            }});
+            if (r.wa_link) window.open(r.wa_link, '_blank');
+            closeModal();
+            toast(r.estado === 'enviado' ? 'Mensaje enviado.'
+                : r.estado === 'manual' ? 'Mensaje registrado' + (r.wa_link ? ' (se abrió WhatsApp).' : '.')
+                : 'Falló el envío: ' + (r.error || ''));
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+async function pvMsgEnviarMorosos() {
+    const plantilla = $('#pm_plantilla').value;
+    if (!plantilla) { toast('Seleccione la plantilla a enviar.'); return; }
+    if (!confirmAction('¿Enviar la plantilla seleccionada a todos los contratos morosos?')) return;
+    const res = $('#pvMsgResult');
+    res.innerHTML = '<p class="setting-help">Enviando…</p>';
+    try {
+        const r = await API.req('prevision_mensajes.php?action=enviar_morosos', { method: 'POST', json: {
+            canal: $('#pm_canal').value, plantilla_id: plantilla, min_cuotas: $('#pm_min').value,
+        }});
+        res.innerHTML = `
+            <div class="prev-import-result">
+                <p><strong>Resultado:</strong> ${r.enviados} enviados · ${r.manuales} en modo manual · ${r.fallidos} fallidos · ${r.sin_telefono} sin teléfono.</p>
+            </div>
+            <div class="table-responsive"><table class="admin-table admin-table-compact">
+                <thead><tr><th>Contrato</th><th>Cliente</th><th>Estado</th><th></th></tr></thead>
+                <tbody>${r.items.map(i => `
+                    <tr>
+                        <td>${escapeHtml(i.contrato)}</td>
+                        <td>${escapeHtml(i.cliente)}</td>
+                        <td>${pvBadge(i.estado)}${i.error ? `<div class="row-sub">${escapeHtml(i.error)}</div>` : ''}</td>
+                        <td>${i.wa_link ? `<a class="btn btn-outline btn-sm" href="${escapeHtml(i.wa_link)}" target="_blank" rel="noopener">Abrir WhatsApp</a>` : ''}</td>
+                    </tr>`).join('') || '<tr><td colspan="4" class="empty-row">No hay contratos morosos con ese criterio.</td></tr>'}
+                </tbody></table></div>`;
+    } catch (e) { res.innerHTML = ''; toast(e.message); }
+}
+
+// ==========================================================================
+//  AJUSTES MASIVOS DE TARIFAS
+// ==========================================================================
+async function pvLoadAjustes() {
+    const cont = $('#pvAjuContent');
+    const planes = Prevision.planes.filter(p => p.activo);
+    cont.innerHTML = `
+        <div class="admin-card settings-card">
+            <div class="form-group"><label class="form-label">Descripción del ajuste *</label>
+                <input type="text" id="aj_desc" class="form-control" maxlength="255" placeholder="Aumento tarifario ${new Date().getFullYear()}"></div>
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Tipo</label>
+                    ${pvSelect('aj_tipo', { porcentaje: 'Porcentaje (%)', monto: 'Monto fijo (+/-)' }, 'porcentaje')}</div>
+                <div class="form-group"><label class="form-label">Valor (negativo = rebaja)</label>
+                    <input type="number" step="0.01" id="aj_valor" class="form-control" placeholder="10 = +10%"></div>
+                <div class="form-group"><label class="form-label">Plan</label>
+                    <select id="aj_plan" class="form-control"><option value="">Todos los planes</option>
+                        ${planes.map(p => `<option value="${p.id}">${escapeHtml(p.nombre)}</option>`).join('')}</select></div>
+                <div class="form-group"><label class="form-label">Moneda</label>
+                    ${pvSelect('aj_moneda', { USD: 'Solo USD ($)', BS: 'Solo Bolívares (Bs)' }, '', 'Ambas monedas')}</div>
+                <div class="form-group"><label class="form-label">Redondeo</label>
+                    ${pvSelect('aj_redondeo', { centimos: 'A céntimos (0,01)', entero: 'Al entero' }, 'centimos')}</div>
+            </div>
+            <div class="setting-row"><div><strong>Actualizar también la cuota de los planes</strong>
+                <p class="setting-help">Cambia la cuota mensual del catálogo de planes.</p></div>
+                <label class="switch"><input type="checkbox" id="aj_planes_chk"><span class="slider"></span></label></div>
+            <div class="setting-row"><div><strong>Actualizar cuotas pendientes ya generadas</strong>
+                <p class="setting-help">Solo cuotas programadas futuras sin abonos.</p></div>
+                <label class="switch"><input type="checkbox" id="aj_cuotas_chk"><span class="slider"></span></label></div>
+            <div class="setting-actions">
+                <button class="btn btn-outline" onclick="pvAjustePreview()">Vista previa</button>
+                ${pvEsAdmin() ? '<button class="btn btn-danger" onclick="pvAjusteAplicar()">Aplicar ajuste</button>' : ''}
+            </div>
+        </div>
+        <div id="pvAjuPreview"></div>
+        <div id="pvAjuHistorial"></div>`;
+    pvAjusteHistorial();
+}
+
+function pvAjusteJson() {
+    return {
+        descripcion: $('#aj_desc').value.trim(),
+        tipo: $('#aj_tipo').value,
+        valor: $('#aj_valor').value,
+        redondeo: $('#aj_redondeo').value,
+        plan_id: $('#aj_plan').value || 0,
+        moneda: $('#aj_moneda').value,
+        aplicar_planes: $('#aj_planes_chk').checked ? 1 : 0,
+        aplicar_cuotas: $('#aj_cuotas_chk').checked ? 1 : 0,
+    };
+}
+
+async function pvAjustePreview() {
+    const box = $('#pvAjuPreview');
+    try {
+        const r = await API.req('prevision_ajustes.php?action=preview', { method: 'POST', json: pvAjusteJson() });
+        const filas = r.contratos.slice(0, 100);
+        box.innerHTML = `
+            <div class="prev-import-result">
+                <p><strong>Vista previa:</strong> ${r.contratos.length} contrato(s) afectado(s)
+                ${r.planes.length ? ` · ${r.planes.length} plan(es)` : ''}
+                ${r.cuotas_afectadas ? ` · ${r.cuotas_afectadas} cuota(s) pendiente(s)` : ''}.
+                Nada se ha guardado todavía.</p>
+            </div>
+            ${r.planes.length ? `
+            <h3 class="prev-h4">Planes</h3>
+            <div class="table-responsive"><table class="admin-table admin-table-compact">
+                <thead><tr><th>Plan</th><th>Cuota actual</th><th>Cuota nueva</th></tr></thead>
+                <tbody>${r.planes.map(p => `
+                    <tr><td>${escapeHtml(p.nombre)}</td>
+                        <td>${pvMoney(p.valor_anterior, p.moneda)}</td>
+                        <td><strong>${pvMoney(p.valor_nuevo, p.moneda)}</strong></td></tr>`).join('')}
+                </tbody></table></div>` : ''}
+            <h3 class="prev-h4">Contratos ${r.contratos.length > 100 ? '(primeros 100)' : ''}</h3>
+            <div class="table-responsive prev-scroll"><table class="admin-table admin-table-compact">
+                <thead><tr><th>Contrato</th><th>Cliente</th><th>Plan</th><th>Cuota actual</th><th>Cuota nueva</th></tr></thead>
+                <tbody>${filas.map(c => `
+                    <tr><td><strong>${escapeHtml(c.numero)}</strong></td>
+                        <td>${escapeHtml(c.cliente_nombre)}</td>
+                        <td class="row-sub">${escapeHtml(c.plan_nombre || '—')}</td>
+                        <td>${pvMoney(c.valor_anterior, c.moneda)}</td>
+                        <td><strong>${pvMoney(c.valor_nuevo, c.moneda)}</strong></td></tr>`).join('')
+                    || '<tr><td colspan="5" class="empty-row">Ningún contrato coincide con los filtros.</td></tr>'}
+                </tbody></table></div>`;
+    } catch (e) { box.innerHTML = ''; toast(e.message); }
+}
+
+async function pvAjusteAplicar() {
+    const json = pvAjusteJson();
+    if (!json.descripcion) { toast('Indique la descripción del ajuste.'); return; }
+    if (!confirmAction('¿Aplicar el ajuste a todos los contratos de la vista previa? Podrá revertirlo desde el historial.')) return;
+    try {
+        const r = await API.req('prevision_ajustes.php?action=aplicar', { method: 'POST', json });
+        toast(`Ajuste aplicado a ${r.afectados} contrato(s).`);
+        $('#pvAjuPreview').innerHTML = '';
+        pvAjusteHistorial();
+        Prevision.loadCatalogos(true);
+    } catch (e) { toast(e.message); }
+}
+
+async function pvAjusteHistorial() {
+    const box = $('#pvAjuHistorial');
+    try {
+        const r = await API.req('prevision_ajustes.php?action=list');
+        box.innerHTML = `
+            <h3 class="prev-h4">Historial de ajustes</h3>
+            <div class="table-responsive"><table class="admin-table admin-table-compact">
+                <thead><tr><th>Fecha</th><th>Descripción</th><th>Ajuste</th><th>Alcance</th><th>Contratos</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody>${r.items.map(a => `
+                    <tr>
+                        <td>${fmtDate(a.created_at)}</td>
+                        <td><strong>${escapeHtml(a.descripcion)}</strong><div class="row-sub">${escapeHtml(a.usuario || '')}</div></td>
+                        <td>${a.tipo === 'porcentaje' ? (a.valor > 0 ? '+' : '') + pvNum(a.valor) + ' %' : (a.valor > 0 ? '+' : '') + pvNum(a.valor)}</td>
+                        <td class="row-sub">${escapeHtml(a.plan_nombre || 'Todos los planes')}${a.moneda ? ' · ' + a.moneda : ''}${a.aplicar_planes ? ' · planes' : ''}${a.aplicar_cuotas ? ' · cuotas' : ''}</td>
+                        <td>${a.afectados}</td>
+                        <td>${pvBadge(a.estado)}${a.revertido_en ? `<div class="row-sub">${fmtDate(a.revertido_en)}</div>` : ''}</td>
+                        <td><div class="admin-actions">
+                            <button class="btn btn-outline btn-sm" onclick="pvAjusteVer(${a.id})">Detalle</button>
+                            ${pvEsAdmin() && a.estado === 'aplicado' ? `<button class="btn btn-danger btn-sm" onclick="pvAjusteRevertir(${a.id})">Revertir</button>` : ''}
+                        </div></td>
+                    </tr>`).join('') || '<tr><td colspan="7" class="empty-row">Sin ajustes aplicados.</td></tr>'}
+                </tbody></table></div>`;
+    } catch (e) {
+        box.innerHTML = `<p class="setting-help">Importe <strong>database/06_prevision_v3.sql</strong> para activar los ajustes de tarifas.</p>`;
+    }
+}
+
+async function pvAjusteVer(id) {
+    try {
+        const r = await API.req('prevision_ajustes.php?action=get&id=' + id);
+        const a = r.item;
+        openModal('Detalle del ajuste', `
+            <div class="prev-kv">
+                <div><span>Descripción</span><strong>${escapeHtml(a.descripcion)}</strong></div>
+                <div><span>Ajuste</span><strong>${a.tipo === 'porcentaje' ? pvNum(a.valor) + ' %' : pvNum(a.valor)}</strong></div>
+                <div><span>Estado</span>${pvBadge(a.estado)}</div>
+                <div><span>Registros</span><strong>${r.detalles.length}</strong></div>
+            </div>
+            <div class="table-responsive prev-scroll"><table class="admin-table admin-table-compact">
+                <thead><tr><th>Tipo</th><th>Referencia</th><th>Anterior</th><th>Nuevo</th></tr></thead>
+                <tbody>${r.detalles.map(d => `
+                    <tr><td>${escapeHtml(d.objeto)}</td><td>${escapeHtml(d.referencia || String(d.objeto_id))}</td>
+                        <td>${pvNum(d.valor_anterior)}</td><td><strong>${pvNum(d.valor_nuevo)}</strong></td></tr>`).join('')}
+                </tbody></table></div>
+            <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cerrar</button></div>`);
+    } catch (e) { toast(e.message); }
+}
+
+async function pvAjusteRevertir(id) {
+    if (!confirmAction('¿Revertir este ajuste? Se restaurarán las cuotas anteriores de contratos, planes y cuotas pendientes sin abonos.')) return;
+    try {
+        const r = await API.req('prevision_ajustes.php?action=revertir', { method: 'POST', json: { id } });
+        toast(`Ajuste revertido (${r.revertidos} registros restaurados).`);
+        pvAjusteHistorial();
+        Prevision.loadCatalogos(true);
     } catch (e) { toast(e.message); }
 }
 

@@ -21,6 +21,12 @@ disco y backend PHP, todo junto).
   **siniestros/reclamos** con validación de cobertura (equivale a
   `cm_siniestros` de SIEMPRE), gestiones de mora y configuración del
   **auto-lapsado**. Requiere `04_prevision.sql` importado previamente.
+- **`06_prevision_v3.sql`** — **Previsión, Ronda 3**: **ajustes masivos de
+  tarifas** (`prev_ajustes` + detalle reversible), **mensajería WhatsApp/SMS**
+  (`prev_msg_plantillas` con 7 plantillas iniciales y `prev_msg_envios`) y la
+  configuración del proveedor de mensajería en `app_settings` (manual,
+  WhatsApp Cloud API, Twilio o API HTTP genérica — se elige desde el panel).
+  Requiere `05_prevision_v2.sql` importado previamente.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -79,9 +85,9 @@ disco y backend PHP, todo junto).
 2. Pestaña **Importar** → **Seleccionar archivo** → `database/01_schema.sql` → **Continuar**.
 3. Verifica que aparezcan las **7 tablas**.
 4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
-   `04_prevision.sql` y `05_prevision_v2.sql` (módulo de Previsión, en ese
-   orden). El `04` requiere que `users` (del `01`) ya exista; el `05`
-   requiere el `04`.
+   `04_prevision.sql`, `05_prevision_v2.sql` y `06_prevision_v3.sql`
+   (módulo de Previsión, en ese orden). El `04` requiere que `users` (del
+   `01`) ya exista; el `05` requiere el `04` y el `06` requiere el `05`.
 
 ### 3. Iniciar sesión y asegurar el admin
 

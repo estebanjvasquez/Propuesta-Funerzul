@@ -178,6 +178,9 @@
                     <button class="filter-btn" data-sub="planes" type="button">Planes</button>
                     <button class="filter-btn" data-sub="vendedores" type="button">Vendedores</button>
                     <button class="filter-btn" data-sub="comisiones" type="button">Comisiones</button>
+                    <button class="filter-btn" data-sub="reportes" type="button">Reportes</button>
+                    <button class="filter-btn" data-sub="mensajes" type="button">Mensajes</button>
+                    <button class="filter-btn" data-sub="ajustes" type="button">Ajustes</button>
                     <button class="filter-btn" data-sub="catalogos" type="button">Catálogos</button>
                     <button class="filter-btn" data-sub="importar" type="button">Importar</button>
                 </div>
@@ -309,6 +312,37 @@
                     </div>
                     <p class="setting-help">Etapas de comisión por contrato (esquema SIEMPRE): <strong>Semana 1</strong>, <strong>Fin de mes 1</strong>, <strong>Mes 2</strong> y <strong>Mes 13</strong>.</p>
                     <div id="pvComContent"></div>
+                </div>
+
+                <!-- Reportes -->
+                <div id="pvSub-reportes" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar"><h2>Reportes</h2></div>
+                    <div class="filter-group" id="pvRepFilters">
+                        <button class="filter-btn active" data-vista="aging" type="button">Antigüedad CxC</button>
+                        <button class="filter-btn" data-vista="produccion" type="button">Producción por vendedor</button>
+                        <button class="filter-btn" data-vista="cobranza" type="button">Cobranza por período</button>
+                        <button class="filter-btn" data-vista="cartera" type="button">Cartera por plan</button>
+                    </div>
+                    <div id="pvRepContent"></div>
+                </div>
+
+                <!-- Mensajes (WhatsApp/SMS) -->
+                <div id="pvSub-mensajes" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar"><h2>Mensajes WhatsApp / SMS</h2></div>
+                    <div class="filter-group" id="pvMsgFilters">
+                        <button class="filter-btn active" data-vista="enviar" type="button">Enviar</button>
+                        <button class="filter-btn" data-vista="plantillas" type="button">Plantillas</button>
+                        <button class="filter-btn" data-vista="historial" type="button">Historial</button>
+                        <button class="filter-btn" data-vista="config" type="button">Configuración</button>
+                    </div>
+                    <div id="pvMsgContent"></div>
+                </div>
+
+                <!-- Ajustes de tarifas -->
+                <div id="pvSub-ajustes" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar"><h2>Ajuste masivo de tarifas</h2></div>
+                    <p class="setting-help">Aumente o reduzca las cuotas de los contratos activos por porcentaje o monto fijo, con vista previa antes de aplicar y posibilidad de revertir. Puede incluir la cuota de los planes y las cuotas pendientes ya generadas.</p>
+                    <div id="pvAjuContent"></div>
                 </div>
 
                 <!-- Catálogos -->
@@ -445,6 +479,6 @@
     <div id="toast" class="toast">Notificación</div>
 
     <script src="admin.js?v=20260707"></script>
-    <script src="admin-prevision.js?v=20260707"></script>
+    <script src="admin-prevision.js?v=20260707b"></script>
 </body>
 </html>

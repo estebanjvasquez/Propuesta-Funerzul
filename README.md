@@ -73,6 +73,9 @@ Propuesta Funerzul/
 │   prevision_siniestros.php  Previsión: siniestros/reclamos con validación de cobertura
 │   prevision_cobranza.php    Previsión: morosos, gestiones, auto-lapsado, hoja de cobro
 │   prevision_catalogos.php   Previsión: sucursales, servicios, cobradores y rutas
+│   prevision_ajustes.php     Previsión: ajuste masivo de tarifas (con reverso)
+│   prevision_mensajes.php    Previsión: WhatsApp/SMS con proveedor configurable
+│   prevision_reportes.php    Previsión: aging CxC, producción, cobranza, cartera (CSV)
 │   diag.php               Diagnóstico de instalación (protegido)
 │   cron/purge_photos.php  Rutina de purga de fotos
 │   lib/                   Núcleo (BD, auth, helpers, render, previsión)
@@ -282,14 +285,15 @@ base de datos del sistema administrativo **SIEMPRE** (`database/SIEMPRE.sql`).
 Lo usa todo el personal (editor y admin); las eliminaciones definitivas y las
 reversiones de pagos son solo del admin.
 
-**Para activarlo**: importe `database/04_prevision.sql` y luego
-`database/05_prevision_v2.sql` en phpMyAdmin (crean las tablas `prev_*` con los
-catálogos de SIEMPRE: 18 parentescos y los 9 planes vigentes — Tradición,
-Esencial, Vanguardia, etc. — más sucursales, servicios, siniestros y cobranza).
+**Para activarlo**: importe `database/04_prevision.sql`, luego
+`database/05_prevision_v2.sql` y `database/06_prevision_v3.sql` en phpMyAdmin
+(crean las tablas `prev_*` con los catálogos de SIEMPRE: 18 parentescos y los
+9 planes vigentes — Tradición, Esencial, Vanguardia, etc. — más sucursales,
+servicios, siniestros, cobranza, mensajería y ajustes de tarifas).
 
 Al entrar se ven los indicadores del módulo: **contratos activos**, **clientes**,
 **cuotas vencidas** (con su monto), **cobrado en el mes** y la **tasa del día**
-(Bs/USD, con botón para actualizarla). Debajo, seis sub-pestañas:
+(Bs/USD, con botón para actualizarla). Debajo, doce sub-pestañas:
 
 - **Contratos** — buscar por número/cédula/nombre, filtrar por estatus o por
   contratos con cuotas vencidas. **“+ Nuevo contrato”**: se busca al titular por su
@@ -332,6 +336,25 @@ Al entrar se ven los indicadores del módulo: **contratos activos**, **clientes*
   configurable (suspende contratos con ≥ N cuotas vencidas, con vista previa,
   ejecución manual y cron diario `api/cron/prevision_lapsar.php`); y **hoja de
   cobro imprimible** por ruta para el cobrador.
+- **Reportes** — **antigüedad de cuentas por cobrar** (al día, 1-30, 31-60,
+  61-90 y +90 días, con totales por moneda), **producción por vendedor** en un
+  período, **cobranza por período** (por forma de pago y por día) y **cartera
+  por plan** (contratos por estatus y facturación mensual). Todos descargables
+  en **CSV** para Excel.
+- **Mensajes** — notificaciones **WhatsApp/SMS** a los clientes con
+  **plantillas** editables (variables como `{{cliente}}`, `{{contrato}}`,
+  `{{saldo_vencido}}`) y **envío masivo a morosos**. El **proveedor es
+  configurable por canal desde el panel**, sin tocar código: *Manual* (registra
+  el mensaje y abre WhatsApp listo para enviar — modo por defecto mientras no
+  haya proveedor contratado), *WhatsApp Cloud API* (Meta), *Twilio* o *API HTTP
+  genérica* (gateway local de SMS). Incluye mensaje de prueba e historial de
+  envíos con estado y errores.
+- **Ajustes** — **ajuste masivo de tarifas**: sube o baja las cuotas de los
+  contratos activos por **porcentaje o monto fijo**, filtrando por plan y/o
+  moneda, con redondeo a céntimos o al entero; opcionalmente actualiza la
+  cuota de los planes y las cuotas pendientes ya generadas. Siempre con
+  **vista previa** antes de aplicar y con **historial reversible** (el detalle
+  guarda cada valor anterior → nuevo).
 - **Catálogos** — sucursales, **servicios adicionales** (bóveda, cremación,
   traslados; recurrentes o de cargo único, contratables por contrato),
   cobradores y **rutas de cobranza** (zona, día de cobro, cobrador asignado).
@@ -370,8 +393,9 @@ Resumen (guías detalladas en `database/README.md` y `api/README.md`):
    [`database/01_schema.sql`](database/01_schema.sql) y, para el Directorio Médico y
    los Recursos, [`database/02_directorio_recursos.sql`](database/02_directorio_recursos.sql), con phpMyAdmin.
    Para el **módulo de Previsión**, importar además
-   [`database/04_prevision.sql`](database/04_prevision.sql) y
-   [`database/05_prevision_v2.sql`](database/05_prevision_v2.sql).
+   [`database/04_prevision.sql`](database/04_prevision.sql),
+   [`database/05_prevision_v2.sql`](database/05_prevision_v2.sql) y
+   [`database/06_prevision_v3.sql`](database/06_prevision_v3.sql).
 2. **Backend**: copiar `api/config.example.php` → `api/config.php` y poner las
    credenciales de MySQL y un `cron_secret` aleatorio.
 3. **Extensiones PHP** (cPanel → *Select PHP Version → Extensions*): activar

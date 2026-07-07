@@ -19,6 +19,10 @@ const PREV_ESTADOS_SINIESTRO   = ['abierto', 'liquidado', 'cerrado', 'rechazado'
 const PREV_TIPOS_SIN_DETALLE   = ['servicio', 'pago', 'reintegro', 'otro'];
 const PREV_TIPOS_GESTION       = ['llamada', 'visita', 'whatsapp', 'sms', 'email', 'otro'];
 const PREV_RESULTADOS_GESTION  = ['contactado', 'no_contactado', 'promesa_pago', 'reclamo', 'otro'];
+const PREV_MSG_CANALES         = ['whatsapp', 'sms'];
+const PREV_MSG_PROVEEDORES     = ['manual', 'whatsapp_cloud', 'twilio', 'http'];
+const PREV_AJUSTE_TIPOS        = ['porcentaje', 'monto'];
+const PREV_AJUSTE_REDONDEOS    = ['centimos', 'entero'];
 
 /** Valor dentro de una lista permitida, o $default. */
 function prev_enum($v, array $allowed, ?string $default = null): ?string
@@ -507,6 +511,245 @@ function prev_servicio_out(array $r): array
         'recurrente'  => (bool)$r['recurrente'],
         'activo'      => (bool)$r['activo'],
     ];
+}
+
+// ---------------------------------------------------------------------------
+// Mensajería (WhatsApp / SMS) con proveedor configurable
+// ---------------------------------------------------------------------------
+// El proveedor de cada canal se lee de app_settings:
+//   prev_msg_proveedor_whatsapp / prev_msg_proveedor_sms
+//     'manual'         -> solo registra el envío (WhatsApp genera enlace wa.me)
+//     'whatsapp_cloud' -> API oficial de Meta (prev_msg_wa_token, prev_msg_wa_phone_id)
+//     'twilio'         -> Twilio (prev_msg_twilio_sid/token/from_sms/from_wa)
+//     'http'           -> API HTTP genérica (prev_msg_http_url/metodo/token)
+
+/** Proveedor configurado para un canal ('manual' si no hay nada válido). */
+function prev_msg_proveedor(string $canal): string
+{
+    $p = get_setting('prev_msg_proveedor_' . $canal, 'manual');
+    if ($canal === 'sms' && $p === 'whatsapp_cloud') $p = 'manual'; // no aplica
+    return in_array($p, PREV_MSG_PROVEEDORES, true) ? $p : 'manual';
+}
+
+/**
+ * Normaliza un teléfono a formato internacional sin '+' (p.ej. 584121234567).
+ * Usa el código de país configurado (prev_msg_pais, por defecto 58 Venezuela).
+ */
+function prev_msg_telefono($tel): ?string
+{
+    $d = preg_replace('/\D+/', '', (string)$tel) ?? '';
+    if ($d === '') return null;
+    $pais = preg_replace('/\D+/', '', get_setting('prev_msg_pais', '58')) ?: '58';
+    if (strpos($d, $pais) === 0 && strlen($d) >= 11) return $d;   // ya trae el país
+    $d = ltrim($d, '0');                                          // 0412... -> 412...
+    if (strlen($d) < 7) return null;
+    return $pais . $d;
+}
+
+/** Rellena las variables {{...}} de una plantilla. */
+function prev_msg_render(string $cuerpo, array $vars): string
+{
+    $vars += ['empresa' => get_setting('prev_msg_empresa', 'Funeraria del Zulia'),
+              'fecha'   => date('d/m/Y')];
+    return preg_replace_callback('/\{\{\s*([a-z_]+)\s*\}\}/i',
+        fn($m) => (string)($vars[strtolower($m[1])] ?? ''), $cuerpo);
+}
+
+/** Variables de plantilla derivadas de un contrato (fila con joins) y su mora. */
+function prev_msg_vars_contrato(array $c): array
+{
+    $st = db()->prepare(
+        "SELECT COUNT(*) AS n, COALESCE(SUM(saldo),0) AS monto FROM prev_cuotas
+         WHERE contrato_id = ? AND estado IN ('pendiente','parcial') AND fecha_vencimiento < CURDATE()"
+    );
+    $st->execute([(int)$c['id']]);
+    $mora = $st->fetch();
+    $fmt = fn($v) => number_format((float)$v, 2, ',', '.') . ' ' . ($c['moneda'] === 'BS' ? 'Bs' : 'USD');
+    return [
+        'cliente'         => trim((string)($c['cliente_nombre'] ?? '')),
+        'contrato'        => (string)$c['numero'],
+        'plan'            => (string)($c['plan_nombre'] ?? ''),
+        'moneda'          => (string)$c['moneda'],
+        'monto_cuota'     => $fmt($c['monto_cuota']),
+        'cuotas_vencidas' => (string)(int)$mora['n'],
+        'saldo_vencido'   => $fmt($mora['monto']),
+    ];
+}
+
+/** POST/GET HTTP con cURL. Devuelve [ok, http_code, body, error]. */
+function prev_msg_http(string $metodo, string $url, array $headers, ?string $body): array
+{
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 20,
+        CURLOPT_CUSTOMREQUEST  => $metodo,
+        CURLOPT_HTTPHEADER     => $headers,
+    ]);
+    if ($body !== null && $metodo !== 'GET') curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    $resp = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    $err  = curl_error($ch);
+    curl_close($ch);
+    return ['ok' => $resp !== false && $code >= 200 && $code < 300,
+            'http_code' => $code, 'body' => (string)$resp, 'error' => $err];
+}
+
+/**
+ * Envía un mensaje por el proveedor configurado del canal.
+ * Devuelve ['estado' => enviado|fallido|manual, 'proveedor', 'respuesta', 'error', 'wa_link'].
+ */
+function prev_msg_enviar(string $canal, string $telefono, string $cuerpo): array
+{
+    $prov = prev_msg_proveedor($canal);
+    $out  = ['estado' => 'fallido', 'proveedor' => $prov, 'respuesta' => null,
+             'error' => null, 'wa_link' => null];
+
+    if ($prov === 'manual') {
+        $out['estado'] = 'manual';
+        if ($canal === 'whatsapp') {
+            $out['wa_link'] = 'https://wa.me/' . $telefono . '?text=' . rawurlencode($cuerpo);
+        }
+        return $out;
+    }
+
+    if ($prov === 'whatsapp_cloud') {
+        $token   = get_setting('prev_msg_wa_token', '');
+        $phoneId = get_setting('prev_msg_wa_phone_id', '');
+        if ($token === '' || $phoneId === '') { $out['error'] = 'Falta configurar el token o el Phone ID de WhatsApp Cloud.'; return $out; }
+        $r = prev_msg_http('POST', "https://graph.facebook.com/v19.0/{$phoneId}/messages",
+            ['Authorization: Bearer ' . $token, 'Content-Type: application/json'],
+            json_encode(['messaging_product' => 'whatsapp', 'to' => $telefono,
+                         'type' => 'text', 'text' => ['preview_url' => false, 'body' => $cuerpo]]));
+        $out['respuesta'] = mb_substr($r['body'], 0, 2000);
+        if ($r['ok']) { $out['estado'] = 'enviado'; }
+        else { $out['error'] = $r['error'] ?: ('HTTP ' . $r['http_code']); }
+        return $out;
+    }
+
+    if ($prov === 'twilio') {
+        $sid   = get_setting('prev_msg_twilio_sid', '');
+        $token = get_setting('prev_msg_twilio_token', '');
+        $from  = get_setting($canal === 'whatsapp' ? 'prev_msg_twilio_from_wa' : 'prev_msg_twilio_from_sms', '');
+        if ($sid === '' || $token === '' || $from === '') { $out['error'] = 'Falta configurar SID, token o número de origen de Twilio.'; return $out; }
+        $to   = ($canal === 'whatsapp' ? 'whatsapp:+' : '+') . $telefono;
+        $de   = $canal === 'whatsapp' && stripos($from, 'whatsapp:') !== 0 ? 'whatsapp:' . $from : $from;
+        $r = prev_msg_http('POST', "https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages.json",
+            ['Authorization: Basic ' . base64_encode($sid . ':' . $token),
+             'Content-Type: application/x-www-form-urlencoded'],
+            http_build_query(['To' => $to, 'From' => $de, 'Body' => $cuerpo]));
+        $out['respuesta'] = mb_substr($r['body'], 0, 2000);
+        if ($r['ok']) { $out['estado'] = 'enviado'; }
+        else { $out['error'] = $r['error'] ?: ('HTTP ' . $r['http_code']); }
+        return $out;
+    }
+
+    if ($prov === 'http') {
+        $url = get_setting('prev_msg_http_url', '');
+        if ($url === '') { $out['error'] = 'Falta configurar la URL de la API HTTP.'; return $out; }
+        $metodo  = strtoupper(get_setting('prev_msg_http_metodo', 'POST')) === 'GET' ? 'GET' : 'POST';
+        $token   = get_setting('prev_msg_http_token', '');
+        $headers = ['Content-Type: application/json'];
+        if ($token !== '') $headers[] = 'Authorization: Bearer ' . $token;
+        // La URL admite los marcadores {to} y {message}; en POST además va el JSON.
+        $urlFinal = str_replace(['{to}', '{message}'], [$telefono, rawurlencode($cuerpo)], $url);
+        $body = $metodo === 'POST'
+            ? json_encode(['to' => $telefono, 'message' => $cuerpo, 'channel' => $canal])
+            : null;
+        $r = prev_msg_http($metodo, $urlFinal, $headers, $body);
+        $out['respuesta'] = mb_substr($r['body'], 0, 2000);
+        if ($r['ok']) { $out['estado'] = 'enviado'; }
+        else { $out['error'] = $r['error'] ?: ('HTTP ' . $r['http_code']); }
+        return $out;
+    }
+
+    $out['error'] = 'Proveedor no soportado.';
+    return $out;
+}
+
+/** Registra un envío en prev_msg_envios y devuelve su id. */
+function prev_msg_log(array $d): int
+{
+    db()->prepare(
+        "INSERT INTO prev_msg_envios
+         (contrato_id, cliente_id, canal, destinatario, plantilla_id, cuerpo,
+          estado, proveedor, respuesta, error, usuario_id)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)"
+    )->execute([
+        $d['contrato_id'] ?? null, $d['cliente_id'] ?? null, $d['canal'], $d['destinatario'],
+        $d['plantilla_id'] ?? null, $d['cuerpo'], $d['estado'], $d['proveedor'],
+        $d['respuesta'] ?? null, $d['error'] ?? null, $d['usuario_id'] ?? null,
+    ]);
+    return (int)db()->lastInsertId();
+}
+
+function prev_msg_plantilla_out(array $r): array
+{
+    return [
+        'id'     => (int)$r['id'],
+        'clave'  => $r['clave'],
+        'nombre' => $r['nombre'],
+        'canal'  => $r['canal'],
+        'cuerpo' => $r['cuerpo'],
+        'activo' => (bool)$r['activo'],
+    ];
+}
+
+function prev_msg_envio_out(array $r): array
+{
+    return [
+        'id'              => (int)$r['id'],
+        'contrato_id'     => $r['contrato_id'] !== null ? (int)$r['contrato_id'] : null,
+        'contrato_numero' => $r['contrato_numero'] ?? null,
+        'cliente_nombre'  => $r['cliente_nombre'] ?? null,
+        'canal'           => $r['canal'],
+        'destinatario'    => $r['destinatario'],
+        'plantilla'       => $r['plantilla_nombre'] ?? null,
+        'cuerpo'          => $r['cuerpo'],
+        'estado'          => $r['estado'],
+        'proveedor'       => $r['proveedor'],
+        'error'           => $r['error'],
+        'usuario'         => $r['usuario'] ?? null,
+        'created_at'      => $r['created_at'] ?? null,
+    ];
+}
+
+function prev_ajuste_out(array $r): array
+{
+    return [
+        'id'             => (int)$r['id'],
+        'descripcion'    => $r['descripcion'],
+        'tipo'           => $r['tipo'],
+        'valor'          => (float)$r['valor'],
+        'redondeo'       => $r['redondeo'],
+        'plan_id'        => $r['plan_id'] !== null ? (int)$r['plan_id'] : null,
+        'plan_nombre'    => $r['plan_nombre'] ?? null,
+        'moneda'         => $r['moneda'],
+        'aplicar_planes' => (bool)$r['aplicar_planes'],
+        'aplicar_cuotas' => (bool)$r['aplicar_cuotas'],
+        'afectados'      => (int)$r['afectados'],
+        'estado'         => $r['estado'],
+        'usuario'        => $r['usuario'] ?? null,
+        'revertido_en'   => $r['revertido_en'],
+        'created_at'     => $r['created_at'] ?? null,
+    ];
+}
+
+// ---------------------------------------------------------------------------
+// Reportes: salida CSV
+// ---------------------------------------------------------------------------
+
+/** Emite un CSV (con BOM UTF-8 para Excel) y termina la ejecución. */
+function prev_csv_out(string $filename, array $headers, array $rows): void
+{
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    $out = fopen('php://output', 'w');
+    fwrite($out, "\xEF\xBB\xBF");
+    fputcsv($out, $headers, ';');
+    foreach ($rows as $r) fputcsv($out, $r, ';');
+    fclose($out);
+    exit;
 }
 
 function prev_comision_out(array $r): array
