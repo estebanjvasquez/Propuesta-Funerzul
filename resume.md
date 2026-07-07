@@ -1,0 +1,103 @@
+# resume.md — Contexto del Módulo de Previsión (para continuar en próximos sprints)
+
+> Documento de trabajo interno. Resume la arquitectura, convenciones y el plan
+> por rondas del módulo de Previsión, para retomar el desarrollo sin perder contexto.
+> Última actualización: 2026-07-07 (Ronda 2 completada, commit `d0c0923`).
+
+## 1. Qué es este proyecto
+
+Sitio web + panel administrativo de **Funeraria del Zulia** (PHP 8 + PDO/MySQL en
+cPanel compartido, JS vanilla, sin frameworks). El **módulo de Previsión** replica
+y moderniza el sistema administrativo legado **SIEMPRE** (respaldo en
+`database/SIEMPRE.sql`, 1.15 GB, **está en `.gitignore` y NUNCA debe commitearse**).
+
+## 2. Estado por rondas
+
+| Ronda | Fases | Estado | Commit |
+|---|---|---|---|
+| Base (v1) | Clientes, contratos, beneficiarios, cuotas/pagos, planes, vendedores+comisiones, importación CSV | ✅ | `4b74812` |
+| Ronda 1 (v2) | A: sucursales+servicios · B: siniestros con validación de cobertura · C: cobranza (morosos, gestiones, auto-lapsado+cron, rutas/hoja de cobro) | ✅ | `3d30730` |
+| Ronda 2 (v3) | D: ajuste masivo de tarifas (reversible) · E: mensajería WhatsApp/SMS multi-proveedor · I: reportes (aging, producción, cobranza, cartera) + CSV | ✅ | `d0c0923` |
+| **Ronda 3** | F: domiciliación bancaria por lotes (archivo de débito + retorno) · G: empleadores/planes colectivos (descuento por nómina) · H: documentos imprimibles (contrato, carnet, estado de cuenta) · J: envejecimiento automático de dependientes (edad tope del parentesco) | ⬜ pendiente | — |
+| **Ronda 4** | K: portal de autogestión del cliente | ⬜ pendiente | — |
+
+**Decisiones abiertas:**
+- Proveedor de mensajería: aún sin contratar. El sistema quedó **configurable desde
+  el panel** (Previsión → Mensajes → Configuración): manual / WhatsApp Cloud API /
+  Twilio / API HTTP genérica. Cuando el cliente contrate uno, solo se cargan credenciales.
+- Rama `feature/modulo-prevision` sin push: falta decidir push+PR o merge a `main`.
+
+## 3. Convenciones del código (respetarlas en próximas fases)
+
+### API PHP (`api/prevision_*.php`)
+- Cada endpoint: `require lib/bootstrap.php` + `lib/prevision.php`; switch por `$_GET['action']`.
+- Helpers: `require_method()`, `$u = require_role('admin','editor')`, `require_csrf()`,
+  `json_out(['ok'=>...], code)`, `audit($accion, $tabla, $id, $detalles)`, `clean_str()`,
+  `body_json()`, `db()` (PDO), `get_setting/set_setting/setting_int/setting_bool` (app_settings).
+- Eliminaciones definitivas = solo `admin`. Transacciones con `beginTransaction/commit/rollBack`.
+- Catálogos ENUM de la BD espejados como constantes `PREV_*` en `api/lib/prevision.php`.
+
+### JS (`admin-prevision.js`)
+- Objeto global `Prevision` (estado + wire + loadSub); **debe terminar con
+  `window.Prevision = Prevision;`** (hook de pestañas en admin.js).
+- Funciones globales `pv*` invocadas por `onclick` inline. Helpers de admin.js:
+  `$`, `$all`, `escapeHtml` (atributos HTML), `escapeAttr` (SOLO literales JS en onclick:
+  incluye comillas), `openModal/closeModal`, `toast`, `confirmAction`, `fmtDate`,
+  `API.req(url, {method,json}|{form})`, `State.user.role` (`pvEsAdmin()`).
+- Cache-bust: subir `?v=` de `admin-prevision.js` en admin.html en cada release.
+
+### BD (`database/0N_prevision*.sql`)
+- InnoDB, utf8mb4_unicode_ci, prefijo `prev_*`, FKs a `users(id)`, `INSERT IGNORE` para seeds.
+- Orden de importación: 01 → 02 → 03 → 04 → 05 → 06.
+
+### Deploy
+- `.cpanel.yml` copia `api/` completo + lista explícita de archivos raíz
+  (admin-prevision.js ya está). Los `.sql` no se despliegan (se importan por phpMyAdmin).
+- Crons existentes: `api/cron/purge_photos.php`, `api/cron/prevision_lapsar.php`
+  (CLI o `?token=` = `cron_secret` de config.php).
+
+## 4. Mapa de archivos del módulo
+
+| Archivo | Contenido |
+|---|---|
+| `api/lib/prevision.php` | Constantes PREV_*, validadores (prev_date/money/cedula...), tasa del día, `prev_validar_cobertura()`, `prev_lapsar()`, motor de mensajería (`prev_msg_enviar()` con drivers manual/whatsapp_cloud/twilio/http, `prev_msg_render()`, `prev_msg_telefono()`), `prev_csv_out()`, formatters `prev_*_out()` |
+| `api/prevision_clientes.php` | CRUD titulares (baja lógica, hard delete admin) |
+| `api/prevision_planes.php` | CRUD planes |
+| `api/prevision_vendedores.php` | Vendedores + comisiones 4 etapas SIEMPRE (semana1, fin_mes1, mes2, mes13) |
+| `api/prevision_contratos.php` | Contratos, beneficiarios, cuotas, pagos en cascada con conversión Bs/USD, stats, tasa |
+| `api/prevision_import.php` | Importación CSV con simulación (clientes/vendedores/contratos/beneficiarios/pagos) |
+| `api/prevision_siniestros.php` | Siniestros 2 pasos, snapshot de validación JSON, cierre de titular → contrato finalizado |
+| `api/prevision_cobranza.php` | Morosos, gestiones/promesas, auto-lapsado config+preview+ejecutar, hoja de cobro |
+| `api/prevision_catalogos.php` | Sucursales, servicios, cobradores, rutas + servicios por contrato |
+| `api/prevision_ajustes.php` | Ajuste masivo: preview/aplicar/revertir/list/get |
+| `api/prevision_mensajes.php` | config/config_set/test, plantillas CRUD, enviar/enviar_morosos/envios |
+| `api/prevision_reportes.php` | aging/produccion/cobranza/cartera (+`&formato=csv`) |
+| `admin.html` | Pestaña Previsión: 6 stats + 12 sub-pestañas (`pvSub-*`) |
+| `admin-prevision.js` | Toda la UI del módulo (~2.700 líneas) |
+
+## 5. Reglas de negocio clave (heredadas de SIEMPRE)
+
+- **Pagos**: se aplican en cascada a las cuotas pendientes más antiguas; si la moneda
+  difiere se convierte con la tasa del día; el excedente queda como abono a favor
+  (`cuota_id NULL`). `pago_delete` (admin) restaura saldos exactos.
+- **Comisiones**: 4 etapas por contrato; monto sugerido por `comision_venta` % del
+  contrato o % mensual del vendedor; una etapa no se paga dos veces (UNIQUE).
+- **Cobertura de siniestro**: contrato activo + beneficiario activo + plazo de espera
+  (del beneficiario u override, si no `vigente_desde`) + solvencia → cubierto /
+  con_observaciones / sin_cobertura; los checks se congelan en JSON en el expediente.
+- **Cierre de siniestro del titular** → contrato `finalizado` + cuotas pendientes anuladas.
+- **Auto-lapsado**: contratos activos con ≥ N cuotas vencidas → `suspendido`
+  (settings `prev_lapse_enabled`, `prev_lapse_cuotas`).
+- **Ajustes de tarifas**: guardan valor anterior → nuevo por contrato/plan/cuota en
+  `prev_ajuste_detalles`; el reverso solo restaura cuotas aún pendientes sin abonos.
+- **Mensajería**: proveedor por canal en app_settings (`prev_msg_proveedor_whatsapp/sms`);
+  secretos nunca viajan al navegador (se enmascaran como `__set__`); teléfonos se
+  normalizan a internacional (código país `prev_msg_pais`, por defecto 58).
+- Plazo de espera por defecto: 4 meses. Parentescos con rango de edad (18 seeds).
+
+## 6. Activación en el hosting (pendiente de ejecutar)
+
+1. `git push` + Deploy en cPanel Git Version Control.
+2. phpMyAdmin: importar `database/06_prevision_v3.sql` (y antes 04 y 05 si no están).
+3. Cron diario (si se quiere auto-lapsado): `api/cron/prevision_lapsar.php`.
+4. Cuando haya proveedor de mensajería: Previsión → Mensajes → Configuración.
