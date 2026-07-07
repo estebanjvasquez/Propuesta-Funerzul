@@ -18,6 +18,7 @@ y moderniza el sistema administrativo legado **SIEMPRE** (respaldo en
 | Base (v1) | Clientes, contratos, beneficiarios, cuotas/pagos, planes, vendedores+comisiones, importación CSV | ✅ | `4b74812` |
 | Ronda 1 (v2) | A: sucursales+servicios · B: siniestros con validación de cobertura · C: cobranza (morosos, gestiones, auto-lapsado+cron, rutas/hoja de cobro) | ✅ | `3d30730` |
 | Ronda 2 (v3) | D: ajuste masivo de tarifas (reversible) · E: mensajería WhatsApp/SMS multi-proveedor · I: reportes (aging, producción, cobranza, cartera) + CSV | ✅ | `d0c0923` |
+| Ajustes 2.1 (v4) | Comisiones por estados (calcular→aprobar→pagar, `07_prevision_v4.sql`) · Reorganización de menús (topbar Sitio web/Previsión/Sistema; subnav de previsión por grupos) | ✅ | pendiente commit |
 | **Ronda 3** | F: domiciliación bancaria por lotes (archivo de débito + retorno) · G: empleadores/planes colectivos (descuento por nómina) · H: documentos imprimibles (contrato, carnet, estado de cuenta) · J: envejecimiento automático de dependientes (edad tope del parentesco) | ⬜ pendiente | — |
 | **Ronda 4** | K: portal de autogestión del cliente | ⬜ pendiente | — |
 
@@ -81,7 +82,12 @@ y moderniza el sistema administrativo legado **SIEMPRE** (respaldo en
   difiere se convierte con la tasa del día; el excedente queda como abono a favor
   (`cuota_id NULL`). `pago_delete` (admin) restaura saldos exactos.
 - **Comisiones**: 4 etapas por contrato; monto sugerido por `comision_venta` % del
-  contrato o % mensual del vendedor; una etapa no se paga dos veces (UNIQUE).
+  contrato o % mensual del vendedor; una etapa no se genera/paga dos veces (UNIQUE
+  contrato_id+etapa). **Flujo por estados** (`prev_comisiones.estado`):
+  calculada → aprobada → pagada (o anulada = se borra la fila no pagada para
+  poder recalcular). `comisiones_pendientes` = etapas vencidas aún sin fila;
+  `comision_calcular` las genera; `comision_aprobar`/`comision_pagar` avanzan el
+  estado; los totales de `comisiones_resumen`/`comisiones` filtran estado='pagada'.
 - **Cobertura de siniestro**: contrato activo + beneficiario activo + plazo de espera
   (del beneficiario u override, si no `vigente_desde`) + solvencia → cubierto /
   con_observaciones / sin_cobertura; los checks se congelan en JSON en el expediente.

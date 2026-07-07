@@ -86,7 +86,7 @@ las eliminaciones definitivas requieren **admin**.
 | `prevision_clientes.php?action=list\|get\|create\|update\|delete\|restore` | GET/POST | Clientes titulares (búsqueda paginada por cédula/nombre/teléfono; baja lógica). |
 | `prevision_planes.php?action=list\|get\|create\|update\|toggle\|delete` | GET/POST | Planes de previsión. |
 | `prevision_vendedores.php?action=list\|get\|create\|update\|retirar\|reactivar\|delete` | GET/POST | Vendedores y sus % de comisión. |
-| `prevision_vendedores.php?action=comisiones\|comisiones_resumen\|comisiones_pendientes\|comision_pagar\|comision_delete` | GET/POST | Comisiones por contrato/etapa (semana1, fin_mes1, mes2, mes13). |
+| `prevision_vendedores.php?action=comisiones\|comisiones_resumen\|comisiones_pendientes\|comisiones_estado\|comision_calcular\|comision_actualizar\|comision_aprobar\|comision_pagar\|comision_anular\|comision_delete` | GET/POST | Comisiones por contrato/etapa (semana1, fin_mes1, mes2, mes13) con **flujo por estados**: `calcular` (genera las etapas vencidas → *calculada*), `actualizar`/`aprobar` (verificación → *aprobada*) y `pagar` (→ *pagada*); `anular` descarta una no pagada. Requiere `07_prevision_v4.sql`. |
 | `prevision_contratos.php?action=list\|get\|create\|update\|set_estatus` | GET/POST | Contratos (estatus: activo/suspendido/anulado/renuncia). |
 | `prevision_contratos.php?action=parentescos\|beneficiario_add\|beneficiario_update\|beneficiario_estatus\|beneficiario_delete` | GET/POST | Beneficiarios del contrato. |
 | `prevision_contratos.php?action=cuotas\|cuotas_generar\|cuota_update\|cuota_anular` | GET/POST | Cuotas por cobrar (generación según frecuencia). |

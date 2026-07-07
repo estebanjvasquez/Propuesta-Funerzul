@@ -14,7 +14,7 @@ const Prevision = {
     con: { q: '', estatus: '', morosos: false, offset: 0, limit: 25, total: 0 },
     cli: { q: '', offset: 0, limit: 25, total: 0 },
     sin: { q: '', estado: '', offset: 0, limit: 25, total: 0 },
-    comVista: 'pendientes',
+    comVista: 'por_calcular',
     cobVista: 'morosos',
     repVista: 'aging',
     msgVista: 'enviar',
@@ -1241,28 +1241,67 @@ async function pvDeleteVendedor(id) {
 async function pvLoadComisiones() {
     const cont = $('#pvComContent');
     const vid = $('#pvComVendedor').value;
+    const vq = vid ? '&vendedor_id=' + vid : '';
+    const v = Prevision.comVista;
     try {
-        if (Prevision.comVista === 'pendientes') {
-            const r = await API.req('prevision_vendedores.php?action=comisiones_pendientes' + (vid ? '&vendedor_id=' + vid : ''));
+        if (v === 'por_calcular') {
+            const r = await API.req('prevision_vendedores.php?action=comisiones_pendientes' + vq);
             cont.innerHTML = `
+                <div class="admin-toolbar prev-h3">
+                    <p class="setting-help">${r.items.length} etapa(s) vencida(s) sin generar. Al calcular, quedan en estado <strong>calculada</strong> para su revisión.</p>
+                    ${r.items.length ? `<button class="btn btn-primary btn-sm" onclick="pvComCalcularTodas('${vid || ''}')">⚙ Calcular todas</button>` : ''}
+                </div>
                 <div class="table-responsive"><table class="admin-table">
                     <thead><tr><th>Contrato</th><th>Vendedor</th><th>Etapa</th><th>Vencida desde</th><th>Sugerido</th><th>Acciones</th></tr></thead>
                     <tbody>${r.items.map(x => `
                         <tr>
                             <td><a href="#" onclick="pvVerContrato(${x.contrato_id});return false;"><strong>${escapeHtml(x.contrato_numero)}</strong></a></td>
                             <td>${escapeHtml(x.vendedor_nombre)}</td>
-                            <td><span class="status-badge badge-amber">${escapeHtml(PV_ETAPAS[x.etapa] || x.etapa)}</span></td>
+                            <td><span class="status-badge badge-gray">${escapeHtml(PV_ETAPAS[x.etapa] || x.etapa)}</span></td>
                             <td>${fmtDate(x.vencida_desde)}</td>
                             <td>${x.monto_sugerido > 0 ? pvMoney(x.monto_sugerido, x.moneda) : '—'}</td>
-                            <td><button class="btn btn-primary btn-sm"
-                                onclick="pvPagarComisionForm(${x.contrato_id}, '${x.etapa}', ${x.vendedor_id}, ${x.monto_sugerido})">Pagar</button></td>
-                        </tr>`).join('') || `<tr><td colspan="6" class="empty-row">No hay comisiones por pagar. 🎉</td></tr>`}
+                            <td><button class="btn btn-outline btn-sm"
+                                onclick="pvComCalcular(${x.contrato_id}, '${x.etapa}')">Calcular</button></td>
+                        </tr>`).join('') || `<tr><td colspan="6" class="empty-row">No hay etapas vencidas por generar. 🎉</td></tr>`}
                     </tbody></table></div>`;
-        } else if (Prevision.comVista === 'pagadas') {
-            const r = await API.req('prevision_vendedores.php?action=comisiones' + (vid ? '&vendedor_id=' + vid : ''));
+        } else if (v === 'por_aprobar' || v === 'por_pagar') {
+            const estado = v === 'por_aprobar' ? 'calculada' : 'aprobada';
+            const r = await API.req('prevision_vendedores.php?action=comisiones_estado&estado=' + estado + vq);
+            const ids = r.items.map(k => k.id);
+            const accion = v === 'por_aprobar'
+                ? `<button class="btn btn-primary btn-sm" onclick="pvComAprobar([${ids.join(',')}])">✓ Aprobar todas</button>`
+                : '';
+            cont.innerHTML = `
+                <div class="admin-toolbar prev-h3">
+                    <p class="setting-help">${r.items.length} comisión(es) · total sugerido <strong>${pvMoney(r.total_usd, 'USD')}</strong>.
+                    ${v === 'por_aprobar' ? 'Verifique el monto y apruebe.' : 'Apruébelas están listas para enviar a pagar.'}</p>
+                    ${r.items.length ? accion : ''}
+                </div>
+                <div class="table-responsive"><table class="admin-table">
+                    <thead><tr><th>Contrato</th><th>Vendedor</th><th>Etapa</th><th>Base</th><th>%</th><th>Monto</th><th>Acciones</th></tr></thead>
+                    <tbody>${r.items.map(k => `
+                        <tr>
+                            <td><a href="#" onclick="pvVerContrato(${k.contrato_id});return false;"><strong>${escapeHtml(k.contrato_numero)}</strong></a>
+                                ${k.fecha_calculo ? `<div class="row-sub">calc. ${fmtDate(k.fecha_calculo)}</div>` : ''}</td>
+                            <td>${escapeHtml(k.vendedor_nombre)}</td>
+                            <td><span class="status-badge ${v === 'por_aprobar' ? 'badge-amber' : 'badge-blue'}">${escapeHtml(PV_ETAPAS[k.etapa] || k.etapa)}</span></td>
+                            <td>${pvMoney(k.base_monto, k.moneda)}</td>
+                            <td>${pvNum(k.porcentaje)}%</td>
+                            <td><strong>${pvMoney(k.monto_calculado, k.moneda)}</strong></td>
+                            <td><div class="admin-actions">
+                                ${v === 'por_aprobar'
+                                    ? `<button class="btn btn-outline btn-sm" onclick="pvComAjustar(${k.id}, ${k.monto_calculado})">Ajustar</button>
+                                       <button class="btn btn-primary btn-sm" onclick="pvComAprobar([${k.id}])">Aprobar</button>`
+                                    : `<button class="btn btn-primary btn-sm" onclick="pvPagarComisionForm(0, '', 0, 0, ${k.id}, ${k.monto_calculado})">Enviar a pagar</button>`}
+                                <button class="btn btn-danger btn-sm" onclick="pvComAnular(${k.id})">Anular</button>
+                            </div></td>
+                        </tr>`).join('') || `<tr><td colspan="7" class="empty-row">No hay comisiones ${v === 'por_aprobar' ? 'por aprobar' : 'por pagar'}.</td></tr>`}
+                    </tbody></table></div>`;
+        } else if (v === 'pagadas') {
+            const r = await API.req('prevision_vendedores.php?action=comisiones' + vq);
             cont.innerHTML = `
                 <div class="table-responsive"><table class="admin-table">
-                    <thead><tr><th>Fecha</th><th>Contrato</th><th>Vendedor</th><th>Etapa</th><th>Monto USD</th><th>Monto Bs</th><th></th></tr></thead>
+                    <thead><tr><th>Fecha</th><th>Contrato</th><th>Vendedor</th><th>Etapa</th><th>Monto USD</th><th>Monto Bs</th><th>Aprobó</th><th></th></tr></thead>
                     <tbody>${r.items.map(k => `
                         <tr>
                             <td>${fmtDate(k.fecha_pago)}</td>
@@ -1271,8 +1310,9 @@ async function pvLoadComisiones() {
                             <td>${escapeHtml(PV_ETAPAS[k.etapa] || k.etapa)}</td>
                             <td>${pvMoney(k.monto_usd, 'USD')}</td>
                             <td>${k.monto_bs > 0 ? pvMoney(k.monto_bs, 'BS') : '—'}</td>
+                            <td class="row-sub">${escapeHtml(k.aprobador || '—')}</td>
                             <td>${pvEsAdmin() ? `<button class="btn btn-danger btn-sm" onclick="pvDeleteComision(${k.id}, 0)">Eliminar</button>` : ''}</td>
-                        </tr>`).join('') || `<tr><td colspan="7" class="empty-row">Sin comisiones pagadas.</td></tr>`}
+                        </tr>`).join('') || `<tr><td colspan="8" class="empty-row">Sin comisiones pagadas.</td></tr>`}
                     </tbody></table></div>`;
         } else {
             const r = await API.req('prevision_vendedores.php?action=comisiones_resumen');
@@ -1293,18 +1333,80 @@ async function pvLoadComisiones() {
     } catch (e) { toast(e.message); }
 }
 
-function pvPagarComisionForm(contratoId, etapa, vendedorId, sugerido) {
-    openModal('Pagar comisión', `
-        <form id="pvComForm">
-            <div class="form-grid-2">
-                <div class="form-group"><label class="form-label">Etapa *</label>
-                    ${pvSelect('pk_etapa', PV_ETAPAS, etapa || 'semana1')}</div>
-                <div class="form-group"><label class="form-label">Fecha de pago</label>
-                    <input type="date" id="pk_fecha" class="form-control" value="${pvHoy()}"></div>
+async function pvComCalcular(contratoId, etapa) {
+    try {
+        const r = await API.req('prevision_vendedores.php?action=comision_calcular', { method: 'POST', json: { contrato_id: contratoId, etapa } });
+        toast(r.generadas ? 'Comisión calculada.' : 'La etapa no está vencida o ya fue generada.');
+        pvLoadComisiones();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvComCalcularTodas(vid) {
+    if (!confirmAction('¿Calcular todas las comisiones vencidas pendientes de generar?')) return;
+    try {
+        const r = await API.req('prevision_vendedores.php?action=comision_calcular', { method: 'POST', json: { all: 1, vendedor_id: vid || undefined } });
+        toast(`${r.generadas} comisión(es) calculada(s). Revíselas en "Por aprobar".`);
+        pvLoadComisiones();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvComAprobar(ids) {
+    if (!ids || !ids.length) { toast('No hay comisiones para aprobar.'); return; }
+    if (!confirmAction(`¿Aprobar ${ids.length} comisión(es)? Quedarán listas para enviar a pagar.`)) return;
+    try {
+        const r = await API.req('prevision_vendedores.php?action=comision_aprobar', { method: 'POST', json: { ids } });
+        toast(`${r.aprobadas} comisión(es) aprobada(s).`);
+        pvLoadComisiones();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvComAnular(id) {
+    if (!confirmAction('¿Anular esta comisión? Podrá volver a calcularla luego.')) return;
+    try {
+        await API.req('prevision_vendedores.php?action=comision_anular', { method: 'POST', json: { id } });
+        toast('Comisión anulada.'); pvLoadComisiones();
+    } catch (e) { toast(e.message); }
+}
+
+function pvComAjustar(id, actual) {
+    openModal('Ajustar monto de la comisión', `
+        <form id="pvComAjForm">
+            <div class="form-group"><label class="form-label">Monto calculado (USD)</label>
+                <input type="number" step="0.01" min="0" id="ca_monto" class="form-control" value="${actual || ''}" required></div>
+            <div class="form-group"><label class="form-label">Comentario</label>
+                <input type="text" id="ca_comentario" class="form-control" maxlength="200"></div>
+            <p id="ca_error" class="login-error" hidden></p>
+            <div class="modal-actions">
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
             </div>
+        </form>`);
+    $('#pvComAjForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#ca_error'); err.hidden = true;
+        try {
+            await API.req('prevision_vendedores.php?action=comision_actualizar', { method: 'POST', json: {
+                id, monto_calculado: $('#ca_monto').value, comentario: $('#ca_comentario').value.trim(),
+            }});
+            closeModal(); toast('Monto ajustado.'); pvLoadComisiones();
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+// Formulario de pago. Con comisionId paga una comisión ya generada (flujo);
+// sin él, registra un pago directo por contrato+etapa (detalle del contrato).
+function pvPagarComisionForm(contratoId, etapa, vendedorId, sugerido, comisionId, calculado) {
+    const monto = calculado || sugerido || '';
+    openModal(comisionId ? 'Enviar comisión a pagar' : 'Pagar comisión', `
+        <form id="pvComForm">
+            ${comisionId ? '' : `
+            <div class="form-group"><label class="form-label">Etapa *</label>
+                ${pvSelect('pk_etapa', PV_ETAPAS, etapa || 'semana1')}</div>`}
+            <div class="form-group"><label class="form-label">Fecha de pago</label>
+                <input type="date" id="pk_fecha" class="form-control" value="${pvHoy()}"></div>
             <div class="form-grid-2">
                 <div class="form-group"><label class="form-label">Monto USD</label>
-                    <input type="number" step="0.01" min="0" id="pk_usd" class="form-control" value="${sugerido || ''}"></div>
+                    <input type="number" step="0.01" min="0" id="pk_usd" class="form-control" value="${monto}"></div>
                 <div class="form-group"><label class="form-label">Monto Bs</label>
                     <input type="number" step="0.01" min="0" id="pk_bs" class="form-control"></div>
             </div>
@@ -1315,7 +1417,7 @@ function pvPagarComisionForm(contratoId, etapa, vendedorId, sugerido) {
                 <input type="text" id="pk_comentario" class="form-control" maxlength="200"></div>
             <p id="pk_error" class="login-error" hidden></p>
             <div class="modal-actions">
-                <button type="submit" class="btn btn-primary">Registrar pago de comisión</button>
+                <button type="submit" class="btn btn-primary">${comisionId ? 'Registrar pago' : 'Registrar pago de comisión'}</button>
                 <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
             </div>
         </form>`);
@@ -1323,13 +1425,15 @@ function pvPagarComisionForm(contratoId, etapa, vendedorId, sugerido) {
         e.preventDefault();
         const err = $('#pk_error'); err.hidden = true;
         try {
-            await API.req('prevision_vendedores.php?action=comision_pagar', { method: 'POST', json: {
-                contrato_id: contratoId, vendedor_id: vendedorId || undefined,
-                etapa: $('#pk_etapa').value, fecha_pago: $('#pk_fecha').value,
+            const json = {
+                fecha_pago: $('#pk_fecha').value,
                 monto_usd: $('#pk_usd').value, monto_bs: $('#pk_bs').value, tasa: $('#pk_tasa').value,
                 comentario: $('#pk_comentario').value.trim(),
-            }});
-            closeModal(); toast('Comisión registrada.');
+            };
+            if (comisionId) { json.id = comisionId; }
+            else { json.contrato_id = contratoId; json.vendedor_id = vendedorId || undefined; json.etapa = $('#pk_etapa').value; }
+            await API.req('prevision_vendedores.php?action=comision_pagar', { method: 'POST', json });
+            closeModal(); toast('Comisión pagada.');
             if (Prevision.sub === 'comisiones') pvLoadComisiones();
             Prevision.loadStats();
         } catch (ex) { err.innerText = ex.message; err.hidden = false; }

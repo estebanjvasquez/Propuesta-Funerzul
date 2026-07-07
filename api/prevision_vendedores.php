@@ -11,12 +11,18 @@
  *   POST reactivar           (staff)
  *   POST delete              (admin; solo si no tiene contratos ni comisiones)
  *
- * Comisiones (etapas del esquema SIEMPRE: semana1, fin_mes1, mes2, mes13):
- *   GET  comisiones          (?vendedor_id=, ?contrato_id=, ?desde=, ?hasta=)
- *   GET  comisiones_resumen  (totales por vendedor)
- *   GET  comisiones_pendientes (?vendedor_id=; etapas vencidas sin pagar)
- *   POST comision_pagar      (staff; registra el pago de una etapa)
- *   POST comision_delete     (admin)
+ * Comisiones (etapas del esquema SIEMPRE: semana1, fin_mes1, mes2, mes13).
+ * Flujo por estados: calculada -> aprobada -> pagada (o anulada).
+ *   GET  comisiones            (pagadas; ?vendedor_id=, ?contrato_id=, ?desde=, ?hasta=)
+ *   GET  comisiones_resumen    (totales pagados por vendedor)
+ *   GET  comisiones_pendientes (?vendedor_id=; etapas vencidas aún sin generar)
+ *   GET  comisiones_estado     (?estado=calculada|aprobada|pagada, ?vendedor_id=)
+ *   POST comision_calcular     (staff; genera una etapa {contrato_id,etapa} o todas {all:1})
+ *   POST comision_actualizar   (staff; ajusta el monto de una comisión 'calculada' antes de aprobar)
+ *   POST comision_aprobar      (staff; calculada -> aprobada; {ids:[...]} o {contrato_id,etapa})
+ *   POST comision_pagar        (staff; aprobada/calculada -> pagada; {id} o {contrato_id,etapa})
+ *   POST comision_anular       (staff; descarta una comisión no pagada para poder recalcularla)
+ *   POST comision_delete       (admin; elimina un pago de comisión)
  */
 require __DIR__ . '/lib/bootstrap.php';
 require __DIR__ . '/lib/prevision.php';
@@ -70,6 +76,36 @@ function etapa_vence(string $fechaIngreso, string $etapa): string
         case 'mes13':    $d->modify('+13 months'); break;
     }
     return $d->format('Y-m-d');
+}
+
+/**
+ * Datos para generar la comisión de una etapa de un contrato activo:
+ * [vendedor_id, base, porcentaje, monto, moneda, vence] o null si no aplica
+ * (contrato inexistente/no activo/sin vendedor, o etapa aún no vencida).
+ */
+function comision_calc_row(int $contratoId, string $etapa): ?array
+{
+    $st = db()->prepare(
+        "SELECT c.id, c.vendedor_id, c.fecha_ingreso, c.monto_cuota, c.moneda,
+                c.comision_venta, c.estatus, v.comision_mensual
+         FROM prev_contratos c JOIN prev_vendedores v ON v.id = c.vendedor_id
+         WHERE c.id = ?"
+    );
+    $st->execute([$contratoId]);
+    $r = $st->fetch();
+    if (!$r || $r['estatus'] !== 'activo' || !$r['vendedor_id']) return null;
+    $vence = etapa_vence($r['fecha_ingreso'], $etapa);
+    if ($vence > date('Y-m-d')) return null;
+    $pct  = (float)$r['comision_venta'] > 0 ? (float)$r['comision_venta'] : (float)$r['comision_mensual'];
+    $base = (float)$r['monto_cuota'];
+    return [
+        'vendedor_id' => (int)$r['vendedor_id'],
+        'base'        => $base,
+        'porcentaje'  => $pct,
+        'monto'       => round($base * $pct / 100, 2),
+        'moneda'      => $r['moneda'],
+        'vence'       => $vence,
+    ];
 }
 
 switch ($action) {
@@ -240,22 +276,48 @@ switch ($action) {
     case 'comisiones': {
         require_method('GET');
         require_role('admin', 'editor');
-        $where = '1=1';
+        // Por defecto muestra las pagadas; ?contrato_id lista todas las del contrato.
+        $where = ($cid0 = (int)($_GET['contrato_id'] ?? 0)) > 0 ? '1=1' : "k.estado = 'pagada'";
         $params = [];
         if (($vid = (int)($_GET['vendedor_id'] ?? 0)) > 0) { $where .= " AND k.vendedor_id = ?"; $params[] = $vid; }
-        if (($cid = (int)($_GET['contrato_id'] ?? 0)) > 0) { $where .= " AND k.contrato_id = ?"; $params[] = $cid; }
+        if ($cid0 > 0) { $where .= " AND k.contrato_id = ?"; $params[] = $cid0; }
         if ($d = prev_date($_GET['desde'] ?? '')) { $where .= " AND k.fecha_pago >= ?"; $params[] = $d; }
         if ($h = prev_date($_GET['hasta'] ?? '')) { $where .= " AND k.fecha_pago <= ?"; $params[] = $h; }
 
         $st = db()->prepare(
-            "SELECT k.*, c.numero AS contrato_numero, v.nombre AS vendedor_nombre
+            "SELECT k.*, c.numero AS contrato_numero, c.moneda AS moneda,
+                    v.nombre AS vendedor_nombre, ua.email AS aprobador
              FROM prev_comisiones k
              JOIN prev_contratos  c ON c.id = k.contrato_id
              JOIN prev_vendedores v ON v.id = k.vendedor_id
+             LEFT JOIN users ua ON ua.id = k.aprobado_por
              WHERE $where ORDER BY k.fecha_pago DESC, k.id DESC LIMIT 500"
         );
         $st->execute($params);
         json_out(['ok' => true, 'items' => array_map('prev_comision_out', $st->fetchAll())]);
+    }
+
+    case 'comisiones_estado': {
+        require_method('GET');
+        require_role('admin', 'editor');
+        $estado = prev_enum($_GET['estado'] ?? '', PREV_ESTADOS_COMISION, 'calculada');
+        $where = "k.estado = ?";
+        $params = [$estado];
+        if (($vid = (int)($_GET['vendedor_id'] ?? 0)) > 0) { $where .= " AND k.vendedor_id = ?"; $params[] = $vid; }
+
+        $st = db()->prepare(
+            "SELECT k.*, c.numero AS contrato_numero, c.moneda AS moneda,
+                    v.nombre AS vendedor_nombre, ua.email AS aprobador
+             FROM prev_comisiones k
+             JOIN prev_contratos  c ON c.id = k.contrato_id
+             JOIN prev_vendedores v ON v.id = k.vendedor_id
+             LEFT JOIN users ua ON ua.id = k.aprobado_por
+             WHERE $where ORDER BY k.fecha_calculo ASC, k.id ASC LIMIT 1000"
+        );
+        $st->execute($params);
+        $items = array_map('prev_comision_out', $st->fetchAll());
+        $totUsd = array_sum(array_map(fn($i) => $i['monto_calculado'] ?: $i['monto_usd'], $items));
+        json_out(['ok' => true, 'estado' => $estado, 'items' => $items, 'total_usd' => round($totUsd, 2)]);
     }
 
     case 'comisiones_resumen': {
@@ -269,7 +331,7 @@ switch ($action) {
                     COALESCE(SUM(k.monto_bs),0)  AS comisiones_bs,
                     COUNT(k.id) AS pagos
              FROM prev_vendedores v
-             LEFT JOIN prev_comisiones k ON k.vendedor_id = v.id
+             LEFT JOIN prev_comisiones k ON k.vendedor_id = v.id AND k.estado = 'pagada'
              GROUP BY v.id, v.nombre, v.cedula, v.activo
              ORDER BY v.activo DESC, v.nombre ASC"
         );
@@ -333,43 +395,160 @@ switch ($action) {
         json_out(['ok' => true, 'items' => $items]);
     }
 
+    case 'comision_calcular': {
+        require_method('POST');
+        $u = require_role('admin', 'editor');
+        require_csrf();
+        $b = body_json();
+
+        // Lista de (contrato, etapa) a generar: una específica o todas las vencidas.
+        $objetivos = [];
+        if (!empty($b['all'])) {
+            $where = "c.estatus = 'activo' AND c.vendedor_id IS NOT NULL";
+            $params = [];
+            if (($vid = (int)($b['vendedor_id'] ?? 0)) > 0) { $where .= " AND c.vendedor_id = ?"; $params[] = $vid; }
+            $st = db()->prepare(
+                "SELECT c.id, GROUP_CONCAT(k.etapa) AS generadas
+                 FROM prev_contratos c
+                 LEFT JOIN prev_comisiones k ON k.contrato_id = c.id
+                 WHERE $where GROUP BY c.id"
+            );
+            $st->execute($params);
+            foreach ($st->fetchAll() as $r) {
+                $ya = $r['generadas'] ? explode(',', $r['generadas']) : [];
+                foreach (PREV_ETAPAS_COMISION as $etapa) {
+                    if (!in_array($etapa, $ya, true)) $objetivos[] = [(int)$r['id'], $etapa];
+                }
+            }
+        } else {
+            $contratoId = (int)($b['contrato_id'] ?? 0);
+            $etapa = prev_enum($b['etapa'] ?? '', PREV_ETAPAS_COMISION);
+            if (!$contratoId || !$etapa) json_out(['ok' => false, 'error' => 'Faltan contrato y/o etapa.'], 422);
+            $objetivos[] = [$contratoId, $etapa];
+        }
+
+        $ins = db()->prepare(
+            "INSERT IGNORE INTO prev_comisiones
+             (contrato_id, vendedor_id, etapa, estado, base_monto, porcentaje, monto_calculado,
+              monto_usd, fecha_calculo, registrado_por)
+             VALUES (?,?,?,'calculada',?,?,?,?,CURDATE(),?)"
+        );
+        $generadas = 0;
+        foreach ($objetivos as [$cid, $etapa]) {
+            $calc = comision_calc_row($cid, $etapa);
+            if (!$calc) continue;                       // no vencida / contrato no activo
+            $ins->execute([$cid, $calc['vendedor_id'], $etapa, $calc['base'], $calc['porcentaje'],
+                           $calc['monto'], $calc['monto'], $u['id']]);
+            if ($ins->rowCount() > 0) $generadas++;
+        }
+        audit('prev_comision.calcular', 'prev_comisiones', null,
+              ['generadas' => $generadas, 'evaluadas' => count($objetivos)]);
+        json_out(['ok' => true, 'generadas' => $generadas]);
+    }
+
+    case 'comision_actualizar': {
+        require_method('POST');
+        require_role('admin', 'editor');
+        require_csrf();
+        $b = body_json();
+        $id = (int)($b['id'] ?? 0);
+        $st = db()->prepare("SELECT estado FROM prev_comisiones WHERE id = ?");
+        $st->execute([$id]);
+        $estado = $st->fetchColumn();
+        if ($estado === false) json_out(['ok' => false, 'error' => 'Comisión no encontrada.'], 404);
+        if ($estado !== 'calculada') json_out(['ok' => false, 'error' => 'Solo se puede ajustar una comisión en estado calculada.'], 409);
+        $monto = prev_money($b['monto_calculado'] ?? 0);
+        if ($monto <= 0) json_out(['ok' => false, 'error' => 'Indique el monto.'], 422);
+        db()->prepare("UPDATE prev_comisiones SET monto_calculado = ?, monto_usd = ?, comentario = ? WHERE id = ?")
+            ->execute([$monto, $monto, clean_str($b['comentario'] ?? '', 200) ?: null, $id]);
+        audit('prev_comision.actualizar', 'prev_comisiones', $id, ['monto_calculado' => $monto]);
+        json_out(['ok' => true]);
+    }
+
+    case 'comision_aprobar': {
+        require_method('POST');
+        $u = require_role('admin', 'editor');
+        require_csrf();
+        $b = body_json();
+        $ids = [];
+        if (isset($b['ids']) && is_array($b['ids'])) {
+            $ids = array_values(array_filter(array_map('intval', $b['ids'])));
+        } elseif (($cid = (int)($b['contrato_id'] ?? 0)) && ($et = prev_enum($b['etapa'] ?? '', PREV_ETAPAS_COMISION))) {
+            $st = db()->prepare("SELECT id FROM prev_comisiones WHERE contrato_id = ? AND etapa = ? AND estado = 'calculada'");
+            $st->execute([$cid, $et]);
+            $ids = array_map('intval', $st->fetchAll(PDO::FETCH_COLUMN));
+        }
+        if (!$ids) json_out(['ok' => false, 'error' => 'No hay comisiones calculadas para aprobar.'], 422);
+        $in = implode(',', array_fill(0, count($ids), '?'));
+        $st = db()->prepare(
+            "UPDATE prev_comisiones SET estado = 'aprobada', aprobado_por = ?, fecha_aprobacion = NOW()
+             WHERE estado = 'calculada' AND id IN ($in)"
+        );
+        $st->execute(array_merge([$u['id']], $ids));
+        audit('prev_comision.aprobar', 'prev_comisiones', null, ['aprobadas' => $st->rowCount()]);
+        json_out(['ok' => true, 'aprobadas' => $st->rowCount()]);
+    }
+
     case 'comision_pagar': {
         require_method('POST');
         $u = require_role('admin', 'editor');
         require_csrf();
         $b = body_json();
+
+        $fecha = prev_date($b['fecha_pago'] ?? '') ?: date('Y-m-d');
+        $tasa  = (float)($b['tasa'] ?? 0) ?: prev_tasa_del_dia($fecha);
+        $montoUsd = prev_money($b['monto_usd'] ?? 0);
+        $montoBs  = prev_money($b['monto_bs'] ?? 0);
+
+        // Caso 1: pagar una comisión ya generada (aprobada/calculada) por su id.
+        if (($id = (int)($b['id'] ?? 0)) > 0) {
+            $st = db()->prepare(
+                "SELECT k.*, c.numero AS contrato_numero FROM prev_comisiones k
+                 JOIN prev_contratos c ON c.id = k.contrato_id WHERE k.id = ?"
+            );
+            $st->execute([$id]);
+            $k = $st->fetch();
+            if (!$k) json_out(['ok' => false, 'error' => 'Comisión no encontrada.'], 404);
+            if ($k['estado'] === 'pagada') json_out(['ok' => false, 'error' => 'Esta comisión ya está pagada.'], 409);
+            if ($montoUsd <= 0 && $montoBs <= 0) $montoUsd = (float)$k['monto_calculado'];
+            if ($montoBs <= 0 && $tasa > 0) $montoBs = round($montoUsd * $tasa, 2);
+            if ($montoUsd <= 0 && $tasa > 0) $montoUsd = round($montoBs / $tasa, 2);
+            db()->prepare(
+                "UPDATE prev_comisiones SET estado = 'pagada', monto_usd = ?, monto_bs = ?, tasa = ?,
+                        fecha_pago = ?, comentario = COALESCE(?, comentario), registrado_por = ? WHERE id = ?"
+            )->execute([$montoUsd, $montoBs, $tasa, $fecha, clean_str($b['comentario'] ?? '', 200) ?: null, $u['id'], $id]);
+            audit('prev_comision.pagar', 'prev_comisiones', $id,
+                  ['contrato' => $k['contrato_numero'], 'etapa' => $k['etapa'], 'monto_usd' => $montoUsd]);
+            json_out(['ok' => true, 'id' => $id]);
+        }
+
+        // Caso 2 (directo): registrar el pago de una etapa sin pasar por el flujo.
         $contratoId = (int)($b['contrato_id'] ?? 0);
         $etapa = prev_enum($b['etapa'] ?? '', PREV_ETAPAS_COMISION);
         if (!$contratoId || !$etapa) json_out(['ok' => false, 'error' => 'Faltan contrato y/o etapa.'], 422);
-
         $st = db()->prepare("SELECT id, vendedor_id, numero FROM prev_contratos WHERE id = ?");
         $st->execute([$contratoId]);
         $c = $st->fetch();
         if (!$c) json_out(['ok' => false, 'error' => 'Contrato no encontrado.'], 404);
         $vendedorId = (int)($b['vendedor_id'] ?? 0) ?: (int)$c['vendedor_id'];
         if (!$vendedorId) json_out(['ok' => false, 'error' => 'El contrato no tiene vendedor asignado.'], 422);
-
-        $fecha = prev_date($b['fecha_pago'] ?? '') ?: date('Y-m-d');
-        $tasa  = (float)($b['tasa'] ?? 0) ?: prev_tasa_del_dia($fecha);
-        $montoUsd = prev_money($b['monto_usd'] ?? 0);
-        $montoBs  = prev_money($b['monto_bs'] ?? 0);
         if ($montoUsd <= 0 && $montoBs <= 0) json_out(['ok' => false, 'error' => 'Indique el monto de la comisión.'], 422);
         if ($montoBs <= 0 && $tasa > 0) $montoBs = round($montoUsd * $tasa, 2);
         if ($montoUsd <= 0 && $tasa > 0) $montoUsd = round($montoBs / $tasa, 2);
 
         try {
-            $ins = db()->prepare(
+            db()->prepare(
                 "INSERT INTO prev_comisiones
-                 (contrato_id, vendedor_id, etapa, monto_bs, tasa, monto_usd, fecha_pago, comentario, registrado_por)
-                 VALUES (?,?,?,?,?,?,?,?,?)"
-            );
-            $ins->execute([
-                $contratoId, $vendedorId, $etapa, $montoBs, $tasa, $montoUsd, $fecha,
+                 (contrato_id, vendedor_id, etapa, estado, monto_calculado, monto_bs, tasa, monto_usd,
+                  fecha_calculo, fecha_pago, comentario, registrado_por)
+                 VALUES (?,?,?,'pagada',?,?,?,?,CURDATE(),?,?,?)"
+            )->execute([
+                $contratoId, $vendedorId, $etapa, $montoUsd, $montoBs, $tasa, $montoUsd, $fecha,
                 clean_str($b['comentario'] ?? '', 200) ?: null, $u['id'],
             ]);
         } catch (\PDOException $e) {
             if ((string)$e->getCode() === '23000') {
-                json_out(['ok' => false, 'error' => 'Esa etapa ya fue pagada para este contrato.'], 409);
+                json_out(['ok' => false, 'error' => 'Esa etapa ya fue generada/pagada para este contrato.'], 409);
             }
             throw $e;
         }
@@ -377,6 +556,22 @@ switch ($action) {
         audit('prev_comision.pagar', 'prev_comisiones', $id,
               ['contrato' => $c['numero'], 'etapa' => $etapa, 'monto_usd' => $montoUsd]);
         json_out(['ok' => true, 'id' => $id], 201);
+    }
+
+    case 'comision_anular': {
+        require_method('POST');
+        require_role('admin', 'editor');
+        require_csrf();
+        $id = (int)(body_json()['id'] ?? 0);
+        $st = db()->prepare("SELECT estado FROM prev_comisiones WHERE id = ?");
+        $st->execute([$id]);
+        $estado = $st->fetchColumn();
+        if ($estado === false) json_out(['ok' => false, 'error' => 'Comisión no encontrada.'], 404);
+        if ($estado === 'pagada') json_out(['ok' => false, 'error' => 'Una comisión pagada no se anula; use Eliminar (admin).'], 409);
+        // Se elimina para liberar la etapa (contrato_id+etapa es único) y poder recalcularla.
+        db()->prepare("DELETE FROM prev_comisiones WHERE id = ? AND estado <> 'pagada'")->execute([$id]);
+        audit('prev_comision.anular', 'prev_comisiones', $id, ['estado_previo' => $estado]);
+        json_out(['ok' => true]);
     }
 
     case 'comision_delete': {

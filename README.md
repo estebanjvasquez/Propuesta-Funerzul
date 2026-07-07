@@ -107,6 +107,14 @@ Guía para el personal de Funeraria del Zulia que gestiona los obituarios del si
 > **Seguridad:** cada persona debe tener su propio usuario. No compartas credenciales.
 > La sesión se cierra con el botón **Salir** (arriba a la derecha).
 
+La barra superior agrupa el trabajo en dos menús y un acceso directo:
+
+- **Sitio web** (contenido público): Obituarios, Condolencias, Directorio Médico,
+  Recursos, Preguntas frecuentes y Plantillas de obituario (esta última, admin).
+- **Previsión** (proceso administrativo): el módulo de planes de previsión, con
+  su propia sub-navegación por grupos (Operación, Comercial, Configuración, Gestión).
+- **Sistema** (solo admin): Configuración y Usuarios.
+
 ### 2. Roles de usuario
 
 | Rol | Puede hacer |
@@ -114,7 +122,8 @@ Guía para el personal de Funeraria del Zulia que gestiona los obituarios del si
 | **Editor** | Crear, editar, destacar y dar de baja obituarios; moderar y editar condolencias. |
 | **Admin** | Todo lo del editor **+** gestionar plantillas, usuarios, configuración y purga, y eliminar definitivamente. |
 
-Las pestañas **Plantillas**, **Configuración** y **Usuarios** solo las ve el admin.
+Las opciones **Plantillas** (menú *Sitio web*) y el menú **Sistema**
+(**Configuración** y **Usuarios**) solo las ve el admin.
 
 ### 3. Tablero (pestaña Obituarios)
 
@@ -316,11 +325,15 @@ Al entrar se ven los indicadores del módulo: **contratos activos**, **clientes*
   activar/desactivar sin afectar contratos existentes.
 - **Vendedores** — datos personales, porcentajes de comisión
   (semanal/mensual/anual) y cuenta bancaria para el pago; retiro y reactivación.
-- **Comisiones** — el sistema calcula qué etapas están **por pagar** por contrato
-  según el esquema de SIEMPRE (**Semana 1**, **Fin de mes 1**, **Mes 2** y
-  **Mes 13**) con un monto sugerido; se registra el pago en USD y/o Bs con su
-  tasa. Vistas de pagadas e historial y resumen por vendedor. Una etapa no puede
-  pagarse dos veces para el mismo contrato.
+- **Comisiones** — flujo de aprobación en cuatro pasos según el esquema de
+  SIEMPRE (**Semana 1**, **Fin de mes 1**, **Mes 2** y **Mes 13**):
+  **1) Por calcular** — el sistema detecta las etapas vencidas sin generar y con
+  el botón **“Calcular todas”** (o una a una) las genera con su monto sugerido
+  (% del contrato o del vendedor). **2) Por aprobar** — las comisiones calculadas
+  se **verifican** (se puede ajustar el monto) y se **aprueban**. **3) Por pagar**
+  — las aprobadas se **envían a pagar** registrando el monto en USD y/o Bs con su
+  tasa. **4) Pagadas** — historial con quién aprobó. Más una vista de **resumen**
+  por vendedor. Una etapa no puede generarse ni pagarse dos veces por contrato.
 - **Siniestros** — el corazón del servicio: al fallecer un titular o
   beneficiario se registra el siniestro en dos pasos (contrato + quién
   falleció) y el sistema **valida la cobertura automáticamente** (contrato

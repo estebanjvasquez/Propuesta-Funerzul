@@ -15,6 +15,7 @@ const PREV_ESTATUS_CONTRATO    = ['activo', 'suspendido', 'anulado', 'renuncia',
 const PREV_ESTATUS_BENEFICIARIO = ['activo', 'suspendido', 'excluido', 'fallecido'];
 const PREV_TIPOS_CUOTA         = ['inicial', 'programada', 'especial', 'mora', 'final'];
 const PREV_ETAPAS_COMISION     = ['semana1', 'fin_mes1', 'mes2', 'mes13'];
+const PREV_ESTADOS_COMISION    = ['calculada', 'aprobada', 'pagada', 'anulada'];
 const PREV_ESTADOS_SINIESTRO   = ['abierto', 'liquidado', 'cerrado', 'rechazado'];
 const PREV_TIPOS_SIN_DETALLE   = ['servicio', 'pago', 'reintegro', 'otro'];
 const PREV_TIPOS_GESTION       = ['llamada', 'visita', 'whatsapp', 'sms', 'email', 'otro'];
@@ -761,11 +762,20 @@ function prev_comision_out(array $r): array
         'vendedor_id'     => (int)$r['vendedor_id'],
         'vendedor_nombre' => $r['vendedor_nombre'] ?? null,
         'etapa'           => $r['etapa'],
+        'estado'          => $r['estado'] ?? 'pagada',
+        'base_monto'      => isset($r['base_monto']) ? (float)$r['base_monto'] : 0.0,
+        'porcentaje'      => isset($r['porcentaje']) ? (float)$r['porcentaje'] : 0.0,
+        'monto_calculado' => isset($r['monto_calculado']) ? (float)$r['monto_calculado'] : 0.0,
+        'moneda'          => $r['moneda'] ?? null,
         'monto_bs'        => (float)$r['monto_bs'],
         'tasa'            => (float)$r['tasa'],
         'monto_usd'       => (float)$r['monto_usd'],
+        'fecha_calculo'   => $r['fecha_calculo'] ?? null,
         'fecha_pago'      => $r['fecha_pago'],
         'comentario'      => $r['comentario'],
+        'aprobado_por'    => $r['aprobado_por'] !== null ? (int)$r['aprobado_por'] : null,
+        'aprobador'       => $r['aprobador'] ?? null,
+        'fecha_aprobacion' => $r['fecha_aprobacion'] ?? null,
         'created_at'      => $r['created_at'] ?? null,
     ];
 }

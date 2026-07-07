@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Administración | Funeraria del Zulia</title>
     <link rel="icon" href="favicon.png" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20260627">
+    <link rel="stylesheet" href="styles.css?v=20260708">
 </head>
 <body class="admin-body">
 
@@ -40,15 +40,33 @@
                     <span class="admin-brand-tag">Panel</span>
                 </a>
                 <nav class="admin-tabs" id="adminTabs">
-                    <button class="admin-tab-btn active" data-tab="obituarios" type="button">Obituarios</button>
-                    <button class="admin-tab-btn" data-tab="condolencias" type="button">Condolencias <span class="tab-badge" id="badgePending" hidden>0</span></button>
-                    <button class="admin-tab-btn" data-tab="medicos" type="button">Directorio Médico</button>
-                    <button class="admin-tab-btn" data-tab="recursos" type="button">Recursos</button>
-                    <button class="admin-tab-btn" data-tab="faqs" type="button">Preguntas</button>
+                    <!-- Menú del sitio público (frontend) -->
+                    <div class="admin-menu">
+                        <button class="admin-menu-btn" data-menu="sitio" type="button">Sitio web
+                            <span class="tab-badge" id="badgePending" hidden>0</span>
+                            <span class="admin-menu-caret">▾</span></button>
+                        <div class="admin-menu-panel" id="menu-sitio" hidden>
+                            <button class="admin-tab-btn" data-tab="obituarios" type="button">Obituarios</button>
+                            <button class="admin-tab-btn" data-tab="condolencias" type="button">Condolencias <span class="tab-badge" id="badgePendingItem" hidden>0</span></button>
+                            <button class="admin-tab-btn" data-tab="medicos" type="button">Directorio Médico</button>
+                            <button class="admin-tab-btn" data-tab="recursos" type="button">Recursos</button>
+                            <button class="admin-tab-btn" data-tab="faqs" type="button">Preguntas frecuentes</button>
+                            <button class="admin-tab-btn admin-only" data-tab="plantillas" type="button" hidden>Plantillas de obituario</button>
+                        </div>
+                    </div>
+
+                    <!-- Módulo administrativo de Previsión -->
                     <button class="admin-tab-btn" data-tab="prevision" type="button">Previsión</button>
-                    <button class="admin-tab-btn admin-only" data-tab="plantillas" type="button" hidden>Plantillas</button>
-                    <button class="admin-tab-btn admin-only" data-tab="config" type="button" hidden>Configuración</button>
-                    <button class="admin-tab-btn admin-only" data-tab="usuarios" type="button" hidden>Usuarios</button>
+
+                    <!-- Sistema (solo admin) -->
+                    <div class="admin-menu admin-only" hidden>
+                        <button class="admin-menu-btn" data-menu="sistema" type="button">Sistema
+                            <span class="admin-menu-caret">▾</span></button>
+                        <div class="admin-menu-panel" id="menu-sistema" hidden>
+                            <button class="admin-tab-btn" data-tab="config" type="button">Configuración</button>
+                            <button class="admin-tab-btn" data-tab="usuarios" type="button">Usuarios</button>
+                        </div>
+                    </div>
                 </nav>
                 <div class="admin-user">
                     <span id="currentUserName" class="admin-user-name"></span>
@@ -170,19 +188,31 @@
                     </div>
                 </div>
 
-                <div class="filter-group prev-subnav" id="pvSubNav">
-                    <button class="filter-btn active" data-sub="contratos" type="button">Contratos</button>
-                    <button class="filter-btn" data-sub="clientes" type="button">Clientes</button>
-                    <button class="filter-btn" data-sub="siniestros" type="button">Siniestros</button>
-                    <button class="filter-btn" data-sub="cobranza" type="button">Cobranza</button>
-                    <button class="filter-btn" data-sub="planes" type="button">Planes</button>
-                    <button class="filter-btn" data-sub="vendedores" type="button">Vendedores</button>
-                    <button class="filter-btn" data-sub="comisiones" type="button">Comisiones</button>
-                    <button class="filter-btn" data-sub="reportes" type="button">Reportes</button>
-                    <button class="filter-btn" data-sub="mensajes" type="button">Mensajes</button>
-                    <button class="filter-btn" data-sub="ajustes" type="button">Ajustes</button>
-                    <button class="filter-btn" data-sub="catalogos" type="button">Catálogos</button>
-                    <button class="filter-btn" data-sub="importar" type="button">Importar</button>
+                <div class="prev-subnav" id="pvSubNav">
+                    <div class="prev-subnav-group">
+                        <span class="prev-subnav-label">Operación</span>
+                        <button class="filter-btn active" data-sub="contratos" type="button">Contratos</button>
+                        <button class="filter-btn" data-sub="clientes" type="button">Clientes</button>
+                        <button class="filter-btn" data-sub="siniestros" type="button">Siniestros</button>
+                        <button class="filter-btn" data-sub="cobranza" type="button">Cobranza</button>
+                    </div>
+                    <div class="prev-subnav-group">
+                        <span class="prev-subnav-label">Comercial</span>
+                        <button class="filter-btn" data-sub="vendedores" type="button">Vendedores</button>
+                        <button class="filter-btn" data-sub="comisiones" type="button">Comisiones</button>
+                    </div>
+                    <div class="prev-subnav-group">
+                        <span class="prev-subnav-label">Configuración</span>
+                        <button class="filter-btn" data-sub="planes" type="button">Planes</button>
+                        <button class="filter-btn" data-sub="catalogos" type="button">Catálogos</button>
+                        <button class="filter-btn" data-sub="ajustes" type="button">Ajustes de tarifas</button>
+                        <button class="filter-btn" data-sub="mensajes" type="button">Mensajes</button>
+                    </div>
+                    <div class="prev-subnav-group">
+                        <span class="prev-subnav-label">Gestión</span>
+                        <button class="filter-btn" data-sub="reportes" type="button">Reportes</button>
+                        <button class="filter-btn" data-sub="importar" type="button">Importar</button>
+                    </div>
                 </div>
 
                 <!-- Contratos -->
@@ -306,11 +336,13 @@
                         </div>
                     </div>
                     <div class="filter-group" id="pvComFilters">
-                        <button class="filter-btn active" data-vista="pendientes" type="button">Por pagar</button>
+                        <button class="filter-btn active" data-vista="por_calcular" type="button">Por calcular</button>
+                        <button class="filter-btn" data-vista="por_aprobar" type="button">Por aprobar</button>
+                        <button class="filter-btn" data-vista="por_pagar" type="button">Por pagar</button>
                         <button class="filter-btn" data-vista="pagadas" type="button">Pagadas</button>
                         <button class="filter-btn" data-vista="resumen" type="button">Resumen</button>
                     </div>
-                    <p class="setting-help">Etapas de comisión por contrato (esquema SIEMPRE): <strong>Semana 1</strong>, <strong>Fin de mes 1</strong>, <strong>Mes 2</strong> y <strong>Mes 13</strong>.</p>
+                    <p class="setting-help">Flujo: <strong>calcular</strong> las comisiones (etapas SIEMPRE: Semana 1, Fin de mes 1, Mes 2, Mes 13) → <strong>verificar y aprobar</strong> → <strong>enviar a pagar</strong>.</p>
                     <div id="pvComContent"></div>
                 </div>
 
@@ -478,7 +510,7 @@
 
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="admin.js?v=20260707"></script>
-    <script src="admin-prevision.js?v=20260707b"></script>
+    <script src="admin.js?v=20260708"></script>
+    <script src="admin-prevision.js?v=20260708"></script>
 </body>
 </html>

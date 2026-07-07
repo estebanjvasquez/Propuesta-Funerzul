@@ -124,12 +124,37 @@ function setupTabs() {
     $all('.admin-tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab, btn));
     });
+    // Menús desplegables del topbar (Sitio web / Sistema)
+    $all('.admin-menu-btn').forEach(mb => {
+        mb.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const panel = mb.nextElementSibling;
+            const abrir = panel.hidden;
+            closeAllMenus();
+            if (abrir) { panel.hidden = false; mb.classList.add('open'); }
+        });
+    });
+    document.addEventListener('click', closeAllMenus);
+    syncMenuActive('obituarios');
+}
+function closeAllMenus() {
+    $all('.admin-menu-panel').forEach(p => p.hidden = true);
+    $all('.admin-menu-btn').forEach(m => m.classList.remove('open'));
+}
+function syncMenuActive(tab) {
+    $all('.admin-menu-btn').forEach(m => m.classList.remove('active'));
+    const item = $(`.admin-tab-btn[data-tab="${tab}"]`);
+    const panel = item?.closest('.admin-menu-panel');
+    const mb = panel?.previousElementSibling;
+    if (mb && mb.classList.contains('admin-menu-btn')) mb.classList.add('active');
 }
 function switchTab(tab, btn) {
     $all('.admin-tab-btn').forEach(b => b.classList.remove('active'));
     btn?.classList.add('active');
     $all('.admin-tab-panel').forEach(p => p.hidden = true);
     $('#tab-' + tab).hidden = false;
+    syncMenuActive(tab);
+    closeAllMenus();
     if (tab === 'condolencias') loadCondolences();
     if (tab === 'prevision' && window.Prevision) Prevision.open();
     if (tab === 'medicos') loadDoctors();
@@ -157,9 +182,10 @@ async function refreshPendingBadge() {
     try {
         const r = await API.req('obituaries.php?action=stats');
         const n = r.stats.pending_condolences;
-        const badge = $('#badgePending');
-        badge.innerText = n;
-        badge.hidden = (n === 0);
+        ['#badgePending', '#badgePendingItem'].forEach(sel => {
+            const badge = $(sel);
+            if (badge) { badge.innerText = n; badge.hidden = (n === 0); }
+        });
     } catch (e) {}
 }
 

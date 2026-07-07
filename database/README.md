@@ -27,6 +27,12 @@ disco y backend PHP, todo junto).
   configuración del proveedor de mensajería en `app_settings` (manual,
   WhatsApp Cloud API, Twilio o API HTTP genérica — se elige desde el panel).
   Requiere `05_prevision_v2.sql` importado previamente.
+- **`07_prevision_v4.sql`** — **Previsión, comisiones por estados**: añade a
+  `prev_comisiones` el flujo *calculada → aprobada → pagada* (columnas `estado`,
+  `base_monto`, `porcentaje`, `monto_calculado`, `fecha_calculo`, `aprobado_por`,
+  `fecha_aprobacion`) para generar, verificar/aprobar y luego pagar las
+  comisiones. Requiere `04_prevision.sql`. (Las comisiones ya existentes quedan
+  como *pagada*.)
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -85,9 +91,10 @@ disco y backend PHP, todo junto).
 2. Pestaña **Importar** → **Seleccionar archivo** → `database/01_schema.sql` → **Continuar**.
 3. Verifica que aparezcan las **7 tablas**.
 4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
-   `04_prevision.sql`, `05_prevision_v2.sql` y `06_prevision_v3.sql`
-   (módulo de Previsión, en ese orden). El `04` requiere que `users` (del
-   `01`) ya exista; el `05` requiere el `04` y el `06` requiere el `05`.
+   `04_prevision.sql`, `05_prevision_v2.sql`, `06_prevision_v3.sql` y
+   `07_prevision_v4.sql` (módulo de Previsión, en ese orden). El `04` requiere
+   que `users` (del `01`) ya exista; el `05` requiere el `04`, el `06` el `05`
+   y el `07` el `04`.
 
 ### 3. Iniciar sesión y asegurar el admin
 
