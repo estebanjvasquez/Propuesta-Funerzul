@@ -116,7 +116,11 @@ y moderniza el sistema administrativo legado **SIEMPRE** (respaldo en
   modal **Tasa** registra la tasa, muestra el histórico y ofrece el botón
   **«Actualizar cuotas en Bs»** (`tasa_aplicar`, solo admin) que recalcula las
   cuotas `programada` pendientes sin abonos a la nueva tasa — **manual**, nunca
-  automático. Cuotas ya cobradas/parciales no se tocan.
+  automático. Cuotas ya cobradas/parciales no se tocan. La referencia USD para el
+  recálculo es `COALESCE(monto_ref_usd, cuota del plan si el plan está en USD)`,
+  así también funciona con contratos en Bs previos que no tenían `monto_ref_usd`
+  (y de paso se lo fija). El botón aparece tras guardar una tasa y también al abrir
+  el modal con la tasa vigente.
 - Plazo de espera por defecto: 4 meses. Parentescos con rango de edad (18 seeds).
 
 ## 6. Activación en el hosting (pendiente de ejecutar)

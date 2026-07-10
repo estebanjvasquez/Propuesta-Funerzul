@@ -98,23 +98,30 @@ function prev_tasa_del_dia(?string $fecha = null): float
     return $t !== false ? (float)$t : 0.0;
 }
 
+// Referencia en USD por cuota de un contrato en Bs: su monto_ref_usd guardado
+// o, si falta, la cuota del plan (los planes están en USD por defecto).
+const PREV_REF_USD_SQL = "COALESCE(c.monto_ref_usd, CASE WHEN p.moneda = 'USD' THEN p.cuota_mensual END)";
+
 /**
  * Cuántos contratos/cuotas en Bs se recalcularían a una tasa dada.
  * Solo cuotas 'programada' pendientes y sin abonos (saldo = monto).
  */
 function prev_preview_cuotas_bs(float $tasa): array
 {
+    $ref = PREV_REF_USD_SQL;
     $st = db()->query(
-        "SELECT COUNT(*) FROM prev_contratos
-         WHERE moneda = 'BS' AND estatus IN ('activo','suspendido')
-           AND monto_ref_usd IS NOT NULL AND monto_ref_usd > 0"
+        "SELECT COUNT(*) FROM prev_contratos c
+         LEFT JOIN prev_planes p ON p.id = c.plan_id
+         WHERE c.moneda = 'BS' AND c.estatus IN ('activo','suspendido')
+           AND $ref > 0"
     );
     $contratos = (int)$st->fetchColumn();
     $st = db()->query(
         "SELECT COUNT(*) FROM prev_cuotas q
          JOIN prev_contratos c ON c.id = q.contrato_id
+         LEFT JOIN prev_planes p ON p.id = c.plan_id
          WHERE c.moneda = 'BS' AND c.estatus IN ('activo','suspendido')
-           AND c.monto_ref_usd IS NOT NULL AND c.monto_ref_usd > 0
+           AND $ref > 0
            AND q.tipo = 'programada' AND q.estado = 'pendiente' AND q.saldo = q.monto"
     );
     $cuotas = (int)$st->fetchColumn();
@@ -123,32 +130,37 @@ function prev_preview_cuotas_bs(float $tasa): array
 
 /**
  * Recalcula el monto en Bs de los contratos en bolívares usando su referencia
- * en USD y la nueva tasa. Actualiza el contrato y sus cuotas programadas aún
- * pendientes sin abonos (las ya cobradas/parciales no se tocan). Manual: se
- * invoca solo cuando el usuario decide aplicar la tasa. Devuelve conteos.
+ * en USD (guardada o la del plan) y la nueva tasa. Actualiza el contrato (y le
+ * fija monto_ref_usd/tasa_cambio) y sus cuotas programadas aún pendientes sin
+ * abonos (las ya cobradas/parciales no se tocan). Manual: se invoca solo cuando
+ * el usuario decide aplicar la tasa. Devuelve conteos.
  */
 function prev_actualizar_cuotas_bs(float $tasa): array
 {
     if ($tasa <= 0) return ['tasa' => $tasa, 'contratos' => 0, 'cuotas' => 0];
+    $ref = PREV_REF_USD_SQL;
     $pdo = db();
     $rows = $pdo->query(
-        "SELECT id, monto_ref_usd FROM prev_contratos
-         WHERE moneda = 'BS' AND estatus IN ('activo','suspendido')
-           AND monto_ref_usd IS NOT NULL AND monto_ref_usd > 0"
+        "SELECT c.id, $ref AS ref_usd
+         FROM prev_contratos c
+         LEFT JOIN prev_planes p ON p.id = c.plan_id
+         WHERE c.moneda = 'BS' AND c.estatus IN ('activo','suspendido')
+           AND $ref > 0"
     )->fetchAll();
 
     $nCont = 0; $nCuo = 0;
     $pdo->beginTransaction();
     try {
-        $upC = $pdo->prepare("UPDATE prev_contratos SET monto_cuota = ?, tasa_cambio = ? WHERE id = ?");
+        $upC = $pdo->prepare("UPDATE prev_contratos SET monto_cuota = ?, tasa_cambio = ?, monto_ref_usd = ? WHERE id = ?");
         $upQ = $pdo->prepare(
             "UPDATE prev_cuotas SET monto = ?, saldo = ?
              WHERE contrato_id = ? AND tipo = 'programada'
                AND estado = 'pendiente' AND saldo = monto"
         );
         foreach ($rows as $r) {
-            $nuevo = round((float)$r['monto_ref_usd'] * $tasa, 2);
-            $upC->execute([$nuevo, $tasa, $r['id']]);
+            $refUsd = (float)$r['ref_usd'];
+            $nuevo  = round($refUsd * $tasa, 2);
+            $upC->execute([$nuevo, $tasa, $refUsd, $r['id']]);
             $upQ->execute([$nuevo, $nuevo, $r['id']]);
             $nCuo += $upQ->rowCount();
             $nCont++;
