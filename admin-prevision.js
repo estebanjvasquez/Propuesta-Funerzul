@@ -258,7 +258,6 @@ function pvContratoFormHtml(c = {}, cliente = null) {
         <input type="hidden" id="pf_id" value="${c.id || ''}">
         <input type="hidden" id="pf_cliente_id" value="${c.cliente_id || (cliente ? cliente.id : '')}">
         <input type="hidden" id="pf_monto_ref_usd" value="${c.monto_ref_usd ?? ''}">
-        <input type="hidden" id="pf_orig_monto" value="${c.monto_cuota ?? ''}">
         <div class="form-grid-2">
             <div class="form-group"><label class="form-label">Nº de contrato</label>
                 <input type="text" id="pf_numero" class="form-control" value="${escapeHtml(c.numero || '')}" placeholder="(automático)"></div>
@@ -360,69 +359,73 @@ function pvContratoFormHtml(c = {}, cliente = null) {
 
 function pvWireContratoForm() {
     $('#pf_plan').addEventListener('change', pvContratoPlanChange);
-    $('#pf_moneda').addEventListener('change', () => pvContratoCalcBs(true));
+    $('#pf_moneda').addEventListener('change', pvContratoMonedaChange);
     $('#pvConForm').addEventListener('submit', pvSubmitContrato);
-    // Tasa vigente para calcular cuotas en Bs (se refresca al abrir el formulario).
-    // Al abrir NO se pisa el monto guardado (overwrite=false): solo informa.
+    // Tasa vigente para calcular cuotas en Bs; al llegar, recalcula si aplica.
     API.req('prevision_contratos.php?action=tasa')
-        .then(r => { Prevision.tasaActual = Number(r.tasa || 0); pvContratoCalcBs(false); })
-        .catch(() => { pvContratoCalcBs(false); });
+        .then(r => { Prevision.tasaActual = Number(r.tasa || 0); pvContratoCalcBs(); })
+        .catch(() => { pvContratoCalcBs(); });
+    pvContratoCalcBs();
 }
 
 function pvContratoPlanChange() {
     const opt = $('#pf_plan').selectedOptions[0];
-    const prevMoneda = $('#pf_moneda').value;
-    if (opt && opt.dataset.cuota !== undefined) {
-        // Si el usuario ya eligió Bs, se respeta esa moneda y se calcula en Bs;
-        // si no, se toma la del plan (por defecto USD) con su precio.
-        if (prevMoneda !== 'BS') {
-            $('#pf_moneda').value = opt.dataset.moneda;
-            $('#pf_monto_cuota').value = opt.dataset.cuota;
-            if (Number(opt.dataset.inicial) > 0) $('#pf_inicial').value = opt.dataset.inicial;
-        }
+    if (opt && opt.dataset.cuota !== undefined && $('#pf_moneda').value !== 'BS') {
+        // Con moneda USD (o al fijarla el plan): precio del plan tal cual.
+        $('#pf_moneda').value = opt.dataset.moneda;
+        $('#pf_monto_cuota').value = opt.dataset.cuota;
+        if (Number(opt.dataset.inicial) > 0) $('#pf_inicial').value = opt.dataset.inicial;
     }
-    pvContratoCalcBs(true);
+    // Con moneda Bs, pvContratoCalcBs recalcula monto e inicial con la tasa.
+    pvContratoCalcBs();
 }
 
-// Referencia en USD a enviar: la cuota del plan si es en USD; si no, el servidor
-// la deriva del monto en Bs entre la tasa.
+function pvContratoMonedaChange() {
+    const opt = $('#pf_plan').selectedOptions[0];
+    if ($('#pf_moneda').value !== 'BS' && opt && opt.dataset.moneda === 'USD' && Number(opt.dataset.cuota) > 0) {
+        // De vuelta a USD: restaurar los precios del plan en dólares.
+        $('#pf_monto_cuota').value = opt.dataset.cuota;
+        if (Number(opt.dataset.inicial) > 0) $('#pf_inicial').value = opt.dataset.inicial;
+    }
+    pvContratoCalcBs();
+}
+
+// Referencia en USD del contrato: la cuota del plan (los planes SIEMPRE están
+// en USD) o, si no hay plan, la referencia guardada del contrato.
 function pvContratoRefUsd() {
     if ($('#pf_moneda').value !== 'BS') return undefined;
     const opt = $('#pf_plan').selectedOptions[0];
     if (opt && opt.dataset.moneda === 'USD' && Number(opt.dataset.cuota) > 0) return Number(opt.dataset.cuota);
-    // Al editar un contrato en Bs de precio manual: conservar la referencia USD
-    // guardada si el monto en Bs no cambió (evita reanclarla a la tasa del día).
-    const storedRef = $('#pf_monto_ref_usd') ? $('#pf_monto_ref_usd').value : '';
-    const origMonto = $('#pf_orig_monto') ? $('#pf_orig_monto').value : '';
-    if (storedRef && origMonto && Number(origMonto) === Number($('#pf_monto_cuota').value)) return Number(storedRef);
-    return undefined;
+    const stored = Number(($('#pf_monto_ref_usd') && $('#pf_monto_ref_usd').value) || 0);
+    return stored > 0 ? stored : undefined;
 }
 
-// Con moneda = Bs, calcula/ancla la cuota a la tasa de cambio (siempre en Bs).
-// overwrite=true → recalcula y escribe el monto (acción del usuario);
-// overwrite=false → solo informa, sin pisar el monto ya guardado (al abrir).
-function pvContratoCalcBs(overwrite = true) {
+// Con moneda = Bs y referencia en USD, la cuota SIEMPRE es ref × tasa vigente:
+// escribe el monto en Bs y bloquea el campo (el servidor aplica la misma regla).
+function pvContratoCalcBs() {
     const info = $('#pf_bs_info');
     if (!info) return;
-    if ($('#pf_moneda').value !== 'BS') { info.innerHTML = ''; return; }
+    const monto = $('#pf_monto_cuota');
+    if ($('#pf_moneda').value !== 'BS') { info.innerHTML = ''; monto.readOnly = false; return; }
     const tasa = Number(Prevision.tasaActual || 0);
     if (tasa <= 0) {
-        info.innerHTML = '⚠ No hay tasa de cambio registrada. Regístrela con el botón <strong>Tasa</strong> para calcular la cuota en Bs.';
+        monto.readOnly = false;
+        info.innerHTML = '⚠ No hay tasa de cambio registrada. Regístrela con el botón <strong>Tasa</strong> del tablero para poder guardar contratos en Bs.';
         return;
     }
-    const opt = $('#pf_plan').selectedOptions[0];
-    const planMoneda = opt ? opt.dataset.moneda : '';
-    const planCuota = opt ? Number(opt.dataset.cuota || 0) : 0;
-    if (planMoneda === 'USD' && planCuota > 0) {
-        const bs = Math.round(planCuota * tasa * 100) / 100;
-        if (overwrite) {
-            $('#pf_monto_cuota').value = bs.toFixed(2);
-            info.innerHTML = `Cuota calculada: <strong>${planCuota.toFixed(2)} USD × ${pvNum(tasa)}</strong> = <strong>${pvNum(bs)} Bs</strong>. Se guarda en Bs y se conserva la referencia en USD para futuras actualizaciones de tasa.`;
-        } else {
-            info.innerHTML = `Plan: ${planCuota.toFixed(2)} USD. A la tasa vigente (${pvNum(tasa)}) equivale a <strong>${pvNum(bs)} Bs</strong>. Cambie la moneda o reelija el plan para recalcular.`;
+    const ref = pvContratoRefUsd();
+    if (ref > 0) {
+        const bs = Math.round(ref * tasa * 100) / 100;
+        monto.value = bs.toFixed(2);
+        monto.readOnly = true;
+        const opt = $('#pf_plan').selectedOptions[0];
+        if (opt && opt.dataset.moneda === 'USD' && Number(opt.dataset.inicial) > 0) {
+            $('#pf_inicial').value = (Math.round(Number(opt.dataset.inicial) * tasa * 100) / 100).toFixed(2);
         }
+        info.innerHTML = `Cuota en Bs: <strong>${ref.toFixed(2)} USD × ${pvNum(tasa)} = ${pvNum(bs)} Bs</strong>. El plan se mantiene en USD; el monto en Bs se recalcula con la tasa vigente al guardar.`;
     } else {
-        info.innerHTML = `Tasa vigente: <strong>${pvNum(tasa)} Bs/USD</strong>. Escriba el monto de la cuota en Bs; se guardará su referencia en USD (monto ÷ tasa).`;
+        monto.readOnly = false;
+        info.innerHTML = `Tasa vigente: <strong>${pvNum(tasa)} Bs/USD</strong>. Sin plan en USD: escriba el monto de la cuota en Bs y se guardará su referencia en USD (monto ÷ tasa).`;
     }
 }
 

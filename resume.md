@@ -109,18 +109,22 @@ y moderniza el sistema administrativo legado **SIEMPRE** (respaldo en
   cliente (con la cédula precargada) y al guardar vuelve al contrato con el titular
   ya seleccionado, conservando lo que se había capturado (`pvContratoDraft`).
 - **Cuotas en Bs ancladas a la tasa** (08_prevision_v5.sql): `prev_contratos`
-  guarda `monto_ref_usd` (referencia USD por cuota) y `tasa_cambio`. Al crear un
-  contrato en Bs, la cuota se calcula = ref_USD × tasa vigente y se guarda en Bs
-  (si el plan es USD, ref = cuota del plan; si se escribe el monto en Bs, ref =
-  monto ÷ tasa). El histórico de tasas está en `prev_tasas` (fecha + tasa). El
-  modal **Tasa** registra la tasa, muestra el histórico y ofrece el botón
-  **«Actualizar cuotas en Bs»** (`tasa_aplicar`, solo admin) que recalcula las
-  cuotas `programada` pendientes sin abonos a la nueva tasa — **manual**, nunca
-  automático. Cuotas ya cobradas/parciales no se tocan. La referencia USD para el
-  recálculo es `COALESCE(monto_ref_usd, cuota del plan si el plan está en USD)`,
-  así también funciona con contratos en Bs previos que no tenían `monto_ref_usd`
-  (y de paso se lo fija). El botón aparece tras guardar una tasa y también al abrir
-  el modal con la tasa vigente.
+  guarda `monto_ref_usd` (referencia USD por cuota) y `tasa_cambio`. **Los planes
+  SIEMPRE están en USD** (uniformidad de precios en el tiempo); si el contrato se
+  cobra en Bs, el monto de la cuota es SIEMPRE `ref_USD × tasa vigente` y **lo
+  recalcula el servidor** en create/update (`contrato_input`), sin importar lo que
+  envíe el navegador (ref = cuota del plan en USD, o `monto_ref_usd` guardado, o
+  monto ÷ tasa si no hay plan). Si no hay tasa registrada, guardar un contrato en
+  Bs da error 422. En el formulario el campo queda **readonly** con el cálculo
+  visible (`pvContratoCalcBs`); la cuota inicial del plan también se convierte.
+  Al **editar** un contrato en Bs cuyo monto cambió, el update sincroniza las
+  cuotas `programada` pendientes sin abonos al nuevo monto. El histórico de tasas
+  está en `prev_tasas` (fecha + tasa). El modal **Tasa** registra la tasa, muestra
+  el histórico y ofrece **«Actualizar cuotas en Bs»** (`tasa_aplicar`, solo admin)
+  que recalcula las cuotas pendientes sin abonos — **manual**, nunca automático;
+  cuotas cobradas/parciales no se tocan. La referencia del recálculo masivo es
+  `COALESCE(monto_ref_usd, cuota del plan si es USD)` (y lo fija de paso). El botón
+  aparece tras guardar una tasa y también al abrir el modal con la tasa vigente.
 - Plazo de espera por defecto: 4 meses. Parentescos con rango de edad (18 seeds).
 
 ## 6. Activación en el hosting (pendiente de ejecutar)

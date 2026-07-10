@@ -118,19 +118,32 @@ function contrato_input(array $b): array
     $cuotaInicial = prev_money($b['cuota_inicial'] ?? ($plan ? $plan['cuota_inicial'] : 0));
 
     // Anclaje a la tasa de cambio para contratos en Bs:
-    //   monto_ref_usd = valor de la cuota en USD (referencia estable)
+    //   monto_ref_usd = valor de la cuota en USD (referencia estable; el plan SIEMPRE está en USD)
     //   tasa_cambio   = tasa con la que se obtuvo el monto en Bs
-    // Así la cuota en Bs puede recalcularse cuando cambie la tasa.
+    // Regla: si hay referencia en USD, el monto en Bs SIEMPRE se calcula en el
+    // servidor (ref × tasa vigente), sin importar lo que envíe el navegador.
+    // Así el precio queda uniforme en el tiempo aunque la tasa sea volátil.
     $tasaCambio  = null;
     $montoRefUsd = null;
     if ($moneda === 'BS') {
         $tasaCambio = round((float)str_replace(',', '.', (string)($b['tasa_cambio'] ?? 0)), 4) ?: prev_tasa_del_dia();
         $montoRefUsd = prev_money($b['monto_ref_usd'] ?? 0);
         if ($montoRefUsd <= 0 && $plan && $plan['moneda'] === 'USD') $montoRefUsd = (float)$plan['cuota_mensual'];
-        // Si hay referencia y tasa pero no se indicó el monto en Bs, se calcula.
-        if ($montoRefUsd > 0 && $tasaCambio > 0 && $montoCuota <= 0) $montoCuota = round($montoRefUsd * $tasaCambio, 2);
-        // Si se indicó el monto en Bs pero no la referencia, se deriva (monto ÷ tasa).
-        if ($montoRefUsd <= 0 && $tasaCambio > 0 && $montoCuota > 0) $montoRefUsd = round($montoCuota / $tasaCambio, 2);
+        if ($montoRefUsd > 0) {
+            if ($tasaCambio <= 0) {
+                json_out(['ok' => false, 'error' => 'No hay tasa de cambio registrada. Registre la tasa del día (botón Tasa) para calcular la cuota en bolívares.'], 422);
+            }
+            $montoCuota = round($montoRefUsd * $tasaCambio, 2);   // siempre recalculado
+        } elseif ($tasaCambio > 0 && $montoCuota > 0) {
+            // Sin plan en USD: se escribió el monto en Bs y se deriva la referencia.
+            $montoRefUsd = round($montoCuota / $tasaCambio, 2);
+        }
+        // La cuota inicial del plan también está en USD: se convierte si el
+        // valor recibido es exactamente el del plan (no fue editado a Bs).
+        if ($plan && $plan['moneda'] === 'USD' && $tasaCambio > 0
+            && $cuotaInicial > 0 && abs($cuotaInicial - (float)$plan['cuota_inicial']) < 0.005) {
+            $cuotaInicial = round($cuotaInicial * $tasaCambio, 2);
+        }
         if ($tasaCambio <= 0) $tasaCambio = null;
         if ($montoRefUsd <= 0) $montoRefUsd = null;
     } else {
@@ -410,7 +423,7 @@ switch ($action) {
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
         if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);
-        contrato_row($id);
+        $old = contrato_row($id);
         $in = contrato_input($b);
 
         $numero = clean_str($b['numero'] ?? '', 20);
@@ -426,8 +439,23 @@ switch ($action) {
         if ($numero !== '') $params[] = $numero;
         array_push($params, $u['id'], $id);
         db()->prepare($sql)->execute($params);
-        audit('prev_contrato.update', 'prev_contratos', $id);
-        json_out(['ok' => true]);
+
+        // Contrato en Bs cuya cuota cambió (p.ej. re-anclada a la tasa vigente):
+        // sincroniza las cuotas programadas pendientes sin abonos al nuevo monto.
+        $cuotasSync = 0;
+        if ($in['moneda'] === 'BS' && $in['monto_cuota'] > 0
+            && round((float)$old['monto_cuota'], 2) !== round((float)$in['monto_cuota'], 2)) {
+            $st = db()->prepare(
+                "UPDATE prev_cuotas SET monto = ?, saldo = ?
+                 WHERE contrato_id = ? AND tipo = 'programada'
+                   AND estado = 'pendiente' AND saldo = monto"
+            );
+            $st->execute([$in['monto_cuota'], $in['monto_cuota'], $id]);
+            $cuotasSync = $st->rowCount();
+        }
+        audit('prev_contrato.update', 'prev_contratos', $id,
+              $cuotasSync ? ['cuotas_bs_sincronizadas' => $cuotasSync, 'monto' => $in['monto_cuota']] : []);
+        json_out(['ok' => true, 'monto_cuota' => $in['monto_cuota'], 'cuotas_actualizadas' => $cuotasSync]);
     }
 
     case 'set_estatus': {
