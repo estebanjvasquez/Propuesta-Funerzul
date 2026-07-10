@@ -372,11 +372,62 @@ async function pvBuscarClienteContrato() {
     try {
         const r = await API.req('prevision_clientes.php?action=get&cedula=' + encodeURIComponent(ced));
         $('#pf_cliente_id').value = r.item.id;
-        info.innerText = '✓ ' + r.item.nombre_completo + ' (' + r.item.documento + ')';
+        info.innerHTML = '✓ ' + escapeHtml(r.item.nombre_completo + ' (' + r.item.documento + ')');
     } catch (e) {
         $('#pf_cliente_id').value = '';
-        info.innerText = '✗ ' + e.message + ' Créelo primero en la sub-pestaña Clientes.';
+        info.innerHTML = '✗ ' + escapeHtml(e.message) +
+            ' <button type="button" class="btn btn-primary btn-sm" onclick="pvCrearClienteDesdeContrato()">+ Crear este cliente</button>';
     }
+}
+
+// Toma una foto de los valores del formulario de contrato para restaurarlos
+// después de crear el cliente sin perder lo que el usuario ya escribió.
+function pvContratoDraft() {
+    const v = (id) => { const el = $('#' + id); return el ? el.value : undefined; };
+    return {
+        numero: v('pf_numero'),
+        fecha_ingreso: v('pf_fecha_ingreso'),
+        plan_id: v('pf_plan') ? Number(v('pf_plan')) : undefined,
+        vendedor_id: v('pf_vendedor') ? Number(v('pf_vendedor')) : undefined,
+        sucursal_id: v('pf_sucursal') || undefined,
+        ruta_id: v('pf_ruta') || undefined,
+        moneda: v('pf_moneda'),
+        monto_cuota: v('pf_monto_cuota'),
+        frecuencia_pago: v('pf_frecuencia'),
+        forma_pago: v('pf_forma'),
+        cuota_inicial: v('pf_inicial'),
+        numero_cuotas: v('pf_num_cuotas'),
+        plazo_espera_meses: v('pf_plazo'),
+        comision_venta: v('pf_comision'),
+        banco: v('pf_banco'),
+        numero_cuenta: v('pf_cuenta'),
+        titular_cuenta: v('pf_titular'),
+        tipo_cuenta: v('pf_tipo_cuenta'),
+        comentarios: v('pf_comentarios'),
+        _gen_cuotas: v('pf_gen_cuotas'),
+        _primera_cuota: v('pf_primera_cuota'),
+    };
+}
+
+function pvRestoreContratoExtras(draft) {
+    if (draft._gen_cuotas !== undefined && $('#pf_gen_cuotas')) $('#pf_gen_cuotas').value = draft._gen_cuotas;
+    if (draft._primera_cuota !== undefined && $('#pf_primera_cuota')) $('#pf_primera_cuota').value = draft._primera_cuota;
+}
+
+// Desde el formulario de contrato: crea el cliente que no existe y regresa al
+// contrato con el titular ya seleccionado (conservando lo ya capturado).
+function pvCrearClienteDesdeContrato() {
+    const draft = pvContratoDraft();
+    const ced = ($('#pf_cedula').value || '').trim();
+    let nac = 'V', cedula = ced;
+    const m = ced.match(/^([VEJP])[-\s]?(.+)$/i);
+    if (m) { nac = m[1].toUpperCase(); cedula = m[2].trim(); }
+    pvFormCliente({ nacionalidad: nac, cedula }, (cli) => {
+        openModal('Nuevo contrato de previsión', pvContratoFormHtml(draft, cli));
+        pvWireContratoForm();
+        pvRestoreContratoExtras(draft);
+        toast('Cliente creado y seleccionado en el contrato.');
+    });
 }
 
 async function pvNuevoContrato() {
@@ -898,7 +949,7 @@ function pvClienteFormHtml(c = {}) {
     </form>`;
 }
 
-function pvFormCliente(c = {}) {
+function pvFormCliente(c = {}, onSaved = null) {
     openModal(c.id ? 'Editar cliente' : 'Nuevo cliente', pvClienteFormHtml(c));
     $('#pvCliForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -924,8 +975,20 @@ function pvFormCliente(c = {}) {
             info_adicional: $('#pc_info').value.trim(),
         };
         try {
-            await API.req('prevision_clientes.php?action=' + (id ? 'update' : 'create'), { method: 'POST', json });
-            closeModal(); toast('Cliente guardado.'); pvLoadClientes(); Prevision.loadStats();
+            const resp = await API.req('prevision_clientes.php?action=' + (id ? 'update' : 'create'), { method: 'POST', json });
+            if (onSaved) {
+                const nid = id ? Number(id) : Number(resp.id);
+                let cli = null;
+                try { cli = (await API.req('prevision_clientes.php?action=get&id=' + nid)).item; } catch (_) {}
+                closeModal();
+                onSaved(cli || {
+                    id: nid, nombres: json.nombres, apellidos: json.apellidos, cedula: json.cedula,
+                    nombre_completo: (json.nombres + ' ' + json.apellidos).trim(),
+                    documento: json.nacionalidad + '-' + json.cedula,
+                });
+            } else {
+                closeModal(); toast('Cliente guardado.'); pvLoadClientes(); Prevision.loadStats();
+            }
         } catch (ex) { err.innerText = ex.message; err.hidden = false; }
     });
 }
@@ -2424,28 +2487,40 @@ async function pvLoadMensajes() {
     const v = Prevision.msgVista;
     try {
         if (v === 'enviar') {
+            await Prevision.loadCatalogos();
             await pvMsgPlantillas();
+            const planes = Prevision.planes.filter(p => p.activo);
             cont.innerHTML = `
                 <div class="admin-card settings-card">
-                    <h3 class="prev-h4">Envío masivo a morosos</h3>
-                    <p class="setting-help">Envía la plantilla seleccionada a todos los contratos con cuotas vencidas (máx. 300 por corrida). En modo <strong>manual</strong> los mensajes quedan registrados y se generan enlaces de WhatsApp para enviarlos uno a uno.</p>
+                    <h3 class="prev-h4">Enviar por WhatsApp</h3>
+                    <p class="setting-help">Filtre los contratos, elija el tipo de mensaje y genere los enlaces. Cada fila abre <strong>WhatsApp Web</strong> con el mensaje ya escrito (modo actual, sin proveedor por API). Cuando contrate un proveedor de mensajería, active el envío automático en <strong>Configuración</strong>.</p>
                     <div class="form-grid-2">
-                        <div class="form-group"><label class="form-label">Canal</label>
-                            ${pvSelect('pm_canal', PV_MSG_CANAL, 'whatsapp')}</div>
-                        <div class="form-group"><label class="form-label">Cuotas vencidas mínimas</label>
-                            <input type="number" min="1" max="24" id="pm_min" class="form-control" value="1"></div>
+                        <div class="form-group"><label class="form-label">Buscar (nombre, cédula o Nº)</label>
+                            <input type="text" id="wa_q" class="form-control" placeholder="Todos"></div>
+                        <div class="form-group"><label class="form-label">Estatus del contrato</label>
+                            ${pvSelect('wa_estatus', { activo: 'Solo activos', suspendido: 'Solo suspendidos', pendiente: 'Solo pendientes' }, '', 'Activos + suspendidos + pendientes')}</div>
                     </div>
-                    <div class="form-group"><label class="form-label">Plantilla *</label>
-                        <span id="pm_plantilla_wrap">${pvMsgPlantillaSelect('pm_plantilla', 'whatsapp', '')}</span></div>
+                    <div class="form-grid-2">
+                        <div class="form-group"><label class="form-label">Plan</label>
+                            <select id="wa_plan" class="form-control"><option value="">Todos los planes</option>
+                                ${planes.map(p => `<option value="${p.id}">${escapeHtml(p.nombre)}</option>`).join('')}</select></div>
+                        <div class="form-group"><label class="form-label">Solo morosos (cuotas vencidas mín.)</label>
+                            <input type="number" min="0" max="24" id="wa_min" class="form-control" value="0" title="0 = todos"></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Tipo de mensaje</label>
+                        <span id="wa_plantilla_wrap">${pvMsgPlantillaSelect('wa_plantilla', 'whatsapp', '')}</span>
+                        <p class="setting-help">Atajos:
+                            <button type="button" class="btn btn-outline btn-sm" onclick="pvMsgWaAtajo('bienvenida')">Bienvenida</button>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="pvMsgWaAtajo('cobranza')">Cobranza</button>
+                            · o gestione las plantillas en la pestaña <strong>Plantillas</strong>.</p></div>
+                    <div class="form-group"><label class="form-label">Texto libre (si no elige plantilla)</label>
+                        <textarea id="wa_cuerpo" class="form-control" rows="3" maxlength="2000" placeholder="Puede usar ${PV_MSG_VARIABLES}"></textarea></div>
                     <div class="setting-actions">
-                        <button class="btn btn-primary" onclick="pvMsgEnviarMorosos()">Enviar a morosos</button>
+                        <button class="btn btn-primary" onclick="pvMsgWaGenerar()">Generar mensajes</button>
                     </div>
-                    <p class="setting-help">Para enviar a un cliente puntual use el botón <strong>Mensaje</strong> en Cobranza → Morosos, o desde el detalle del contrato.</p>
+                    <p class="setting-help">Para un cliente puntual use el botón <strong>Mensaje</strong> en Cobranza → Morosos o en el detalle del contrato.</p>
                 </div>
                 <div id="pvMsgResult"></div>`;
-            $('#pm_canal').addEventListener('change', () => {
-                $('#pm_plantilla_wrap').innerHTML = pvMsgPlantillaSelect('pm_plantilla', $('#pm_canal').value, '');
-            });
         } else if (v === 'plantillas') {
             const items = await pvMsgPlantillas(true);
             cont.innerHTML = `
@@ -2701,31 +2776,66 @@ async function pvMsgEnviarForm(contratoId) {
     });
 }
 
-async function pvMsgEnviarMorosos() {
-    const plantilla = $('#pm_plantilla').value;
-    if (!plantilla) { toast('Seleccione la plantilla a enviar.'); return; }
-    if (!confirmAction('¿Enviar la plantilla seleccionada a todos los contratos morosos?')) return;
+// Atajo: selecciona la plantilla de bienvenida/cobranza, o carga un texto editable.
+function pvMsgWaAtajo(tipo) {
+    const claves = tipo === 'bienvenida' ? ['bienvenida'] : ['cuota_vencida', 'recordatorio_cuota'];
+    const p = (Prevision.msgPlantillas || []).find(x => x.canal === 'whatsapp' && x.activo && claves.includes(x.clave));
+    const sel = $('#wa_plantilla');
+    if (p && sel) {
+        sel.value = String(p.id); $('#wa_cuerpo').value = '';
+        toast('Plantilla «' + p.nombre + '» seleccionada.');
+    } else {
+        if (sel) sel.value = '';
+        $('#wa_cuerpo').value = tipo === 'bienvenida'
+            ? '¡Bienvenido(a) {{cliente}}! Su contrato {{contrato}} ({{plan}}) fue registrado con éxito. Su cuota es de {{monto_cuota}}. Gracias por confiar en {{empresa}}.'
+            : 'Estimado(a) {{cliente}}, su contrato {{contrato}} presenta {{cuotas_vencidas}} cuota(s) vencida(s) por {{saldo_vencido}}. Regularice su pago para mantener activa su cobertura. {{empresa}}.';
+        toast('Se cargó un texto editable; ajústelo antes de generar.');
+    }
+}
+
+// Filtra contratos y genera los enlaces de WhatsApp Web (uno por contrato).
+async function pvMsgWaGenerar() {
     const res = $('#pvMsgResult');
-    res.innerHTML = '<p class="setting-help">Enviando…</p>';
+    const plantilla = $('#wa_plantilla').value;
+    const cuerpo = $('#wa_cuerpo').value.trim();
+    if (!plantilla && !cuerpo) { toast('Elija una plantilla o escriba un texto.'); return; }
+    res.innerHTML = '<p class="setting-help">Generando mensajes…</p>';
     try {
-        const r = await API.req('prevision_mensajes.php?action=enviar_morosos', { method: 'POST', json: {
-            canal: $('#pm_canal').value, plantilla_id: plantilla, min_cuotas: $('#pm_min').value,
+        const r = await API.req('prevision_mensajes.php?action=preparar', { method: 'POST', json: {
+            canal: 'whatsapp',
+            q: $('#wa_q').value.trim(),
+            estatus: $('#wa_estatus').value,
+            plan_id: $('#wa_plan').value || 0,
+            min_cuotas: $('#wa_min').value || 0,
+            plantilla_id: plantilla || 0,
+            cuerpo,
+            limit: 300,
         }});
+        Prevision._waItems = r.items.filter(i => i.wa_link);
         res.innerHTML = `
             <div class="prev-import-result">
-                <p><strong>Resultado:</strong> ${r.enviados} enviados · ${r.manuales} en modo manual · ${r.fallidos} fallidos · ${r.sin_telefono} sin teléfono.</p>
+                <p><strong>${r.total}</strong> contrato(s) · ${r.con_telefono} con teléfono · ${r.sin_telefono} sin teléfono.</p>
+                ${r.con_telefono ? `<button class="btn btn-primary btn-sm" onclick="pvMsgWaAbrirTodos()">Abrir todos en WhatsApp (${r.con_telefono})</button>
+                    <span class="setting-help">El navegador puede pedir permiso para abrir varias pestañas.</span>` : ''}
             </div>
             <div class="table-responsive"><table class="admin-table admin-table-compact">
-                <thead><tr><th>Contrato</th><th>Cliente</th><th>Estado</th><th></th></tr></thead>
+                <thead><tr><th>Contrato</th><th>Cliente</th><th>Teléfono</th><th>Mensaje</th><th></th></tr></thead>
                 <tbody>${r.items.map(i => `
                     <tr>
                         <td>${escapeHtml(i.contrato)}</td>
                         <td>${escapeHtml(i.cliente)}</td>
-                        <td>${pvBadge(i.estado)}${i.error ? `<div class="row-sub">${escapeHtml(i.error)}</div>` : ''}</td>
+                        <td>${i.telefono ? escapeHtml(i.telefono) : '<span class="status-badge badge-amber">sin teléfono</span>'}</td>
+                        <td class="row-sub">${escapeHtml(i.cuerpo.length > 90 ? i.cuerpo.slice(0, 90) + '…' : i.cuerpo)}</td>
                         <td>${i.wa_link ? `<a class="btn btn-outline btn-sm" href="${escapeHtml(i.wa_link)}" target="_blank" rel="noopener">Abrir WhatsApp</a>` : ''}</td>
-                    </tr>`).join('') || '<tr><td colspan="4" class="empty-row">No hay contratos morosos con ese criterio.</td></tr>'}
+                    </tr>`).join('') || '<tr><td colspan="5" class="empty-row">No hay contratos con ese criterio.</td></tr>'}
                 </tbody></table></div>`;
     } catch (e) { res.innerHTML = ''; toast(e.message); }
+}
+
+function pvMsgWaAbrirTodos() {
+    const items = Prevision._waItems || [];
+    if (!items.length) return;
+    items.forEach((i, idx) => setTimeout(() => window.open(i.wa_link, '_blank', 'noopener'), idx * 400));
 }
 
 // ==========================================================================

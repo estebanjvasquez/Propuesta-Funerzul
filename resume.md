@@ -99,6 +99,15 @@ y moderniza el sistema administrativo legado **SIEMPRE** (respaldo en
 - **Mensajería**: proveedor por canal en app_settings (`prev_msg_proveedor_whatsapp/sms`);
   secretos nunca viajan al navegador (se enmascaran como `__set__`); teléfonos se
   normalizan a internacional (código país `prev_msg_pais`, por defecto 58).
+  - **Consola «Enviar por WhatsApp»** (Mensajes → Enviar): filtra contratos
+    (buscar / estatus / plan / solo morosos), elige plantilla o texto libre y
+    genera enlaces **wa.me** por contrato (acción `preparar`, no registra) para
+    abrir WhatsApp Web con el mensaje ya escrito — modo actual sin proveedor API.
+    Atajos «Bienvenida» y «Cobranza». `enviar_morosos` sigue siendo el lote registrado.
+- **Alta de contrato → crear cliente al vuelo**: si la búsqueda por cédula no
+  encuentra al titular, aparece «+ Crear este cliente»; se abre el formulario de
+  cliente (con la cédula precargada) y al guardar vuelve al contrato con el titular
+  ya seleccionado, conservando lo que se había capturado (`pvContratoDraft`).
 - Plazo de espera por defecto: 4 meses. Parentescos con rango de edad (18 seeds).
 
 ## 6. Activación en el hosting (pendiente de ejecutar)

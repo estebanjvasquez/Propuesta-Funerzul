@@ -16,6 +16,7 @@
  *
  * Envíos:
  *   POST enviar           (staff; a un contrato: plantilla o texto libre)
+ *   POST preparar         (staff; filtra contratos y devuelve enlaces wa.me listos, sin registrar)
  *   POST enviar_morosos   (staff; lote a todos los morosos con teléfono)
  *   GET  envios           (staff; historial, ?contrato_id= ?estado= paginado)
  *
@@ -218,6 +219,65 @@ switch ($action) {
         json_out(['ok' => $r['estado'] !== 'fallido', 'id' => $id, 'estado' => $r['estado'],
                   'proveedor' => $r['proveedor'], 'error' => $r['error'],
                   'wa_link' => $r['wa_link'], 'cuerpo' => $cuerpo], $r['estado'] !== 'fallido' ? 201 : 502);
+    }
+
+    case 'preparar': {
+        // Filtra contratos y devuelve, por cada uno, el mensaje ya renderizado y
+        // el enlace de WhatsApp Web (wa.me) listo para abrir. No registra envíos:
+        // es el modo "WhatsApp Web" mientras no haya proveedor por API contratado.
+        require_method('POST');
+        require_role('admin', 'editor');
+        require_csrf();
+        $b = body_json();
+        $canal = prev_enum($b['canal'] ?? '', PREV_MSG_CANALES, 'whatsapp');
+
+        $where = "c.estatus <> 'anulado'";
+        $params = [];
+        if (($est = prev_enum($b['estatus'] ?? '', ['activo', 'suspendido', 'pendiente', 'finalizado', 'renuncia', 'excluido', 'fallecido'])) !== null) {
+            $where .= ' AND c.estatus = ?'; $params[] = $est;
+        } else {
+            $where .= " AND c.estatus IN ('activo','suspendido','pendiente')";
+        }
+        if (($pid = (int)($b['plan_id'] ?? 0)) > 0) { $where .= ' AND c.plan_id = ?'; $params[] = $pid; }
+        $q = clean_str($b['q'] ?? '', 60);
+        if ($q !== '') {
+            $where .= " AND (c.numero LIKE ? OR CONCAT(cl.nombres,' ',cl.apellidos) LIKE ? OR cl.cedula LIKE ?)";
+            $like = "%$q%"; array_push($params, $like, $like, $like);
+        }
+        $minCuotas = max(0, (int)($b['min_cuotas'] ?? 0));
+        if ($minCuotas > 0) {
+            $where .= " AND (SELECT COUNT(*) FROM prev_cuotas q WHERE q.contrato_id = c.id
+                        AND q.estado IN ('pendiente','parcial') AND q.fecha_vencimiento < CURDATE()) >= ?";
+            $params[] = $minCuotas;
+        }
+        $limit = max(1, min(300, (int)($b['limit'] ?? 100)));
+
+        $st = db()->prepare(
+            "SELECT c.id FROM prev_contratos c JOIN prev_clientes cl ON cl.id = c.cliente_id
+             WHERE $where ORDER BY c.numero LIMIT $limit"
+        );
+        $st->execute($params);
+        $ids = array_map('intval', $st->fetchAll(PDO::FETCH_COLUMN));
+
+        $con = 0; $sin = 0; $items = [];
+        foreach ($ids as $cid) {
+            $c = msg_contrato($cid);
+            if (!$c) continue;
+            [$pid2, $cuerpo] = msg_cuerpo($b, prev_msg_vars_contrato($c));
+            $tel = prev_msg_telefono($c['telefono_celular'] ?: $c['telefono_habitacion']);
+            $wa = ($tel && $canal === 'whatsapp') ? 'https://wa.me/' . $tel . '?text=' . rawurlencode($cuerpo) : null;
+            if ($tel) $con++; else $sin++;
+            $items[] = [
+                'contrato_id' => $cid,
+                'contrato'    => $c['numero'],
+                'cliente'     => $c['cliente_nombre'],
+                'telefono'    => $tel ?: '',
+                'wa_link'     => $wa,
+                'cuerpo'      => $cuerpo,
+            ];
+        }
+        json_out(['ok' => true, 'con_telefono' => $con, 'sin_telefono' => $sin,
+                  'total' => count($items), 'items' => $items]);
     }
 
     case 'enviar_morosos': {
