@@ -16,6 +16,9 @@ database/SIEMPRE.sql
 # --- Video y frames del flujo de referencia (análisis local, muy pesado) ---
 flujo/
 
+# --- Grafo de conocimiento generado localmente (graphify) ---
+graphify-out/
+
 # --- Sistema ---
 .DS_Store
 Thumbs.db
