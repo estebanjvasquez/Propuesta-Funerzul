@@ -443,6 +443,19 @@ switch ($action) {
         $old = contrato_row($id);
         $in = contrato_input($b);
 
+        // No se puede cambiar la moneda del contrato si ya tiene pagos/cobros
+        // registrados: los importes ya cobrados quedaron en la moneda anterior y
+        // re-etiquetarlos falsearía la cuenta. Debe revertir/anular esos
+        // movimientos antes de cambiar la moneda.
+        $monedaCambio = $old['moneda'] !== $in['moneda'];
+        if ($monedaCambio) {
+            $pg = db()->prepare("SELECT COUNT(*) FROM prev_pagos WHERE contrato_id = ?");
+            $pg->execute([$id]);
+            if ((int)$pg->fetchColumn() > 0) {
+                json_out(['ok' => false, 'error' => 'No se puede cambiar la moneda del contrato: ya tiene pagos o cobros registrados. Revierta o anule esos movimientos antes de cambiar la moneda.'], 409);
+            }
+        }
+
         $numero = clean_str($b['numero'] ?? '', 20);
         if ($numero !== '') {
             $st = db()->prepare("SELECT id FROM prev_contratos WHERE numero = ? AND id <> ?");
@@ -458,20 +471,33 @@ switch ($action) {
         db()->prepare($sql)->execute($params);
 
         // Sincronización de cuotas programadas pendientes SIN abonos (saldo = monto):
+        //   · Cambio de moneda del contrato (ya validado arriba: sin pagos): reescribe
+        //     moneda + monto de esas cuotas al nuevo valor del contrato.
+        //   · Contratos heredados cuyas cuotas quedaron en otra moneda que la del
+        //     contrato (p.ej. se creó en Bs y luego se pasó a USD): se alinean cuando
+        //     no hay movimientos, para dejar de "deber bolívares etiquetados como USD".
+        //     Esto repara solo, al volver a guardar, los contratos ya inconsistentes.
         //   · Re-anclaje del monto en Bs a la tasa vigente (misma moneda): automático.
-        //   · Cambio de moneda del contrato (Bs↔USD): solo si el usuario lo confirma
-        //     (recalcular_cuotas), para no reescribir montos sin querer. Reescribe la
-        //     moneda Y el monto de esas cuotas al nuevo valor del contrato, de modo que
-        //     el cliente deje de "deber bolívares etiquetados como dólares".
-        // Las cuotas ya cobradas, parciales o anuladas conservan su moneda/monto
-        // original (registro histórico); por eso los reportes agrupan por la moneda
-        // de la cuota, no la del contrato.
-        $cuotasSync   = 0;
-        $monedaCambio = $old['moneda'] !== $in['moneda'];
-        $montoCambio  = round((float)$old['monto_cuota'], 2) !== round((float)$in['monto_cuota'], 2);
-        $recalcular   = $in['monto_cuota'] > 0 && (
-            (!$monedaCambio && $in['moneda'] === 'BS' && $montoCambio)          // re-anclaje Bs automático
-            || (!empty($b['recalcular_cuotas']) && ($monedaCambio || $montoCambio))
+        //   · Ajuste de monto en la misma moneda: solo si el usuario lo confirma.
+        // Las cuotas cobradas, parciales o anuladas conservan su moneda (histórico);
+        // por eso los reportes agrupan por la moneda de la cuota, no la del contrato.
+        $cuotasSync  = 0;
+        $montoCambio = round((float)$old['monto_cuota'], 2) !== round((float)$in['monto_cuota'], 2);
+        $pg = db()->prepare("SELECT COUNT(*) FROM prev_pagos WHERE contrato_id = ?");
+        $pg->execute([$id]);
+        $tieneMovimientos = (int)$pg->fetchColumn() > 0;
+        $mis = db()->prepare(
+            "SELECT COUNT(*) FROM prev_cuotas WHERE contrato_id = ? AND tipo = 'programada'
+               AND estado = 'pendiente' AND saldo = monto AND moneda <> ?"
+        );
+        $mis->execute([$id, $in['moneda']]);
+        $cuotasDesalineadas = (int)$mis->fetchColumn();
+
+        $recalcular = $in['monto_cuota'] > 0 && (
+            $monedaCambio                                                  // cambio de moneda (validado sin pagos)
+            || (!$tieneMovimientos && $cuotasDesalineadas > 0)            // alinea cuotas heredadas en otra moneda
+            || (!$monedaCambio && $in['moneda'] === 'BS' && $montoCambio) // re-anclaje Bs automático
+            || !empty($b['recalcular_cuotas'])                            // ajuste de monto confirmado
         );
         if ($recalcular) {
             $st = db()->prepare(

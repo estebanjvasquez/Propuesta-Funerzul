@@ -512,11 +512,27 @@ async function pvEditContrato(id) {
     await Prevision.loadCatalogos();
     try {
         const r = await API.req('prevision_contratos.php?action=get&id=' + id);
-        // Foto de la moneda/monto originales para detectar cambios al guardar y
-        // ofrecer recalcular las cuotas pendientes a la nueva moneda del contrato.
+        // Foto de la moneda/monto originales para detectar cambios al guardar.
+        // La moneda solo puede cambiarse si el contrato NO tiene pagos/cobros.
+        const tieneMov = (r.pagos && r.pagos.length > 0) || Number((r.totales && r.totales.cobrado) || 0) > 0;
         Prevision._contratoOrig = { moneda: r.item.moneda, monto_cuota: Number(r.item.monto_cuota) || 0 };
         openModalWide('Editar contrato ' + r.item.numero, pvContratoFormHtml(r.item, r.cliente));
         pvWireContratoForm();
+        if (tieneMov) {
+            const sel = $('#pf_moneda');
+            if (sel) {
+                sel.disabled = true;
+                sel.title = 'No se puede cambiar la moneda: el contrato ya tiene pagos o cobros.';
+                const grp = sel.closest('.form-group');
+                if (grp && !$('#pf_moneda_lock')) {
+                    const p = document.createElement('p');
+                    p.id = 'pf_moneda_lock';
+                    p.className = 'setting-help';
+                    p.textContent = '🔒 Moneda bloqueada: el contrato ya tiene pagos o cobros. Para cambiarla, revierta esos movimientos.';
+                    grp.appendChild(p);
+                }
+            }
+        }
     } catch (e) { toast(e.message); }
 }
 
@@ -556,22 +572,19 @@ async function pvSubmitContrato(e) {
         json.generar_cuotas = $('#pf_gen_cuotas') ? $('#pf_gen_cuotas').value : 0;
         json.primera_cuota = $('#pf_primera_cuota') ? $('#pf_primera_cuota').value : '';
     } else {
-        // Al editar: si cambió la moneda del contrato (o el monto en USD), ofrecer
-        // recalcular las cuotas pendientes sin abonos a la nueva moneda/monto. El
-        // re-anclaje del monto en Bs a la tasa ya lo hace el servidor de forma
-        // automática, así que ahí no se pregunta.
+        // Al editar: el cambio de moneda lo valida y recalcula el servidor
+        // automáticamente (solo se permite sin pagos/cobros; entonces alinea las
+        // cuotas pendientes a la nueva moneda). El re-anclaje del monto en Bs a la
+        // tasa también es automático. Aquí solo se ofrece recalcular cuando cambia
+        // el MONTO en la misma moneda (USD).
         const orig = Prevision._contratoOrig || {};
-        const et = (m) => (m === 'BS' ? 'Bs' : 'USD');
         const monedaCambio = orig.moneda && orig.moneda !== json.moneda;
         const montoCambio = Math.abs((Number(json.monto_cuota) || 0) - (orig.monto_cuota || 0)) >= 0.01;
-        if (monedaCambio || (montoCambio && json.moneda === 'USD')) {
-            const msg = monedaCambio
-                ? `Cambió la moneda del contrato de ${et(orig.moneda)} a ${et(json.moneda)}.\n\n` +
-                  `¿Recalcular las cuotas pendientes (sin abonos) a ${pvMoney(json.monto_cuota, json.moneda)}?\n\n` +
-                  `Las cuotas ya cobradas o con abonos conservan su moneda original.`
-                : `Cambió el monto de la cuota.\n\n` +
-                  `¿Actualizar las cuotas pendientes (sin abonos) a ${pvMoney(json.monto_cuota, json.moneda)}?`;
-            json.recalcular_cuotas = confirmAction(msg);
+        if (!monedaCambio && montoCambio && json.moneda === 'USD') {
+            json.recalcular_cuotas = confirmAction(
+                `Cambió el monto de la cuota.\n\n` +
+                `¿Actualizar las cuotas pendientes (sin abonos) a ${pvMoney(json.monto_cuota, json.moneda)}?`
+            );
         }
     }
     try {
