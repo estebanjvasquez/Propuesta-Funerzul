@@ -7,8 +7,8 @@
  *   POST config_set       (admin; solo pisa los secretos que vengan con valor)
  *   POST test             (admin; envía un mensaje de prueba a un teléfono)
  *
- * Plantillas (variables {{cliente}}, {{contrato}}, {{plan}}, {{monto_cuota}},
- * {{cuotas_vencidas}}, {{saldo_vencido}}, {{empresa}}, {{fecha}}):
+ * Plantillas (variables {{cliente}}, {{cedula}}, {{contrato}}, {{plan}},
+ * {{monto_cuota}}, {{cuotas_vencidas}}, {{saldo_vencido}}, {{empresa}}, {{fecha}}):
  *   GET  plantillas        (staff; ?canal=)
  *   POST plantilla_save    (staff; crea o actualiza por id)
  *   POST plantilla_toggle  (staff)
@@ -45,6 +45,7 @@ function msg_contrato(int $id): ?array
     $st = db()->prepare(
         "SELECT c.*, CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente_nombre,
                 cl.telefono_celular, cl.telefono_habitacion, cl.id AS cliente_id,
+                CONCAT(cl.nacionalidad, '-', cl.cedula) AS cliente_documento,
                 p.nombre AS plan_nombre
          FROM prev_contratos c
          JOIN prev_clientes cl ON cl.id = c.cliente_id

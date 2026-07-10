@@ -1,0 +1,5 @@
+# Adjuntos de contratos de previsión: sin listado y sin ejecución de scripts
+Options -Indexes
+<FilesMatch "\.(php|phtml|phar|cgi|pl|py|sh)$">
+  Require all denied
+</FilesMatch>

@@ -323,8 +323,14 @@ function pvContratoFormHtml(c = {}, cliente = null) {
         <div class="form-grid-2">
             <div class="form-group"><label class="form-label">Plazo de espera (meses)</label>
                 <input type="number" min="0" max="60" id="pf_plazo" class="form-control" value="${c.plazo_espera_meses ?? 4}"></div>
+            <div class="form-group"><label class="form-label">Vigente desde (vacío = ingreso + plazo)</label>
+                <input type="date" id="pf_vigente" class="form-control" value="${c.vigente_desde || ''}"></div>
+        </div>
+        <div class="form-grid-2">
             <div class="form-group"><label class="form-label">% comisión de venta</label>
                 <input type="number" step="0.01" min="0" max="100" id="pf_comision" class="form-control" value="${c.comision_venta ?? 0}"></div>
+            <div class="form-group"><label class="form-label">Fecha de corte de comisiones (vacío = ingreso)</label>
+                <input type="date" id="pf_fecha_corte" class="form-control" value="${c.fecha_corte || ''}"></div>
         </div>
         ${!c.id ? `
         <div class="form-grid-2">
@@ -462,7 +468,9 @@ function pvContratoDraft() {
         cuota_inicial: v('pf_inicial'),
         numero_cuotas: v('pf_num_cuotas'),
         plazo_espera_meses: v('pf_plazo'),
+        vigente_desde: v('pf_vigente'),
         comision_venta: v('pf_comision'),
+        fecha_corte: v('pf_fecha_corte'),
         banco: v('pf_banco'),
         numero_cuenta: v('pf_cuenta'),
         titular_cuenta: v('pf_titular'),
@@ -531,7 +539,9 @@ async function pvSubmitContrato(e) {
         cuota_inicial: $('#pf_inicial').value,
         numero_cuotas: $('#pf_num_cuotas').value,
         plazo_espera_meses: $('#pf_plazo').value,
+        vigente_desde: $('#pf_vigente').value,
         comision_venta: $('#pf_comision').value,
+        fecha_corte: $('#pf_fecha_corte').value,
         banco: $('#pf_banco').value.trim(),
         numero_cuenta: $('#pf_cuenta').value.trim(),
         titular_cuenta: $('#pf_titular').value.trim(),
@@ -557,6 +567,7 @@ async function pvVerContrato(id) {
     try {
         const r = await API.req('prevision_contratos.php?action=get&id=' + id);
         const c = r.item;
+        Prevision._conPlazo = c.plazo_espera_meses;   // para la vigencia estimada de beneficiarios
         const admin = pvEsAdmin();
         const benef = r.beneficiarios.map(b => `
             <tr>
@@ -609,8 +620,18 @@ async function pvVerContrato(id) {
                 <td>${admin ? `<button class="btn btn-danger btn-sm" onclick="pvDeleteComision(${k.id}, ${c.id})">Eliminar</button>` : ''}</td>
             </tr>`).join('') || `<tr><td colspan="5" class="empty-row">Sin comisiones pagadas.</td></tr>`;
 
+        // Aviso de bienvenida: contrato activo reciente (≤7 días) sin bienvenida enviada
+        const esReciente = c.fecha_ingreso && (Date.now() - new Date(c.fecha_ingreso + 'T00:00:00').getTime()) < 8 * 86400000;
+        const avisoBienvenida = (r.bienvenida_enviada === false && c.estatus === 'activo' && esReciente) ? `
+            <div class="prev-import-result prev-bienvenida">
+                <p><strong>Contrato nuevo:</strong> aún no se envía el mensaje de bienvenida al cliente.</p>
+                <button class="btn btn-primary btn-sm" onclick="pvMsgBienvenida(${c.id})">📱 Enviar bienvenida por WhatsApp</button>
+                <button class="btn btn-outline btn-sm" onclick="pvAddBeneficiario(${c.id})">+ Agregar beneficiarios</button>
+            </div>` : '';
+
         openModal(`Contrato ${escapeHtml(c.numero)} — ${escapeHtml(c.cliente_nombre || '')}`, `
             <div class="prev-detail">
+                ${avisoBienvenida}
                 <div class="prev-kv">
                     <div><span>Titular</span><strong>${escapeHtml(c.cliente_nombre || '')} (${escapeHtml(c.cliente_cedula || '')})</strong></div>
                     <div><span>Plan</span><strong>${escapeHtml(c.plan_nombre || '—')}</strong></div>
@@ -691,8 +712,102 @@ async function pvVerContrato(id) {
                 <div class="table-responsive"><table class="admin-table admin-table-compact">
                     <thead><tr><th>Etapa</th><th>Vendedor</th><th>Monto</th><th>Pagada el</th><th></th></tr></thead>
                     <tbody>${comis}</tbody></table></div>
+                <details class="prev-details" id="pvAdjBox"><summary>Archivos adjuntos</summary>
+                    <div id="pvAdjList"><p class="setting-help">Cargando…</p></div>
+                    <div class="prev-inline">
+                        <input type="file" id="pvAdjFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp">
+                        <button class="btn btn-outline btn-sm" onclick="pvAdjSubir(${c.id})">Subir</button>
+                    </div>
+                    <p class="setting-help">PDF o imagen, máx. 5 MB (contrato firmado, cédula, comprobantes...).</p>
+                </details>
+                <details class="prev-details" id="pvEvtBox"><summary>Eventos del contrato (bitácora)</summary>
+                    <div id="pvEvtList"><p class="setting-help">Cargando…</p></div>
+                </details>
             </div>`);
+        $('#pvAdjBox').addEventListener('toggle', () => { if ($('#pvAdjBox').open) pvAdjCargar(c.id); }, { once: false });
+        $('#pvEvtBox').addEventListener('toggle', () => { if ($('#pvEvtBox').open) pvEvtCargar(c.id); }, { once: false });
     } catch (e) { toast(e.message); }
+}
+
+// ---------- Bienvenida por WhatsApp (un clic desde el detalle) ----------
+async function pvMsgBienvenida(contratoId) {
+    try {
+        const plantillas = await pvMsgPlantillas();
+        const p = plantillas.find(x => x.clave === 'bienvenida' && x.canal === 'whatsapp' && x.activo);
+        if (!p) { toast('No hay plantilla de bienvenida activa. Revise Mensajes → Plantillas.'); return; }
+        const r = await API.req('prevision_mensajes.php?action=enviar', { method: 'POST', json: {
+            contrato_id: contratoId, canal: 'whatsapp', plantilla_id: p.id, cuerpo: '', telefono: '',
+        }});
+        if (r.wa_link) window.open(r.wa_link, '_blank');
+        toast(r.estado === 'enviado' ? 'Bienvenida enviada.'
+            : r.estado === 'manual' ? 'Bienvenida registrada' + (r.wa_link ? ' (se abrió WhatsApp).' : '.')
+            : 'Falló el envío: ' + (r.error || ''));
+        pvVerContrato(contratoId);
+    } catch (e) { toast(e.message); }
+}
+
+// ---------- Adjuntos del contrato ----------
+async function pvAdjCargar(contratoId) {
+    const box = $('#pvAdjList');
+    if (!box) return;
+    try {
+        const r = await API.req('prevision_adjuntos.php?action=list&contrato_id=' + contratoId);
+        box.innerHTML = r.items.length ? `
+            <div class="table-responsive"><table class="admin-table admin-table-compact">
+                <thead><tr><th>Archivo</th><th>Tamaño</th><th>Subido</th><th></th></tr></thead>
+                <tbody>${r.items.map(a => `
+                    <tr>
+                        <td><a href="${escapeHtml(a.url)}" target="_blank" rel="noopener">${escapeHtml(a.nombre_archivo)}</a></td>
+                        <td>${(a.tamano / 1024).toFixed(0)} KB</td>
+                        <td>${fmtDate(a.created_at)}<div class="row-sub">${escapeHtml(a.usuario || '')}</div></td>
+                        <td>${pvEsAdmin() ? `<button class="btn btn-danger btn-sm" onclick="pvAdjEliminar(${a.id}, ${contratoId})">Eliminar</button>` : ''}</td>
+                    </tr>`).join('')}</tbody></table></div>`
+            : '<p class="setting-help">Sin archivos adjuntos.</p>';
+    } catch (e) {
+        box.innerHTML = `<p class="setting-help">${escapeHtml(e.message)} (importe database/09_prevision_v6.sql)</p>`;
+    }
+}
+
+async function pvAdjSubir(contratoId) {
+    const inp = $('#pvAdjFile');
+    if (!inp.files.length) { toast('Seleccione el archivo a subir.'); return; }
+    const fd = new FormData();
+    fd.append('contrato_id', contratoId);
+    fd.append('archivo', inp.files[0]);
+    try {
+        await API.req('prevision_adjuntos.php?action=subir', { method: 'POST', form: fd });
+        inp.value = '';
+        toast('Archivo adjuntado.');
+        pvAdjCargar(contratoId);
+    } catch (e) { toast(e.message); }
+}
+
+async function pvAdjEliminar(id, contratoId) {
+    if (!confirmAction('¿Eliminar este archivo adjunto?')) return;
+    try {
+        await API.req('prevision_adjuntos.php?action=eliminar', { method: 'POST', json: { id } });
+        toast('Adjunto eliminado.');
+        pvAdjCargar(contratoId);
+    } catch (e) { toast(e.message); }
+}
+
+// ---------- Eventos (bitácora) del contrato ----------
+async function pvEvtCargar(contratoId) {
+    const box = $('#pvEvtList');
+    if (!box) return;
+    try {
+        const r = await API.req('prevision_contratos.php?action=eventos&id=' + contratoId);
+        box.innerHTML = r.items.length ? `
+            <div class="table-responsive prev-scroll"><table class="admin-table admin-table-compact">
+                <thead><tr><th>Fecha</th><th>Evento</th><th>Usuario</th></tr></thead>
+                <tbody>${r.items.map(e => `
+                    <tr>
+                        <td>${fmtDate(e.fecha)}<div class="row-sub">${escapeHtml((e.fecha || '').slice(11, 16))}</div></td>
+                        <td>${escapeHtml(e.accion)}${e.detalle ? `<div class="row-sub">${escapeHtml(e.detalle)}</div>` : ''}</td>
+                        <td class="row-sub">${escapeHtml(e.usuario || '—')}</td>
+                    </tr>`).join('')}</tbody></table></div>`
+            : '<p class="setting-help">Sin eventos registrados.</p>';
+    } catch (e) { box.innerHTML = `<p class="setting-help">${escapeHtml(e.message)}</p>`; }
 }
 
 function pvEstatusContrato(id, actual) {
@@ -836,7 +951,8 @@ function pvBenefFormHtml(contratoId, b = {}) {
                 <div class="prev-inline">
                     ${pvSelect('pb_nacionalidad', { V: 'V', E: 'E' }, b.nacionalidad || 'V')}
                     <input type="text" id="pb_cedula" class="form-control" value="${escapeHtml(b.cedula || '')}">
-                </div></div>
+                </div>
+                <p class="setting-help" id="pb_cedula_info" hidden></p></div>
         </div>
         <div class="form-grid-2">
             <div class="form-group"><label class="form-label">Nombres *</label>
@@ -851,10 +967,16 @@ function pvBenefFormHtml(contratoId, b = {}) {
                 ${pvSelect('pb_sexo', { M: 'Masculino', F: 'Femenino' }, b.sexo || '', '—')}</div>
         </div>
         <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">Estado civil</label>
+                ${pvSelect('pb_edocivil', { 'Soltero(a)': 'Soltero(a)', 'Casado(a)': 'Casado(a)', 'Concubino(a)': 'Concubino(a)', 'Divorciado(a)': 'Divorciado(a)', 'Viudo(a)': 'Viudo(a)' }, b.estado_civil || '', '—')}</div>
             <div class="form-group"><label class="form-label">Cargo adicional (cuota)</label>
                 <input type="number" step="0.01" min="0" id="pb_cuota" class="form-control" value="${b.cuota_adicional ?? 0}"></div>
+        </div>
+        <div class="form-grid-2">
             <div class="form-group"><label class="form-label">Plazo de espera (meses)</label>
                 <input type="number" min="0" max="60" id="pb_plazo" class="form-control" value="${b.plazo_espera_meses ?? ''}" placeholder="(el del contrato)"></div>
+            <div class="form-group"><label class="form-label">&nbsp;</label>
+                <p class="setting-help" id="pb_vigencia_info"></p></div>
         </div>
         <div class="form-group"><label class="form-label">Comentarios</label>
             <input type="text" id="pb_comentarios" class="form-control" maxlength="500" value="${escapeHtml(b.comentarios || '')}"></div>
@@ -866,7 +988,37 @@ function pvBenefFormHtml(contratoId, b = {}) {
     </form>`;
 }
 
-function pvWireBenefForm(contratoId, benId) {
+// Vigencia estimada del beneficiario: fecha de inclusión + plazo de espera.
+function pvBenefVigencia(b) {
+    const info = $('#pb_vigencia_info');
+    if (!info) return;
+    const plazo = $('#pb_plazo').value !== '' ? Number($('#pb_plazo').value) : Number(Prevision._conPlazo ?? 4);
+    const base = (b && b.fecha_inclusion) ? b.fecha_inclusion : pvHoy();
+    const d = new Date(base + 'T00:00:00');
+    d.setMonth(d.getMonth() + plazo);
+    info.innerHTML = `Cobertura vigente desde: <strong>${fmtDate(d.toISOString().slice(0, 10))}</strong> (${plazo} mes(es) de espera desde ${fmtDate(base)})`;
+}
+
+function pvWireBenefForm(contratoId, benId, b = null) {
+    // Lookup: si la cédula ya existe como cliente, precarga sus datos.
+    $('#pb_cedula').addEventListener('blur', async () => {
+        const ced = $('#pb_cedula').value.trim();
+        const info = $('#pb_cedula_info');
+        if (!ced) { info.hidden = true; return; }
+        try {
+            const r = await API.req('prevision_clientes.php?action=get&cedula=' + encodeURIComponent(ced));
+            const cli = r.item;
+            if (!$('#pb_nombres').value) $('#pb_nombres').value = cli.nombres || '';
+            if (!$('#pb_apellidos').value) $('#pb_apellidos').value = cli.apellidos || '';
+            if (!$('#pb_nacimiento').value && cli.fecha_nacimiento) $('#pb_nacimiento').value = cli.fecha_nacimiento;
+            if (cli.sexo) $('#pb_sexo').value = cli.sexo;
+            info.innerText = '✓ Ya es cliente registrado: ' + cli.nombre_completo + ' (datos precargados).';
+            info.hidden = false;
+        } catch (_) { info.hidden = true; }
+    });
+    $('#pb_plazo').addEventListener('input', () => pvBenefVigencia(b));
+    pvBenefVigencia(b);
+
     $('#pvBenForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const err = $('#pb_error'); err.hidden = true;
@@ -879,6 +1031,7 @@ function pvWireBenefForm(contratoId, benId) {
             apellidos: $('#pb_apellidos').value.trim(),
             fecha_nacimiento: $('#pb_nacimiento').value,
             sexo: $('#pb_sexo').value,
+            estado_civil: $('#pb_edocivil').value,
             cuota_adicional: $('#pb_cuota').value,
             plazo_espera_meses: $('#pb_plazo').value,
             comentarios: $('#pb_comentarios').value.trim(),
@@ -904,7 +1057,7 @@ async function pvEditBeneficiario(id, contratoId) {
         const b = r.beneficiarios.find(x => x.id === id);
         if (!b) return toast('Beneficiario no encontrado.');
         openModal('Editar beneficiario', pvBenefFormHtml(contratoId, b));
-        pvWireBenefForm(contratoId, id);
+        pvWireBenefForm(contratoId, id, b);
     } catch (e) { toast(e.message); }
 }
 
@@ -1233,7 +1386,7 @@ async function pvLoadVendedores() {
         tb.innerHTML = r.items.map(v => `
             <tr>
                 <td>${escapeHtml(v.cedula || '—')}</td>
-                <td><div class="row-name">${escapeHtml(v.nombre)}</div>${v.fecha_retiro ? `<div class="row-sub">Retirado ${fmtDate(v.fecha_retiro)}</div>` : ''}</td>
+                <td><div class="row-name">${escapeHtml(v.nombre)}</div>${v.cargo && v.cargo !== 'vendedor' ? `<div class="row-sub">${escapeHtml(v.cargo)}${v.supervisor_nombre ? ' · sup.: ' + escapeHtml(v.supervisor_nombre) : ''}</div>` : (v.supervisor_nombre ? `<div class="row-sub">Sup.: ${escapeHtml(v.supervisor_nombre)}</div>` : '')}${v.fecha_retiro ? `<div class="row-sub">Retirado ${fmtDate(v.fecha_retiro)}</div>` : ''}</td>
                 <td>${escapeHtml(v.telefono1 || '—')}</td>
                 <td>${pvNum(v.comision_semanal)}% / ${pvNum(v.comision_mensual)}% / ${pvNum(v.comision_anual)}%</td>
                 <td>${v.contratos ?? 0}</td>
@@ -1271,6 +1424,16 @@ function pvFormVendedor(v = {}) {
                 <div class="form-group"><label class="form-label">Fecha de ingreso</label>
                     <input type="date" id="pw_ingreso" class="form-control" value="${v.fecha_ingreso || pvHoy()}"></div>
             </div>
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Cargo</label>
+                    ${pvSelect('pw_cargo', { vendedor: 'Vendedor / Asesor', coordinador: 'Coordinador de ventas', gerente: 'Gerente de ventas' }, v.cargo || 'vendedor')}</div>
+                <div class="form-group"><label class="form-label">Supervisor (coordinador/gerente)</label>
+                    <select id="pw_supervisor" class="form-control">
+                        <option value="">— Sin supervisor —</option>
+                        ${Prevision.vendedores.filter(x => x.activo && x.id !== v.id).map(x =>
+                            `<option value="${x.id}" ${v.supervisor_id == x.id ? 'selected' : ''}>${escapeHtml(x.nombre)}${x.cargo && x.cargo !== 'vendedor' ? ' (' + x.cargo + ')' : ''}</option>`).join('')}
+                    </select></div>
+            </div>
             <div class="form-group"><label class="form-label">Sucursal</label>
                 <select id="pw_sucursal" class="form-control">
                     <option value="">—</option>
@@ -1296,6 +1459,8 @@ function pvFormVendedor(v = {}) {
                     <div class="form-group"><label class="form-label">Cédula del titular</label>
                         <input type="text" id="pw_ced_cuenta" class="form-control" maxlength="15" value="${escapeHtml(v.cedula_cuenta || '')}"></div>
                 </div>
+                <div class="form-group"><label class="form-label">Zelle (correo o teléfono)</label>
+                    <input type="text" id="pw_zelle" class="form-control" maxlength="120" value="${escapeHtml(v.zelle || '')}"></div>
             </details>
             <div class="form-group"><label class="form-label">Notas</label>
                 <input type="text" id="pw_notas" class="form-control" maxlength="500" value="${escapeHtml(v.notas || '')}"></div>
@@ -1317,6 +1482,8 @@ function pvFormVendedor(v = {}) {
             telefono2: $('#pw_tel2').value.trim(),
             email: $('#pw_email').value.trim(),
             fecha_ingreso: $('#pw_ingreso').value,
+            cargo: $('#pw_cargo').value,
+            supervisor_id: $('#pw_supervisor').value || null,
             sucursal_id: $('#pw_sucursal').value || null,
             comision_semanal: $('#pw_com_s').value,
             comision_mensual: $('#pw_com_m').value,
@@ -1325,6 +1492,7 @@ function pvFormVendedor(v = {}) {
             numero_cuenta: $('#pw_cuenta').value.trim(),
             titular_cuenta: $('#pw_titular').value.trim(),
             cedula_cuenta: $('#pw_ced_cuenta').value.trim(),
+            zelle: $('#pw_zelle').value.trim(),
             notas: $('#pw_notas').value.trim(),
         };
         try {
@@ -1400,10 +1568,31 @@ async function pvLoadComisiones() {
             const accion = v === 'por_aprobar'
                 ? `<button class="btn btn-primary btn-sm" onclick="pvComAprobar([${ids.join(',')}])">✓ Aprobar todas</button>`
                 : '';
+            // Descuentos pendientes por anulaciones (se compensan al pagar)
+            let descPorVend = {}, descAviso = '';
+            if (v === 'por_pagar') {
+                try {
+                    const d = await API.req('prevision_vendedores.php?action=descuentos&estado=pendiente');
+                    d.items.forEach(x => { descPorVend[x.vendedor_id] = (descPorVend[x.vendedor_id] || 0) + x.monto_usd; });
+                    if (d.total_pendiente > 0) descAviso = `
+                        <div class="prev-import-result">
+                            <p>⚠ <strong>Descuentos pendientes por anulaciones: ${pvMoney(d.total_pendiente, 'USD')}</strong> — se compensan automáticamente al pagar la siguiente comisión del vendedor.</p>
+                            <div class="row-sub">${d.items.map(x => `${escapeHtml(x.vendedor_nombre)}: −${pvMoney(x.monto_usd, 'USD')} (${escapeHtml(x.motivo)})`).join(' · ')}</div>
+                        </div>`;
+                } catch (_) { /* 09 aún no importado */ }
+            }
+            // Datos de pago del vendedor (banco / Zelle) como en la app KM
+            const datosPago = (vid) => {
+                const vd = (Prevision.vendedores || []).find(x => x.id === vid);
+                if (!vd) return '';
+                const partes = [vd.banco, vd.zelle ? 'Zelle: ' + vd.zelle : ''].filter(Boolean).join(' · ');
+                return partes ? `<div class="row-sub">${escapeHtml(partes)}</div>` : '';
+            };
             cont.innerHTML = `
+                ${descAviso}
                 <div class="admin-toolbar prev-h3">
                     <p class="setting-help">${r.items.length} comisión(es) · total sugerido <strong>${pvMoney(r.total_usd, 'USD')}</strong>.
-                    ${v === 'por_aprobar' ? 'Verifique el monto y apruebe.' : 'Apruébelas están listas para enviar a pagar.'}</p>
+                    ${v === 'por_aprobar' ? 'Verifique el monto y apruebe.' : 'Aprobadas y listas para enviar a pagar.'}</p>
                     ${r.items.length ? accion : ''}
                 </div>
                 <div class="table-responsive"><table class="admin-table">
@@ -1412,7 +1601,8 @@ async function pvLoadComisiones() {
                         <tr>
                             <td><a href="#" onclick="pvVerContrato(${k.contrato_id});return false;"><strong>${escapeHtml(k.contrato_numero)}</strong></a>
                                 ${k.fecha_calculo ? `<div class="row-sub">calc. ${fmtDate(k.fecha_calculo)}</div>` : ''}</td>
-                            <td>${escapeHtml(k.vendedor_nombre)}</td>
+                            <td>${escapeHtml(k.vendedor_nombre)}${v === 'por_pagar' ? datosPago(k.vendedor_id) : ''}
+                                ${descPorVend[k.vendedor_id] ? `<div class="row-sub">⚠ Descuento pendiente: −${pvMoney(descPorVend[k.vendedor_id], 'USD')}</div>` : ''}</td>
                             <td><span class="status-badge ${v === 'por_aprobar' ? 'badge-amber' : 'badge-blue'}">${escapeHtml(PV_ETAPAS[k.etapa] || k.etapa)}</span></td>
                             <td>${pvMoney(k.base_monto, k.moneda)}</td>
                             <td>${pvNum(k.porcentaje)}%</td>
@@ -2574,7 +2764,7 @@ const PV_MSG_PROVEEDOR = {
     twilio: 'Twilio',
     http: 'API HTTP genérica (gateway local)',
 };
-const PV_MSG_VARIABLES = '{{cliente}} {{contrato}} {{plan}} {{monto_cuota}} {{cuotas_vencidas}} {{saldo_vencido}} {{moneda}} {{empresa}} {{fecha}}';
+const PV_MSG_VARIABLES = '{{cliente}} {{cedula}} {{contrato}} {{plan}} {{monto_cuota}} {{cuotas_vencidas}} {{saldo_vencido}} {{moneda}} {{empresa}} {{fecha}}';
 PV_ESTATUS_BADGE.enviado = 'badge-green';
 PV_ESTATUS_BADGE.fallido = 'badge-red';
 PV_ESTATUS_BADGE.manual = 'badge-blue';

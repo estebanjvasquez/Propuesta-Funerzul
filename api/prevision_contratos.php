@@ -22,6 +22,9 @@
  *   POST pago_registrar  (staff; aplica en cascada a las cuotas pendientes más antiguas)
  *   POST pago_delete     (admin; revierte el saldo de la cuota)
  *
+ * Bitácora:
+ *   GET  eventos         (staff; ?id= — auditoría del contrato y sus entidades)
+ *
  * Tablero y tasa:
  *   GET  stats           (indicadores del módulo)
  *   GET  tasa            (tasa Bs/USD vigente)
@@ -159,6 +162,7 @@ function contrato_input(array $b): array
         'origen'             => clean_str($b['origen'] ?? '', 60) ?: null,
         'fecha_solicitud'    => prev_date($b['fecha_solicitud'] ?? ''),
         'fecha_ingreso'      => $fechaIngreso,
+        'fecha_corte'        => prev_date($b['fecha_corte'] ?? ''),   // base de comisiones; NULL = ingreso
         'vigente_desde'      => $vigenteDesde,
         'plazo_espera_meses' => $plazo,
         'frecuencia_pago'    => prev_enum($b['frecuencia_pago'] ?? '', PREV_FRECUENCIAS, 'mensual'),
@@ -338,6 +342,18 @@ switch ($action) {
         );
         $sin->execute([$id]);
 
+        // ¿Ya se envió la bienvenida? (tolerante: las tablas de mensajería son del 06)
+        $bienvenida = null;
+        try {
+            $bw = db()->prepare(
+                "SELECT COUNT(*) FROM prev_msg_envios e
+                 JOIN prev_msg_plantillas p ON p.id = e.plantilla_id
+                 WHERE e.contrato_id = ? AND p.clave = 'bienvenida' AND e.estado <> 'fallido'"
+            );
+            $bw->execute([$id]);
+            $bienvenida = (int)$bw->fetchColumn() > 0;
+        } catch (\Throwable $e) { /* mensajería aún no instalada */ }
+
         json_out([
             'ok'            => true,
             'item'          => prev_contrato_out($r),
@@ -357,6 +373,7 @@ switch ($action) {
                 'cobrado'    => (float)$totales['cobrado'],
                 'por_cobrar' => (float)$totales['por_cobrar'],
             ],
+            'bienvenida_enviada' => $bienvenida,
         ]);
     }
 
@@ -476,9 +493,31 @@ switch ($action) {
             $pdo->prepare("UPDATE prev_contratos SET estatus=?, fecha_estatus=?, motivo_estatus=?, updated_by=? WHERE id=?")
                 ->execute([$estatus, $fecha, $motivo, $u['id'], $id]);
             // Al anular o renunciar se anulan las cuotas que quedaban por cobrar.
+            $descuentos = 0;
             if (in_array($estatus, ['anulado', 'renuncia'], true)) {
                 $pdo->prepare("UPDATE prev_cuotas SET estado='anulada' WHERE contrato_id=? AND estado IN ('pendiente','parcial')")
                     ->execute([$id]);
+
+                // Comisiones ya pagadas del contrato -> descuento pendiente al
+                // vendedor, a compensar en su próximo pago (como en la app KM).
+                try {
+                    $st = $pdo->prepare(
+                        "SELECT id, vendedor_id, monto_usd, etapa FROM prev_comisiones
+                         WHERE contrato_id = ? AND estado = 'pagada' AND monto_usd > 0"
+                    );
+                    $st->execute([$id]);
+                    $insDes = $pdo->prepare(
+                        "INSERT INTO prev_com_descuentos (vendedor_id, contrato_id, comision_id, monto_usd, motivo, registrado_por)
+                         VALUES (?,?,?,?,?,?)"
+                    );
+                    foreach ($st->fetchAll() as $k) {
+                        $insDes->execute([
+                            (int)$k['vendedor_id'], $id, (int)$k['id'], (float)$k['monto_usd'],
+                            ucfirst($estatus) . " contrato #{$r['numero']} (etapa {$k['etapa']})", $u['id'],
+                        ]);
+                        $descuentos++;
+                    }
+                } catch (\Throwable $e) { /* prev_com_descuentos aún no instalada (09) */ }
             }
             $pdo->commit();
         } catch (\Throwable $e) {
@@ -486,8 +525,9 @@ switch ($action) {
             throw $e;
         }
         audit('prev_contrato.set_estatus', 'prev_contratos', $id,
-              ['numero' => $r['numero'], 'de' => $r['estatus'], 'a' => $estatus, 'motivo' => $motivo]);
-        json_out(['ok' => true]);
+              ['numero' => $r['numero'], 'de' => $r['estatus'], 'a' => $estatus, 'motivo' => $motivo,
+               'descuentos_comision' => $descuentos]);
+        json_out(['ok' => true, 'descuentos_comision' => $descuentos]);
     }
 
     // ==================== BENEFICIARIOS ====================
@@ -538,13 +578,14 @@ switch ($action) {
         $ins = db()->prepare(
             "INSERT INTO prev_beneficiarios
              (contrato_id, parentesco_id, nacionalidad, cedula, nombres, apellidos, fecha_nacimiento,
-              sexo, cuota_adicional, plazo_espera_meses, fecha_inclusion, comentarios)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
+              sexo, estado_civil, cuota_adicional, plazo_espera_meses, fecha_inclusion, comentarios)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
         );
         $ins->execute([
             $contratoId, $parentescoId, prev_nacionalidad($b['nacionalidad'] ?? 'V'), $cedula,
             $nombres, clean_str($b['apellidos'] ?? '', 100), $fnac,
             in_array($sexo, ['M', 'F'], true) ? $sexo : null,
+            clean_str($b['estado_civil'] ?? '', 30) ?: null,
             prev_money($b['cuota_adicional'] ?? 0),
             isset($b['plazo_espera_meses']) && $b['plazo_espera_meses'] !== '' ? max(0, min(60, (int)$b['plazo_espera_meses'])) : null,
             prev_date($b['fecha_inclusion'] ?? '') ?: date('Y-m-d'),
@@ -575,13 +616,14 @@ switch ($action) {
         db()->prepare(
             "UPDATE prev_beneficiarios SET
                parentesco_id=?, nacionalidad=?, cedula=?, nombres=?, apellidos=?, fecha_nacimiento=?,
-               sexo=?, cuota_adicional=?, plazo_espera_meses=?, comentarios=?
+               sexo=?, estado_civil=?, cuota_adicional=?, plazo_espera_meses=?, comentarios=?
              WHERE id=?"
         )->execute([
             $parentescoId, prev_nacionalidad($b['nacionalidad'] ?? 'V'),
             prev_cedula($b['cedula'] ?? '') ?: null, $nombres, clean_str($b['apellidos'] ?? '', 100),
             prev_date($b['fecha_nacimiento'] ?? ''),
             in_array($sexo, ['M', 'F'], true) ? $sexo : null,
+            clean_str($b['estado_civil'] ?? '', 30) ?: null,
             prev_money($b['cuota_adicional'] ?? 0),
             isset($b['plazo_espera_meses']) && $b['plazo_espera_meses'] !== '' ? max(0, min(60, (int)$b['plazo_espera_meses'])) : null,
             clean_str($b['comentarios'] ?? '', 500) ?: null, $id,
@@ -922,6 +964,42 @@ switch ($action) {
             'comisiones_mes_usd'   => (float)$comisionesSt->fetchColumn(),
             'tasa_dia'             => prev_tasa_del_dia(),
         ]]);
+    }
+
+    case 'eventos': {
+        // Bitácora del contrato (equivale a la pestaña "Eventos" de SIEMPRE):
+        // entradas de audit_log del propio contrato + las de entidades hijas
+        // que guardan contrato_id en los detalles (beneficiarios, adjuntos...).
+        require_method('GET');
+        require_role('admin', 'editor');
+        $id = (int)($_GET['id'] ?? 0);
+        if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);
+        $st = db()->prepare(
+            "SELECT action, details, actor_email, created_at FROM audit_log
+             WHERE (entity_type = 'prev_contratos' AND entity_id = ?)
+                OR (details LIKE ? OR details LIKE ?)
+             ORDER BY id DESC LIMIT 100"
+        );
+        $st->execute([(string)$id, '%"contrato_id":' . $id . ',%', '%"contrato_id":' . $id . '}%']);
+        $items = array_map(function ($r) {
+            $det = $r['details'] ? json_decode($r['details'], true) : null;
+            $resumen = '';
+            if (is_array($det)) {
+                $partes = [];
+                foreach ($det as $k => $v) {
+                    if (is_scalar($v)) $partes[] = "$k: $v";
+                    if (count($partes) >= 4) break;
+                }
+                $resumen = implode(' · ', $partes);
+            }
+            return [
+                'fecha'   => $r['created_at'],
+                'accion'  => $r['action'],
+                'detalle' => mb_substr($resumen, 0, 160),
+                'usuario' => $r['actor_email'],
+            ];
+        }, $st->fetchAll());
+        json_out(['ok' => true, 'items' => $items]);
     }
 
     case 'tasa': {

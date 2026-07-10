@@ -39,6 +39,12 @@ disco y backend PHP, todo junto).
   recalcular las cuotas en bolívares cuando cambie la tasa **sin perder el valor
   real del plan**. El histórico de tasas ya vive en `prev_tasas`. La actualización
   de cuotas es **manual** (botón en el panel). Requiere `04_prevision.sql`.
+- **`09_prevision_v6.sql`** — **Previsión, paridad con el flujo SIEMPRE/KM**:
+  `fecha_corte` en contratos (base de las etapas de comisión), jerarquía del
+  vendedor (`cargo`, `supervisor_id`) + `zelle`, `estado_civil` del beneficiario,
+  tabla `prev_adjuntos` (documentos por contrato en `uploads/prevision/`) y tabla
+  `prev_com_descuentos` (descuentos al vendedor por anulación de contratos con
+  comisión pagada, compensados en el siguiente pago). Requiere `04_prevision.sql`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -98,9 +104,10 @@ disco y backend PHP, todo junto).
 3. Verifica que aparezcan las **7 tablas**.
 4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
    `04_prevision.sql`, `05_prevision_v2.sql`, `06_prevision_v3.sql`,
-   `07_prevision_v4.sql` y `08_prevision_v5.sql` (módulo de Previsión, en ese
-   orden). El `04` requiere que `users` (del `01`) ya exista; el `05` requiere el
-   `04`, el `06` el `05`, y el `07` y el `08` requieren el `04`.
+   `07_prevision_v4.sql`, `08_prevision_v5.sql` y `09_prevision_v6.sql`
+   (módulo de Previsión, en ese orden). El `04` requiere que `users` (del `01`)
+   ya exista; el `05` requiere el `04`, el `06` el `05`, y el `07`, `08` y `09`
+   requieren el `04`.
 
 ### 3. Iniciar sesión y asegurar el admin
 

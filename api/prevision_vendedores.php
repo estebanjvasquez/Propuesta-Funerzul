@@ -23,6 +23,8 @@
  *   POST comision_pagar        (staff; aprobada/calculada -> pagada; {id} o {contrato_id,etapa})
  *   POST comision_anular       (staff; descarta una comisión no pagada para poder recalcularla)
  *   POST comision_delete       (admin; elimina un pago de comisión)
+ *   GET  descuentos            (staff; ?vendedor_id=, ?estado= — descuentos por anulación de
+ *                               contratos comisionados; se compensan al pagar la siguiente comisión)
  */
 require __DIR__ . '/lib/bootstrap.php';
 require __DIR__ . '/lib/prevision.php';
@@ -43,9 +45,18 @@ function vendedor_input(array $b): array
         if (!$st->fetchColumn()) json_out(['ok' => false, 'error' => 'Sucursal no encontrada.'], 422);
     }
 
+    $supervisorId = (int)($b['supervisor_id'] ?? 0) ?: null;
+    if ($supervisorId) {
+        $st = db()->prepare("SELECT id FROM prev_vendedores WHERE id = ?");
+        $st->execute([$supervisorId]);
+        if (!$st->fetchColumn()) json_out(['ok' => false, 'error' => 'Supervisor no encontrado.'], 422);
+    }
+
     return [
         'cedula'           => prev_cedula($b['cedula'] ?? '') ?: null,
         'nombre'           => $nombre,
+        'cargo'            => prev_enum($b['cargo'] ?? '', ['vendedor', 'coordinador', 'gerente'], 'vendedor'),
+        'supervisor_id'    => $supervisorId,
         'telefono1'        => clean_str($b['telefono1'] ?? '', 20) ?: null,
         'telefono2'        => clean_str($b['telefono2'] ?? '', 20) ?: null,
         'email'            => clean_str($b['email'] ?? '', 190) ?: null,
@@ -60,6 +71,7 @@ function vendedor_input(array $b): array
         'numero_cuenta'    => clean_str($b['numero_cuenta'] ?? '', 24) ?: null,
         'titular_cuenta'   => clean_str($b['titular_cuenta'] ?? '', 100) ?: null,
         'cedula_cuenta'    => prev_cedula($b['cedula_cuenta'] ?? '') ?: null,
+        'zelle'            => clean_str($b['zelle'] ?? '', 120) ?: null,
         'notas'            => clean_str($b['notas'] ?? '', 500) ?: null,
         'activo'           => isset($b['activo']) ? (!empty($b['activo']) ? 1 : 0) : 1,
     ];
@@ -87,14 +99,16 @@ function comision_calc_row(int $contratoId, string $etapa): ?array
 {
     $st = db()->prepare(
         "SELECT c.id, c.vendedor_id, c.fecha_ingreso, c.monto_cuota, c.moneda,
-                c.comision_venta, c.estatus, v.comision_mensual
+                c.comision_venta, c.estatus, v.comision_mensual,
+                COALESCE(c.fecha_corte, c.fecha_ingreso) AS fecha_base
          FROM prev_contratos c JOIN prev_vendedores v ON v.id = c.vendedor_id
          WHERE c.id = ?"
     );
     $st->execute([$contratoId]);
     $r = $st->fetch();
     if (!$r || $r['estatus'] !== 'activo' || !$r['vendedor_id']) return null;
-    $vence = etapa_vence($r['fecha_ingreso'], $etapa);
+    // Las etapas vencen contadas desde la fecha de corte (si existe) o la de ingreso.
+    $vence = etapa_vence($r['fecha_base'], $etapa);
     if ($vence > date('Y-m-d')) return null;
     $pct  = (float)$r['comision_venta'] > 0 ? (float)$r['comision_venta'] : (float)$r['comision_mensual'];
     $base = (float)$r['monto_cuota'];
@@ -106,6 +120,40 @@ function comision_calc_row(int $contratoId, string $etapa): ?array
         'moneda'      => $r['moneda'],
         'vence'       => $vence,
     ];
+}
+
+/**
+ * Aplica los descuentos pendientes del vendedor (por anulaciones) a un pago de
+ * comisión, sin dejar el pago en negativo. Marca los aplicados y devuelve
+ * [monto_neto_usd, total_descontado_usd, ids_aplicados]. Tolerante si la tabla
+ * prev_com_descuentos aún no existe (09).
+ */
+function descuentos_aplicar(int $vendedorId, float $montoUsd, int $comisionId): array
+{
+    try {
+        $st = db()->prepare(
+            "SELECT id, monto_usd FROM prev_com_descuentos
+             WHERE vendedor_id = ? AND estado = 'pendiente' ORDER BY id ASC"
+        );
+        $st->execute([$vendedorId]);
+        $total = 0.0; $ids = [];
+        foreach ($st->fetchAll() as $d) {
+            if ($total + (float)$d['monto_usd'] > $montoUsd + 0.009) break;
+            $total += (float)$d['monto_usd'];
+            $ids[] = (int)$d['id'];
+        }
+        if ($ids) {
+            $in = implode(',', $ids);
+            db()->prepare(
+                "UPDATE prev_com_descuentos SET estado = 'aplicado',
+                        aplicado_en_comision_id = ?, aplicado_at = NOW()
+                 WHERE id IN ($in)"
+            )->execute([$comisionId]);
+        }
+        return [round($montoUsd - $total, 2), round($total, 2), $ids];
+    } catch (\Throwable $e) {
+        return [$montoUsd, 0.0, []];
+    }
 }
 
 switch ($action) {
@@ -122,10 +170,11 @@ switch ($action) {
             array_push($params, "%$q%", "%$q%");
         }
         $st = db()->prepare(
-            "SELECT v.*, su.nombre AS sucursal_nombre,
+            "SELECT v.*, su.nombre AS sucursal_nombre, sup.nombre AS supervisor_nombre,
                     (SELECT COUNT(*) FROM prev_contratos c WHERE c.vendedor_id = v.id) AS contratos
              FROM prev_vendedores v
              LEFT JOIN prev_sucursales su ON su.id = v.sucursal_id
+             LEFT JOIN prev_vendedores sup ON sup.id = v.supervisor_id
              WHERE $where ORDER BY v.activo DESC, v.nombre ASC"
         );
         $st->execute($params);
@@ -137,8 +186,11 @@ switch ($action) {
         require_role('admin', 'editor');
         $id = (int)($_GET['id'] ?? 0);
         $st = db()->prepare(
-            "SELECT v.*, su.nombre AS sucursal_nombre FROM prev_vendedores v
-             LEFT JOIN prev_sucursales su ON su.id = v.sucursal_id WHERE v.id = ?"
+            "SELECT v.*, su.nombre AS sucursal_nombre, sup.nombre AS supervisor_nombre
+             FROM prev_vendedores v
+             LEFT JOIN prev_sucursales su ON su.id = v.sucursal_id
+             LEFT JOIN prev_vendedores sup ON sup.id = v.supervisor_id
+             WHERE v.id = ?"
         );
         $st->execute([$id]);
         $r = $st->fetch();
@@ -358,6 +410,7 @@ switch ($action) {
 
         $st = db()->prepare(
             "SELECT c.id, c.numero, c.fecha_ingreso, c.monto_cuota, c.moneda, c.comision_venta,
+                    COALESCE(c.fecha_corte, c.fecha_ingreso) AS fecha_base,
                     v.id AS vendedor_id, v.nombre AS vendedor_nombre, v.comision_mensual,
                     GROUP_CONCAT(k.etapa) AS etapas_pagadas
              FROM prev_contratos c
@@ -365,7 +418,7 @@ switch ($action) {
              LEFT JOIN prev_comisiones k ON k.contrato_id = c.id
              WHERE $where
              GROUP BY c.id, c.numero, c.fecha_ingreso, c.monto_cuota, c.moneda, c.comision_venta,
-                      v.id, v.nombre, v.comision_mensual
+                      c.fecha_corte, v.id, v.nombre, v.comision_mensual
              ORDER BY c.fecha_ingreso ASC"
         );
         $st->execute($params);
@@ -376,7 +429,7 @@ switch ($action) {
             $pagadas = $r['etapas_pagadas'] ? explode(',', $r['etapas_pagadas']) : [];
             foreach (PREV_ETAPAS_COMISION as $etapa) {
                 if (in_array($etapa, $pagadas, true)) continue;
-                $vence = etapa_vence($r['fecha_ingreso'], $etapa);
+                $vence = etapa_vence($r['fecha_base'], $etapa);
                 if ($vence > $hoy) continue;  // aún no le toca
                 $pct = (float)$r['comision_venta'] > 0 ? (float)$r['comision_venta'] : (float)$r['comision_mensual'];
                 $items[] = [
@@ -513,13 +566,25 @@ switch ($action) {
             if ($montoUsd <= 0 && $montoBs <= 0) $montoUsd = (float)$k['monto_calculado'];
             if ($montoBs <= 0 && $tasa > 0) $montoBs = round($montoUsd * $tasa, 2);
             if ($montoUsd <= 0 && $tasa > 0) $montoUsd = round($montoBs / $tasa, 2);
+
+            // Compensar descuentos pendientes del vendedor (anulaciones previas).
+            $comentario = clean_str($b['comentario'] ?? '', 200) ?: null;
+            [$netoUsd, $descontado, ] = descuentos_aplicar((int)$k['vendedor_id'], $montoUsd, $id);
+            if ($descontado > 0) {
+                $montoUsd = $netoUsd;
+                if ($tasa > 0) $montoBs = round($montoUsd * $tasa, 2);
+                $nota = sprintf('Descuento por anulaciones: -%s USD', number_format($descontado, 2, ',', '.'));
+                $comentario = mb_substr(trim(($comentario ? $comentario . ' · ' : '') . $nota), 0, 200);
+            }
+
             db()->prepare(
                 "UPDATE prev_comisiones SET estado = 'pagada', monto_usd = ?, monto_bs = ?, tasa = ?,
                         fecha_pago = ?, comentario = COALESCE(?, comentario), registrado_por = ? WHERE id = ?"
-            )->execute([$montoUsd, $montoBs, $tasa, $fecha, clean_str($b['comentario'] ?? '', 200) ?: null, $u['id'], $id]);
+            )->execute([$montoUsd, $montoBs, $tasa, $fecha, $comentario, $u['id'], $id]);
             audit('prev_comision.pagar', 'prev_comisiones', $id,
-                  ['contrato' => $k['contrato_numero'], 'etapa' => $k['etapa'], 'monto_usd' => $montoUsd]);
-            json_out(['ok' => true, 'id' => $id]);
+                  ['contrato' => $k['contrato_numero'], 'etapa' => $k['etapa'],
+                   'monto_usd' => $montoUsd, 'descuento_usd' => $descontado]);
+            json_out(['ok' => true, 'id' => $id, 'descuento_usd' => $descontado, 'monto_usd' => $montoUsd]);
         }
 
         // Caso 2 (directo): registrar el pago de una etapa sin pasar por el flujo.
@@ -556,6 +621,43 @@ switch ($action) {
         audit('prev_comision.pagar', 'prev_comisiones', $id,
               ['contrato' => $c['numero'], 'etapa' => $etapa, 'monto_usd' => $montoUsd]);
         json_out(['ok' => true, 'id' => $id], 201);
+    }
+
+    case 'descuentos': {
+        // Descuentos de comisión por anulaciones (?vendedor_id=, ?estado=pendiente|aplicado)
+        require_method('GET');
+        require_role('admin', 'editor');
+        $where = '1=1';
+        $params = [];
+        if (($vid = (int)($_GET['vendedor_id'] ?? 0)) > 0) { $where .= ' AND d.vendedor_id = ?'; $params[] = $vid; }
+        if (($est = prev_enum($_GET['estado'] ?? '', ['pendiente', 'aplicado', 'anulado'])) !== null) {
+            $where .= ' AND d.estado = ?'; $params[] = $est;
+        }
+        try {
+            $st = db()->prepare(
+                "SELECT d.*, v.nombre AS vendedor_nombre, c.numero AS contrato_numero
+                 FROM prev_com_descuentos d
+                 JOIN prev_vendedores v ON v.id = d.vendedor_id
+                 LEFT JOIN prev_contratos c ON c.id = d.contrato_id
+                 WHERE $where ORDER BY d.id DESC LIMIT 200"
+            );
+            $st->execute($params);
+            $items = array_map(fn($r) => [
+                'id'              => (int)$r['id'],
+                'vendedor_id'     => (int)$r['vendedor_id'],
+                'vendedor_nombre' => $r['vendedor_nombre'],
+                'contrato_numero' => $r['contrato_numero'],
+                'monto_usd'       => (float)$r['monto_usd'],
+                'motivo'          => $r['motivo'],
+                'estado'          => $r['estado'],
+                'created_at'      => $r['created_at'],
+                'aplicado_at'     => $r['aplicado_at'],
+            ], $st->fetchAll());
+            $pend = array_sum(array_map(fn($i) => $i['estado'] === 'pendiente' ? $i['monto_usd'] : 0, $items));
+            json_out(['ok' => true, 'items' => $items, 'total_pendiente' => round($pend, 2)]);
+        } catch (\Throwable $e) {
+            json_out(['ok' => true, 'items' => [], 'total_pendiente' => 0]);  // 09 aún no importado
+        }
     }
 
     case 'comision_anular': {

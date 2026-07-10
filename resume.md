@@ -108,6 +108,21 @@ y moderniza el sistema administrativo legado **SIEMPRE** (respaldo en
   encuentra al titular, aparece «+ Crear este cliente»; se abre el formulario de
   cliente (con la cédula precargada) y al guardar vuelve al contrato con el titular
   ya seleccionado, conservando lo que se había capturado (`pvContratoDraft`).
+- **Paridad flujo SIEMPRE/KM** (09_prevision_v6.sql; análisis de `flujo/frames`,
+  carpeta ignorada en git): al crear un contrato el detalle muestra un aviso con
+  **«Enviar bienvenida por WhatsApp»** (plantilla `bienvenida`, `pvMsgBienvenida`,
+  flag `bienvenida_enviada` en el `get`) y «+ Agregar beneficiarios»; variable
+  `{{cedula}}` en plantillas; campos **Vigente desde** y **Fecha de corte** (base
+  de las etapas de comisión, `COALESCE(fecha_corte, fecha_ingreso)`) en el form;
+  beneficiarios con **lookup de cédula** (precarga si ya es cliente), estado civil
+  y vigencia estimada; **adjuntos por contrato** (`prevision_adjuntos.php`,
+  `uploads/prevision/{id}/`, PDF/imagen ≤5 MB) y **Eventos** (bitácora del
+  contrato desde audit_log) en el detalle; vendedores con **cargo/supervisor** y
+  **Zelle**; y **descuentos por anulación**: anular/renunciar un contrato con
+  comisiones pagadas genera `prev_com_descuentos` pendientes que se compensan
+  automáticamente al pagar la siguiente comisión del vendedor (aviso en Por pagar).
+  Campos bloat de SIEMPRE (religión, redes, municipio/parroquia, «mensualidad se
+  respetará por N días») se descartaron a propósito.
 - **Cuotas en Bs ancladas a la tasa** (08_prevision_v5.sql): `prev_contratos`
   guarda `monto_ref_usd` (referencia USD por cuota) y `tasa_cambio`. **Los planes
   SIEMPRE están en USD** (uniformidad de precios en el tiempo); si el contrato se
@@ -131,6 +146,7 @@ y moderniza el sistema administrativo legado **SIEMPRE** (respaldo en
 
 1. `git push` + Deploy en cPanel Git Version Control.
 2. phpMyAdmin: importar en orden `04` → `05` → `06_prevision_v3.sql` →
-   `07_prevision_v4.sql` → `08_prevision_v5.sql` (los que falten).
+   `07_prevision_v4.sql` → `08_prevision_v5.sql` → `09_prevision_v6.sql`
+   (los que falten).
 3. Cron diario (si se quiere auto-lapsado): `api/cron/prevision_lapsar.php`.
 4. Cuando haya proveedor de mensajería: Previsión → Mensajes → Configuración.

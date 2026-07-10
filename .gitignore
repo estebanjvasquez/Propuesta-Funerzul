@@ -6,8 +6,15 @@ uploads/obituarios/*
 !uploads/obituarios/_placeholder.webp
 !uploads/obituarios/.htaccess
 
+# --- Adjuntos de contratos de previsión: solo se versiona el .htaccess ---
+uploads/prevision/*
+!uploads/prevision/.htaccess
+
 # --- Respaldo del sistema SIEMPRE (1+ GB, supera el límite de GitHub) ---
 database/SIEMPRE.sql
+
+# --- Video y frames del flujo de referencia (análisis local, muy pesado) ---
+flujo/
 
 # --- Sistema ---
 .DS_Store
