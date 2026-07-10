@@ -25,7 +25,10 @@
  * Tablero y tasa:
  *   GET  stats           (indicadores del módulo)
  *   GET  tasa            (tasa Bs/USD vigente)
- *   POST tasa_set        (staff; registra la tasa del día)
+ *   POST tasa_set        (staff; registra la tasa del día en el histórico)
+ *   GET  tasa_historial  (staff; histórico de tasas con fecha y usuario)
+ *   GET  tasa_preview    (staff; cuántas cuotas en Bs se recalcularían a ?tasa=)
+ *   POST tasa_aplicar    (admin; recalcula las cuotas en Bs a la tasa — manual)
  */
 require __DIR__ . '/lib/bootstrap.php';
 require __DIR__ . '/lib/prevision.php';
@@ -114,6 +117,26 @@ function contrato_input(array $b): array
     if ($montoCuota <= 0 && $plan) $montoCuota = (float)$plan['cuota_mensual'];
     $cuotaInicial = prev_money($b['cuota_inicial'] ?? ($plan ? $plan['cuota_inicial'] : 0));
 
+    // Anclaje a la tasa de cambio para contratos en Bs:
+    //   monto_ref_usd = valor de la cuota en USD (referencia estable)
+    //   tasa_cambio   = tasa con la que se obtuvo el monto en Bs
+    // Así la cuota en Bs puede recalcularse cuando cambie la tasa.
+    $tasaCambio  = null;
+    $montoRefUsd = null;
+    if ($moneda === 'BS') {
+        $tasaCambio = round((float)str_replace(',', '.', (string)($b['tasa_cambio'] ?? 0)), 4) ?: prev_tasa_del_dia();
+        $montoRefUsd = prev_money($b['monto_ref_usd'] ?? 0);
+        if ($montoRefUsd <= 0 && $plan && $plan['moneda'] === 'USD') $montoRefUsd = (float)$plan['cuota_mensual'];
+        // Si hay referencia y tasa pero no se indicó el monto en Bs, se calcula.
+        if ($montoRefUsd > 0 && $tasaCambio > 0 && $montoCuota <= 0) $montoCuota = round($montoRefUsd * $tasaCambio, 2);
+        // Si se indicó el monto en Bs pero no la referencia, se deriva (monto ÷ tasa).
+        if ($montoRefUsd <= 0 && $tasaCambio > 0 && $montoCuota > 0) $montoRefUsd = round($montoCuota / $tasaCambio, 2);
+        if ($tasaCambio <= 0) $tasaCambio = null;
+        if ($montoRefUsd <= 0) $montoRefUsd = null;
+    } else {
+        $montoRefUsd = $montoCuota > 0 ? $montoCuota : null;   // USD: la referencia es el propio monto
+    }
+
     return [
         'cliente_id'         => $clienteId,
         'plan_id'            => $planId,
@@ -130,6 +153,8 @@ function contrato_input(array $b): array
         'moneda'             => $moneda,
         'cuota_inicial'      => $cuotaInicial,
         'monto_cuota'        => $montoCuota,
+        'monto_ref_usd'      => $montoRefUsd,
+        'tasa_cambio'        => $tasaCambio,
         'numero_cuotas'      => max(0, (int)($b['numero_cuotas'] ?? 0)),
         'comision_venta'     => max(0.0, min(100.0, round((float)($b['comision_venta'] ?? 0), 2))),
         'edad_ingreso'       => prev_edad($cliente['fecha_nacimiento'], $fechaIngreso),
@@ -891,6 +916,43 @@ switch ($action) {
         )->execute([$fecha, $tasa, $u['id']]);
         audit('prev_tasa.set', 'prev_tasas', $fecha, ['tasa' => $tasa]);
         json_out(['ok' => true, 'fecha' => $fecha, 'tasa' => $tasa]);
+    }
+
+    case 'tasa_historial': {
+        require_method('GET');
+        require_role('admin', 'editor');
+        $limit = max(1, min(60, (int)($_GET['limit'] ?? 24)));
+        $st = db()->query(
+            "SELECT t.fecha, t.tasa, t.created_at, u.email AS usuario
+             FROM prev_tasas t LEFT JOIN users u ON u.id = t.registrado_por
+             ORDER BY t.fecha DESC LIMIT $limit"
+        );
+        $items = array_map(fn($r) => [
+            'fecha' => $r['fecha'], 'tasa' => (float)$r['tasa'],
+            'usuario' => $r['usuario'], 'created_at' => $r['created_at'],
+        ], $st->fetchAll());
+        json_out(['ok' => true, 'items' => $items, 'actual' => prev_tasa_del_dia()]);
+    }
+
+    case 'tasa_preview': {
+        // Cuántas cuotas en Bs se recalcularían a una tasa (para confirmar antes de aplicar).
+        require_method('GET');
+        require_role('admin', 'editor');
+        $tasa = round((float)str_replace(',', '.', (string)($_GET['tasa'] ?? 0)), 4) ?: prev_tasa_del_dia();
+        json_out(['ok' => true, 'tasa' => $tasa] + prev_preview_cuotas_bs($tasa));
+    }
+
+    case 'tasa_aplicar': {
+        // Aplica la tasa a las cuotas en Bs pendientes. Manual (por decisión del usuario).
+        require_method('POST');
+        $u = require_role('admin');
+        require_csrf();
+        $b = body_json();
+        $tasa = round((float)str_replace(',', '.', (string)($b['tasa'] ?? 0)), 4) ?: prev_tasa_del_dia();
+        if ($tasa <= 0) json_out(['ok' => false, 'error' => 'Registre una tasa válida antes de actualizar.'], 422);
+        $res = prev_actualizar_cuotas_bs($tasa);
+        audit('prev_tasa.aplicar_cuotas', 'prev_contratos', null, $res);
+        json_out(['ok' => true] + $res);
     }
 
     default:

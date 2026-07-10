@@ -98,6 +98,69 @@ function prev_tasa_del_dia(?string $fecha = null): float
     return $t !== false ? (float)$t : 0.0;
 }
 
+/**
+ * Cuántos contratos/cuotas en Bs se recalcularían a una tasa dada.
+ * Solo cuotas 'programada' pendientes y sin abonos (saldo = monto).
+ */
+function prev_preview_cuotas_bs(float $tasa): array
+{
+    $st = db()->query(
+        "SELECT COUNT(*) FROM prev_contratos
+         WHERE moneda = 'BS' AND estatus IN ('activo','suspendido')
+           AND monto_ref_usd IS NOT NULL AND monto_ref_usd > 0"
+    );
+    $contratos = (int)$st->fetchColumn();
+    $st = db()->query(
+        "SELECT COUNT(*) FROM prev_cuotas q
+         JOIN prev_contratos c ON c.id = q.contrato_id
+         WHERE c.moneda = 'BS' AND c.estatus IN ('activo','suspendido')
+           AND c.monto_ref_usd IS NOT NULL AND c.monto_ref_usd > 0
+           AND q.tipo = 'programada' AND q.estado = 'pendiente' AND q.saldo = q.monto"
+    );
+    $cuotas = (int)$st->fetchColumn();
+    return ['contratos' => $contratos, 'cuotas' => $cuotas];
+}
+
+/**
+ * Recalcula el monto en Bs de los contratos en bolívares usando su referencia
+ * en USD y la nueva tasa. Actualiza el contrato y sus cuotas programadas aún
+ * pendientes sin abonos (las ya cobradas/parciales no se tocan). Manual: se
+ * invoca solo cuando el usuario decide aplicar la tasa. Devuelve conteos.
+ */
+function prev_actualizar_cuotas_bs(float $tasa): array
+{
+    if ($tasa <= 0) return ['tasa' => $tasa, 'contratos' => 0, 'cuotas' => 0];
+    $pdo = db();
+    $rows = $pdo->query(
+        "SELECT id, monto_ref_usd FROM prev_contratos
+         WHERE moneda = 'BS' AND estatus IN ('activo','suspendido')
+           AND monto_ref_usd IS NOT NULL AND monto_ref_usd > 0"
+    )->fetchAll();
+
+    $nCont = 0; $nCuo = 0;
+    $pdo->beginTransaction();
+    try {
+        $upC = $pdo->prepare("UPDATE prev_contratos SET monto_cuota = ?, tasa_cambio = ? WHERE id = ?");
+        $upQ = $pdo->prepare(
+            "UPDATE prev_cuotas SET monto = ?, saldo = ?
+             WHERE contrato_id = ? AND tipo = 'programada'
+               AND estado = 'pendiente' AND saldo = monto"
+        );
+        foreach ($rows as $r) {
+            $nuevo = round((float)$r['monto_ref_usd'] * $tasa, 2);
+            $upC->execute([$nuevo, $tasa, $r['id']]);
+            $upQ->execute([$nuevo, $nuevo, $r['id']]);
+            $nCuo += $upQ->rowCount();
+            $nCont++;
+        }
+        $pdo->commit();
+    } catch (\Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+    return ['tasa' => $tasa, 'contratos' => $nCont, 'cuotas' => $nCuo];
+}
+
 /** Edad en años a una fecha dada (o hoy). */
 function prev_edad(?string $fechaNac, ?string $al = null): ?int
 {
@@ -354,6 +417,8 @@ function prev_contrato_out(array $r): array
         'moneda'             => $r['moneda'],
         'cuota_inicial'      => (float)$r['cuota_inicial'],
         'monto_cuota'        => (float)$r['monto_cuota'],
+        'monto_ref_usd'      => isset($r['monto_ref_usd']) && $r['monto_ref_usd'] !== null ? (float)$r['monto_ref_usd'] : null,
+        'tasa_cambio'        => isset($r['tasa_cambio']) && $r['tasa_cambio'] !== null ? (float)$r['tasa_cambio'] : null,
         'numero_cuotas'      => (int)$r['numero_cuotas'],
         'comision_venta'     => (float)$r['comision_venta'],
         'edad_ingreso'       => $r['edad_ingreso'] !== null ? (int)$r['edad_ingreso'] : null,

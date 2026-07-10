@@ -108,11 +108,21 @@ y moderniza el sistema administrativo legado **SIEMPRE** (respaldo en
   encuentra al titular, aparece «+ Crear este cliente»; se abre el formulario de
   cliente (con la cédula precargada) y al guardar vuelve al contrato con el titular
   ya seleccionado, conservando lo que se había capturado (`pvContratoDraft`).
+- **Cuotas en Bs ancladas a la tasa** (08_prevision_v5.sql): `prev_contratos`
+  guarda `monto_ref_usd` (referencia USD por cuota) y `tasa_cambio`. Al crear un
+  contrato en Bs, la cuota se calcula = ref_USD × tasa vigente y se guarda en Bs
+  (si el plan es USD, ref = cuota del plan; si se escribe el monto en Bs, ref =
+  monto ÷ tasa). El histórico de tasas está en `prev_tasas` (fecha + tasa). El
+  modal **Tasa** registra la tasa, muestra el histórico y ofrece el botón
+  **«Actualizar cuotas en Bs»** (`tasa_aplicar`, solo admin) que recalcula las
+  cuotas `programada` pendientes sin abonos a la nueva tasa — **manual**, nunca
+  automático. Cuotas ya cobradas/parciales no se tocan.
 - Plazo de espera por defecto: 4 meses. Parentescos con rango de edad (18 seeds).
 
 ## 6. Activación en el hosting (pendiente de ejecutar)
 
 1. `git push` + Deploy en cPanel Git Version Control.
-2. phpMyAdmin: importar `database/06_prevision_v3.sql` (y antes 04 y 05 si no están).
+2. phpMyAdmin: importar en orden `04` → `05` → `06_prevision_v3.sql` →
+   `07_prevision_v4.sql` → `08_prevision_v5.sql` (los que falten).
 3. Cron diario (si se quiere auto-lapsado): `api/cron/prevision_lapsar.php`.
 4. Cuando haya proveedor de mensajería: Previsión → Mensajes → Configuración.

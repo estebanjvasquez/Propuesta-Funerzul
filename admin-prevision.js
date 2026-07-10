@@ -21,6 +21,7 @@ const Prevision = {
     env: { offset: 0, limit: 25, total: 0 },
     cat: { sucursales: [], servicios: [], cobradores: [], rutas: [] },
     msgPlantillas: [],
+    tasaActual: 0,
 
     async open() {
         if (!this.wired) { this.wire(); this.wired = true; }
@@ -130,6 +131,7 @@ const Prevision = {
             $('#pvStatCobrado').innerText = pvMoney(s.cobrado_mes_usd, 'USD');
             $('#pvStatCobradoBs').innerText = s.cobrado_mes_bs > 0 ? pvMoney(s.cobrado_mes_bs, 'BS') : '';
             $('#pvStatTasa').innerText = s.tasa_dia > 0 ? pvNum(s.tasa_dia) : '—';
+            this.tasaActual = Number(s.tasa_dia || 0);
             $('#pvStatSiniestros').innerText = s.siniestros_abiertos ?? 0;
         } catch (e) {
             if (/prev_/.test(e.message) || /doesn'?t exist/i.test(e.message)) {
@@ -255,6 +257,8 @@ function pvContratoFormHtml(c = {}, cliente = null) {
     <form id="pvConForm">
         <input type="hidden" id="pf_id" value="${c.id || ''}">
         <input type="hidden" id="pf_cliente_id" value="${c.cliente_id || (cliente ? cliente.id : '')}">
+        <input type="hidden" id="pf_monto_ref_usd" value="${c.monto_ref_usd ?? ''}">
+        <input type="hidden" id="pf_orig_monto" value="${c.monto_cuota ?? ''}">
         <div class="form-grid-2">
             <div class="form-group"><label class="form-label">Nº de contrato</label>
                 <input type="text" id="pf_numero" class="form-control" value="${escapeHtml(c.numero || '')}" placeholder="(automático)"></div>
@@ -304,6 +308,7 @@ function pvContratoFormHtml(c = {}, cliente = null) {
             <div class="form-group"><label class="form-label">Monto de la cuota *</label>
                 <input type="number" step="0.01" min="0" id="pf_monto_cuota" class="form-control" value="${c.monto_cuota ?? ''}"></div>
         </div>
+        <p class="setting-help" id="pf_bs_info"></p>
         <div class="form-grid-2">
             <div class="form-group"><label class="form-label">Frecuencia de pago</label>
                 ${pvSelect('pf_frecuencia', Object.fromEntries(PV_FRECUENCIAS.map(f => [f, f])), c.frecuencia_pago || 'mensual')}</div>
@@ -354,15 +359,59 @@ function pvContratoFormHtml(c = {}, cliente = null) {
 }
 
 function pvWireContratoForm() {
-    $('#pf_plan').addEventListener('change', (e) => {
-        const opt = e.target.selectedOptions[0];
-        if (opt && opt.dataset.cuota !== undefined) {
-            $('#pf_monto_cuota').value = opt.dataset.cuota;
-            $('#pf_moneda').value = opt.dataset.moneda;
-            if (Number(opt.dataset.inicial) > 0) $('#pf_inicial').value = opt.dataset.inicial;
-        }
-    });
+    $('#pf_plan').addEventListener('change', pvContratoPlanChange);
+    $('#pf_moneda').addEventListener('change', pvContratoCalcBs);
     $('#pvConForm').addEventListener('submit', pvSubmitContrato);
+    // Tasa vigente para calcular cuotas en Bs (se refresca al abrir el formulario).
+    API.req('prevision_contratos.php?action=tasa')
+        .then(r => { Prevision.tasaActual = Number(r.tasa || 0); pvContratoCalcBs(); })
+        .catch(() => { pvContratoCalcBs(); });
+}
+
+function pvContratoPlanChange() {
+    const opt = $('#pf_plan').selectedOptions[0];
+    if (opt && opt.dataset.cuota !== undefined) {
+        $('#pf_monto_cuota').value = opt.dataset.cuota;
+        $('#pf_moneda').value = opt.dataset.moneda;
+        if (Number(opt.dataset.inicial) > 0) $('#pf_inicial').value = opt.dataset.inicial;
+    }
+    pvContratoCalcBs();
+}
+
+// Referencia en USD a enviar: la cuota del plan si es en USD; si no, el servidor
+// la deriva del monto en Bs entre la tasa.
+function pvContratoRefUsd() {
+    if ($('#pf_moneda').value !== 'BS') return undefined;
+    const opt = $('#pf_plan').selectedOptions[0];
+    if (opt && opt.dataset.moneda === 'USD' && Number(opt.dataset.cuota) > 0) return Number(opt.dataset.cuota);
+    // Al editar un contrato en Bs de precio manual: conservar la referencia USD
+    // guardada si el monto en Bs no cambió (evita reanclarla a la tasa del día).
+    const storedRef = $('#pf_monto_ref_usd') ? $('#pf_monto_ref_usd').value : '';
+    const origMonto = $('#pf_orig_monto') ? $('#pf_orig_monto').value : '';
+    if (storedRef && origMonto && Number(origMonto) === Number($('#pf_monto_cuota').value)) return Number(storedRef);
+    return undefined;
+}
+
+// Con moneda = Bs, calcula/ancla la cuota a la tasa de cambio (siempre en Bs).
+function pvContratoCalcBs() {
+    const info = $('#pf_bs_info');
+    if (!info) return;
+    if ($('#pf_moneda').value !== 'BS') { info.innerHTML = ''; return; }
+    const tasa = Number(Prevision.tasaActual || 0);
+    if (tasa <= 0) {
+        info.innerHTML = '⚠ No hay tasa de cambio registrada. Regístrela con el botón <strong>Tasa</strong> para calcular la cuota en Bs.';
+        return;
+    }
+    const opt = $('#pf_plan').selectedOptions[0];
+    const planMoneda = opt ? opt.dataset.moneda : '';
+    const planCuota = opt ? Number(opt.dataset.cuota || 0) : 0;
+    if (planMoneda === 'USD' && planCuota > 0) {
+        const bs = Math.round(planCuota * tasa * 100) / 100;
+        $('#pf_monto_cuota').value = bs.toFixed(2);
+        info.innerHTML = `Cuota calculada: <strong>${planCuota.toFixed(2)} USD × ${pvNum(tasa)}</strong> = <strong>${pvNum(bs)} Bs</strong>. Se guarda en Bs y se conserva la referencia en USD para futuras actualizaciones de tasa.`;
+    } else {
+        info.innerHTML = `Tasa vigente: <strong>${pvNum(tasa)} Bs/USD</strong>. Escriba el monto de la cuota en Bs; se guardará su referencia en USD (monto ÷ tasa).`;
+    }
 }
 
 async function pvBuscarClienteContrato() {
@@ -460,6 +509,8 @@ async function pvSubmitContrato(e) {
         fecha_ingreso: $('#pf_fecha_ingreso').value,
         moneda: $('#pf_moneda').value,
         monto_cuota: $('#pf_monto_cuota').value,
+        tasa_cambio: $('#pf_moneda').value === 'BS' ? (Prevision.tasaActual || undefined) : undefined,
+        monto_ref_usd: pvContratoRefUsd(),
         frecuencia_pago: $('#pf_frecuencia').value,
         forma_pago: $('#pf_forma').value,
         cuota_inicial: $('#pf_inicial').value,
@@ -554,7 +605,7 @@ async function pvVerContrato(id) {
                     <div><span>Estatus</span>${pvBadge(c.estatus)}${c.motivo_estatus ? ` <span class="row-sub">${escapeHtml(c.motivo_estatus)}</span>` : ''}</div>
                     <div><span>Ingreso</span><strong>${fmtDate(c.fecha_ingreso)}</strong></div>
                     <div><span>Vigente desde</span><strong>${fmtDate(c.vigente_desde)}</strong></div>
-                    <div><span>Cuota</span><strong>${pvMoney(c.monto_cuota, c.moneda)} · ${escapeHtml(c.frecuencia_pago)}</strong></div>
+                    <div><span>Cuota</span><strong>${pvMoney(c.monto_cuota, c.moneda)} · ${escapeHtml(c.frecuencia_pago)}</strong>${c.moneda === 'BS' && c.monto_ref_usd ? `<div class="row-sub">Ref. ${pvMoney(c.monto_ref_usd, 'USD')}${c.tasa_cambio ? ' @ ' + pvNum(c.tasa_cambio) : ''}</div>` : ''}</div>
                     <div><span>Forma de cobro</span><strong>${escapeHtml(PV_FORMAS_CONTRATO[c.forma_pago] || c.forma_pago)}</strong></div>
                     <div><span>Cobrado</span><strong>${pvMoney(r.totales.cobrado, c.moneda)}</strong></div>
                     <div><span>Por cobrar</span><strong>${pvMoney(r.totales.por_cobrar, c.moneda)}</strong></div>
@@ -1570,7 +1621,7 @@ async function pvImportar(e) {
 //  TASA DEL DÍA
 // ==========================================================================
 function pvSetTasa() {
-    openModal('Tasa de cambio del día', `
+    openModal('Tasa de cambio', `
         <form id="pvTasaForm">
             <div class="form-grid-2">
                 <div class="form-group"><label class="form-label">Fecha</label>
@@ -1578,21 +1629,67 @@ function pvSetTasa() {
                 <div class="form-group"><label class="form-label">Tasa (Bs por USD) *</label>
                     <input type="number" step="0.0001" min="0.0001" id="pt_tasa" class="form-control" required></div>
             </div>
-            <p class="setting-help">La tasa se usa para convertir pagos en bolívares de contratos en divisas y para las comisiones.</p>
+            <p class="setting-help">Se guarda en el histórico. Convierte pagos en bolívares y calcula las cuotas de contratos en Bs.</p>
             <div class="modal-actions">
                 <button type="submit" class="btn btn-primary">Guardar tasa</button>
-                <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">Cerrar</button>
             </div>
-        </form>`);
+        </form>
+        <div id="pvTasaApply"></div>
+        <h4 class="prev-h4">Histórico de tasas</h4>
+        <div id="pvTasaHist" class="table-responsive"></div>`);
     $('#pvTasaForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
-            await API.req('prevision_contratos.php?action=tasa_set', { method: 'POST', json: {
+            const r = await API.req('prevision_contratos.php?action=tasa_set', { method: 'POST', json: {
                 fecha: $('#pt_fecha').value, tasa: $('#pt_tasa').value,
             }});
-            closeModal(); toast('Tasa registrada.'); Prevision.loadStats();
+            Prevision.tasaActual = Number(r.tasa || 0);
+            toast('Tasa registrada.'); Prevision.loadStats();
+            pvTasaHistorial(); pvTasaApplyBox(r.tasa);
         } catch (ex) { toast(ex.message); }
     });
+    pvTasaHistorial();
+}
+
+// Caja para actualizar (manualmente) las cuotas en Bs a la tasa recién guardada.
+async function pvTasaApplyBox(tasa) {
+    const box = $('#pvTasaApply');
+    if (!box) return;
+    if (!pvEsAdmin()) { box.innerHTML = '<p class="setting-help">La actualización de cuotas en Bs la realiza un administrador.</p>'; return; }
+    try {
+        const r = await API.req('prevision_contratos.php?action=tasa_preview&tasa=' + encodeURIComponent(tasa));
+        box.innerHTML = `
+            <div class="admin-card settings-card">
+                <p><strong>Actualizar cuotas en Bs a ${pvNum(tasa)} Bs/USD</strong></p>
+                <p class="setting-help">Recalcula ${r.contratos} contrato(s) en Bs y ${r.cuotas} cuota(s) pendientes sin abonos. No es automático: solo se aplica si usted lo confirma. Las cuotas ya cobradas o abonadas no cambian.</p>
+                <button class="btn btn-danger" onclick="pvTasaAplicar(${Number(tasa)})" ${r.cuotas ? '' : 'disabled'}>Actualizar ${r.cuotas} cuota(s) ahora</button>
+            </div>`;
+    } catch (e) { box.innerHTML = ''; }
+}
+
+async function pvTasaAplicar(tasa) {
+    if (!confirmAction('¿Actualizar las cuotas pendientes en Bs de los clientes a la tasa ' + pvNum(tasa) + '? Esta acción modifica los montos por cobrar.')) return;
+    try {
+        const r = await API.req('prevision_contratos.php?action=tasa_aplicar', { method: 'POST', json: { tasa } });
+        toast(`Actualizadas ${r.cuotas} cuota(s) de ${r.contratos} contrato(s).`);
+        pvTasaApplyBox(tasa); Prevision.loadStats();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvTasaHistorial() {
+    const box = $('#pvTasaHist');
+    if (!box) return;
+    try {
+        const r = await API.req('prevision_contratos.php?action=tasa_historial&limit=12');
+        box.innerHTML = `<table class="admin-table admin-table-compact">
+            <thead><tr><th>Fecha</th><th>Tasa (Bs/USD)</th><th>Registró</th></tr></thead>
+            <tbody>${r.items.map(t => `<tr>
+                <td>${fmtDate(t.fecha)}</td><td>${pvNum(t.tasa)}</td>
+                <td class="row-sub">${escapeHtml(t.usuario || '—')}</td></tr>`).join('')
+                || '<tr><td colspan="3" class="empty-row">Sin tasas registradas.</td></tr>'}
+            </tbody></table>`;
+    } catch (e) { box.innerHTML = ''; }
 }
 
 // ==========================================================================
