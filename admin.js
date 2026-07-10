@@ -46,12 +46,18 @@ function toast(msg) {
 function confirmAction(msg) { return window.confirm(msg); }
 
 // ---------- Modal ----------
-function openModal(title, html) {
+// size: 'wide' amplía el modal para vistas densas (detalle/edición de contrato,
+// cliente y siniestro, con tablas y formularios de dos columnas). Sin size usa
+// el ancho estándar.
+function openModal(title, html, size) {
     $('#modalTitle').innerText = title;
     $('#modalBody').innerHTML = html;
+    const win = document.querySelector('#modal .admin-modal');
+    if (win) win.classList.toggle('admin-modal--wide', size === 'wide');
     $('#modal').hidden = false;
     document.body.style.overflow = 'hidden';
 }
+function openModalWide(title, html) { return openModal(title, html, 'wide'); }
 function closeModal() {
     $('#modal').hidden = true;
     $('#modalBody').innerHTML = '';

@@ -457,22 +457,36 @@ switch ($action) {
         array_push($params, $u['id'], $id);
         db()->prepare($sql)->execute($params);
 
-        // Contrato en Bs cuya cuota cambió (p.ej. re-anclada a la tasa vigente):
-        // sincroniza las cuotas programadas pendientes sin abonos al nuevo monto.
-        $cuotasSync = 0;
-        if ($in['moneda'] === 'BS' && $in['monto_cuota'] > 0
-            && round((float)$old['monto_cuota'], 2) !== round((float)$in['monto_cuota'], 2)) {
+        // Sincronización de cuotas programadas pendientes SIN abonos (saldo = monto):
+        //   · Re-anclaje del monto en Bs a la tasa vigente (misma moneda): automático.
+        //   · Cambio de moneda del contrato (Bs↔USD): solo si el usuario lo confirma
+        //     (recalcular_cuotas), para no reescribir montos sin querer. Reescribe la
+        //     moneda Y el monto de esas cuotas al nuevo valor del contrato, de modo que
+        //     el cliente deje de "deber bolívares etiquetados como dólares".
+        // Las cuotas ya cobradas, parciales o anuladas conservan su moneda/monto
+        // original (registro histórico); por eso los reportes agrupan por la moneda
+        // de la cuota, no la del contrato.
+        $cuotasSync   = 0;
+        $monedaCambio = $old['moneda'] !== $in['moneda'];
+        $montoCambio  = round((float)$old['monto_cuota'], 2) !== round((float)$in['monto_cuota'], 2);
+        $recalcular   = $in['monto_cuota'] > 0 && (
+            (!$monedaCambio && $in['moneda'] === 'BS' && $montoCambio)          // re-anclaje Bs automático
+            || (!empty($b['recalcular_cuotas']) && ($monedaCambio || $montoCambio))
+        );
+        if ($recalcular) {
             $st = db()->prepare(
-                "UPDATE prev_cuotas SET monto = ?, saldo = ?
+                "UPDATE prev_cuotas SET moneda = ?, monto = ?, saldo = ?
                  WHERE contrato_id = ? AND tipo = 'programada'
                    AND estado = 'pendiente' AND saldo = monto"
             );
-            $st->execute([$in['monto_cuota'], $in['monto_cuota'], $id]);
+            $st->execute([$in['moneda'], $in['monto_cuota'], $in['monto_cuota'], $id]);
             $cuotasSync = $st->rowCount();
         }
         audit('prev_contrato.update', 'prev_contratos', $id,
-              $cuotasSync ? ['cuotas_bs_sincronizadas' => $cuotasSync, 'monto' => $in['monto_cuota']] : []);
-        json_out(['ok' => true, 'monto_cuota' => $in['monto_cuota'], 'cuotas_actualizadas' => $cuotasSync]);
+              $cuotasSync ? ['cuotas_sincronizadas' => $cuotasSync, 'moneda' => $in['moneda'],
+                             'monto' => $in['monto_cuota'], 'cambio_moneda' => $monedaCambio] : []);
+        json_out(['ok' => true, 'monto_cuota' => $in['monto_cuota'], 'moneda' => $in['moneda'],
+                  'cambio_moneda' => $monedaCambio, 'cuotas_actualizadas' => $cuotasSync]);
     }
 
     case 'set_estatus': {

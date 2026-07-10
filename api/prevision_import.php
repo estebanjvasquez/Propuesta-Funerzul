@@ -418,12 +418,30 @@ switch ($action) {
                             'motivo_estatus'     => clean_str($d['motivo_estatus'] ?? '', 255) ?: null,
                             'comentarios'        => clean_str($d['comentarios'] ?? '', 500) ?: null,
                         ];
-                        $st = $pdo->prepare("SELECT id FROM prev_contratos WHERE numero = ?");
+                        $st = $pdo->prepare("SELECT id, moneda FROM prev_contratos WHERE numero = ?");
                         $st->execute([$numero]);
-                        if ($idExist = $st->fetchColumn()) {
+                        if ($existente = $st->fetch()) {
+                            $idExist = (int)$existente['id'];
+                            // El importador NO gestiona cuotas: si la re-importación cambia la
+                            // moneda del contrato, sus cuotas ya generadas conservan la moneda
+                            // anterior. Se avisa (sin recalcular, para no pisar cuotas hechas a
+                            // mano) para que el operador las recalcule desde el panel.
+                            if ($existente['moneda'] !== $moneda) {
+                                $pc = $pdo->prepare(
+                                    "SELECT COUNT(*) FROM prev_cuotas
+                                     WHERE contrato_id = ? AND estado IN ('pendiente','parcial')"
+                                );
+                                $pc->execute([$idExist]);
+                                $pendientes = (int)$pc->fetchColumn();
+                                if ($pendientes > 0 && count($errores) < 200) {
+                                    $errores[] = ['fila' => $n, 'error' => "Advertencia: el contrato $numero cambió de "
+                                        . "{$existente['moneda']} a $moneda pero conserva $pendientes cuota(s) pendiente(s) en "
+                                        . "{$existente['moneda']}. Recalcúlelas desde el panel (editar contrato → confirmar recálculo)."];
+                                }
+                            }
                             $sets = implode(', ', array_map(fn($c) => "$c = ?", array_keys($vals)));
                             $pdo->prepare("UPDATE prev_contratos SET $sets, updated_by = ? WHERE id = ?")
-                                ->execute([...array_values($vals), $u['id'], (int)$idExist]);
+                                ->execute([...array_values($vals), $u['id'], $idExist]);
                             $upd++;
                         } else {
                             $cols = array_keys($vals);

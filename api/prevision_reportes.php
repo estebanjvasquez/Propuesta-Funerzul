@@ -31,8 +31,13 @@ switch ($action) {
     case 'aging': {
         require_method('GET');
         require_role('admin', 'editor');
+        // Se agrupa por la moneda de la CUOTA (q.moneda), no la del contrato: una
+        // cuota conserva la moneda con la que se generó aunque el contrato cambie
+        // después de Bs a USD. Así los bolívares nunca se suman ni se etiquetan como
+        // dólares; un contrato con cuotas en ambas monedas aparece en una fila por
+        // moneda.
         $st = db()->query(
-            "SELECT c.id, c.numero, c.moneda, c.estatus,
+            "SELECT c.id, c.numero, q.moneda, c.estatus,
                     CONCAT(cl.nombres, ' ', cl.apellidos) AS cliente_nombre,
                     p.nombre AS plan_nombre,
                     SUM(CASE WHEN q.fecha_vencimiento >= CURDATE() THEN q.saldo ELSE 0 END) AS al_dia,
@@ -46,7 +51,7 @@ switch ($action) {
              LEFT JOIN prev_planes p ON p.id = c.plan_id
              JOIN prev_cuotas q ON q.contrato_id = c.id AND q.estado IN ('pendiente','parcial')
              WHERE c.estatus IN ('activo','suspendido')
-             GROUP BY c.id, c.numero, c.moneda, c.estatus, cliente_nombre, plan_nombre
+             GROUP BY c.id, c.numero, q.moneda, c.estatus, cliente_nombre, plan_nombre
              HAVING SUM(q.saldo) > 0
              ORDER BY d90_mas DESC, total DESC"
         );

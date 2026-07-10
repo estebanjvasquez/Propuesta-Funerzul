@@ -495,7 +495,7 @@ function pvCrearClienteDesdeContrato() {
     const m = ced.match(/^([VEJP])[-\s]?(.+)$/i);
     if (m) { nac = m[1].toUpperCase(); cedula = m[2].trim(); }
     pvFormCliente({ nacionalidad: nac, cedula }, (cli) => {
-        openModal('Nuevo contrato de previsión', pvContratoFormHtml(draft, cli));
+        openModalWide('Nuevo contrato de previsión', pvContratoFormHtml(draft, cli));
         pvWireContratoForm();
         pvRestoreContratoExtras(draft);
         toast('Cliente creado y seleccionado en el contrato.');
@@ -504,7 +504,7 @@ function pvCrearClienteDesdeContrato() {
 
 async function pvNuevoContrato() {
     await Prevision.loadCatalogos();
-    openModal('Nuevo contrato de previsión', pvContratoFormHtml({}));
+    openModalWide('Nuevo contrato de previsión', pvContratoFormHtml({}));
     pvWireContratoForm();
 }
 
@@ -512,7 +512,10 @@ async function pvEditContrato(id) {
     await Prevision.loadCatalogos();
     try {
         const r = await API.req('prevision_contratos.php?action=get&id=' + id);
-        openModal('Editar contrato ' + r.item.numero, pvContratoFormHtml(r.item, r.cliente));
+        // Foto de la moneda/monto originales para detectar cambios al guardar y
+        // ofrecer recalcular las cuotas pendientes a la nueva moneda del contrato.
+        Prevision._contratoOrig = { moneda: r.item.moneda, monto_cuota: Number(r.item.monto_cuota) || 0 };
+        openModalWide('Editar contrato ' + r.item.numero, pvContratoFormHtml(r.item, r.cliente));
         pvWireContratoForm();
     } catch (e) { toast(e.message); }
 }
@@ -552,11 +555,31 @@ async function pvSubmitContrato(e) {
     if (!id) {
         json.generar_cuotas = $('#pf_gen_cuotas') ? $('#pf_gen_cuotas').value : 0;
         json.primera_cuota = $('#pf_primera_cuota') ? $('#pf_primera_cuota').value : '';
+    } else {
+        // Al editar: si cambió la moneda del contrato (o el monto en USD), ofrecer
+        // recalcular las cuotas pendientes sin abonos a la nueva moneda/monto. El
+        // re-anclaje del monto en Bs a la tasa ya lo hace el servidor de forma
+        // automática, así que ahí no se pregunta.
+        const orig = Prevision._contratoOrig || {};
+        const et = (m) => (m === 'BS' ? 'Bs' : 'USD');
+        const monedaCambio = orig.moneda && orig.moneda !== json.moneda;
+        const montoCambio = Math.abs((Number(json.monto_cuota) || 0) - (orig.monto_cuota || 0)) >= 0.01;
+        if (monedaCambio || (montoCambio && json.moneda === 'USD')) {
+            const msg = monedaCambio
+                ? `Cambió la moneda del contrato de ${et(orig.moneda)} a ${et(json.moneda)}.\n\n` +
+                  `¿Recalcular las cuotas pendientes (sin abonos) a ${pvMoney(json.monto_cuota, json.moneda)}?\n\n` +
+                  `Las cuotas ya cobradas o con abonos conservan su moneda original.`
+                : `Cambió el monto de la cuota.\n\n` +
+                  `¿Actualizar las cuotas pendientes (sin abonos) a ${pvMoney(json.monto_cuota, json.moneda)}?`;
+            json.recalcular_cuotas = confirmAction(msg);
+        }
     }
     try {
         const r = await API.req('prevision_contratos.php?action=' + (id ? 'update' : 'create'), { method: 'POST', json });
         closeModal();
-        toast(id ? 'Contrato actualizado.' : 'Contrato ' + r.numero + ' creado.');
+        let msg = id ? 'Contrato actualizado.' : 'Contrato ' + r.numero + ' creado.';
+        if (id && r.cuotas_actualizadas > 0) msg += ` ${r.cuotas_actualizadas} cuota(s) recalculada(s).`;
+        toast(msg);
         pvLoadContratos(); Prevision.loadStats();
         if (!id) pvVerContrato(r.id);
     } catch (ex) { err.innerText = ex.message; err.hidden = false; }
@@ -629,7 +652,7 @@ async function pvVerContrato(id) {
                 <button class="btn btn-outline btn-sm" onclick="pvAddBeneficiario(${c.id})">+ Agregar beneficiarios</button>
             </div>` : '';
 
-        openModal(`Contrato ${escapeHtml(c.numero)} — ${escapeHtml(c.cliente_nombre || '')}`, `
+        openModalWide(`Contrato ${escapeHtml(c.numero)} — ${escapeHtml(c.cliente_nombre || '')}`, `
             <div class="prev-detail">
                 ${avisoBienvenida}
                 <div class="prev-kv">
@@ -1231,7 +1254,7 @@ async function pvVerCliente(id) {
                 <td>${fmtDate(x.fecha_ingreso)}</td>
                 <td>${pvBadge(x.estatus)}</td>
             </tr>`).join('') || `<tr><td colspan="5" class="empty-row">Sin contratos.</td></tr>`;
-        openModal(`Cliente ${escapeHtml(c.nombre_completo)}`, `
+        openModalWide(`Cliente ${escapeHtml(c.nombre_completo)}`, `
             <div class="prev-detail">
                 <div class="prev-kv">
                     <div><span>Documento</span><strong>${escapeHtml(c.documento)}</strong></div>
@@ -1257,7 +1280,7 @@ async function pvNuevoContratoParaCliente(clienteId) {
     await Prevision.loadCatalogos();
     try {
         const r = await API.req('prevision_clientes.php?action=get&id=' + clienteId);
-        openModal('Nuevo contrato de previsión', pvContratoFormHtml({}, r.item));
+        openModalWide('Nuevo contrato de previsión', pvContratoFormHtml({}, r.item));
         pvWireContratoForm();
     } catch (e) { toast(e.message); }
 }
@@ -2036,7 +2059,7 @@ async function pvVerSiniestro(id) {
                 </div></td>
             </tr>`).join('') || `<tr><td colspan="5" class="empty-row">Sin partidas registradas. Agregue el servicio o pago a liquidar.</td></tr>`;
 
-        openModal(`Siniestro #${s.id} — ${escapeHtml(s.nombre_fallecido)}`, `
+        openModalWide(`Siniestro #${s.id} — ${escapeHtml(s.nombre_fallecido)}`, `
             <div class="prev-detail">
                 <div class="prev-kv">
                     <div><span>Fallecido</span><strong>${escapeHtml(s.nombre_fallecido)}${s.es_titular ? ' (titular)' : ''}</strong></div>
