@@ -32,6 +32,8 @@
  *   GET  tasa_historial  (staff; histórico de tasas con fecha y usuario)
  *   GET  tasa_preview    (staff; cuántas cuotas en Bs se recalcularían a ?tasa=)
  *   POST tasa_aplicar    (admin; recalcula las cuotas en Bs a la tasa — manual)
+ *   GET  cuotas_desalineadas_preview (staff; cuotas en moneda distinta a su contrato)
+ *   POST cuotas_normalizar           (admin; alinea esas cuotas a la moneda del contrato)
  */
 require __DIR__ . '/lib/bootstrap.php';
 require __DIR__ . '/lib/prevision.php';
@@ -1098,6 +1100,25 @@ switch ($action) {
         if ($tasa <= 0) json_out(['ok' => false, 'error' => 'Registre una tasa válida antes de actualizar.'], 422);
         $res = prev_actualizar_cuotas_bs($tasa);
         audit('prev_tasa.aplicar_cuotas', 'prev_contratos', null, $res);
+        json_out(['ok' => true] + $res);
+    }
+
+    case 'cuotas_desalineadas_preview': {
+        // Cuántas cuotas quedaron en una moneda distinta a la de su contrato
+        // (contratos sin pagos), candidatas a normalizarse en bloque.
+        require_method('GET');
+        require_role('admin', 'editor');
+        json_out(['ok' => true] + prev_preview_cuotas_desalineadas());
+    }
+
+    case 'cuotas_normalizar': {
+        // Alinea en bloque las cuotas pendientes a la moneda/monto de su contrato
+        // (solo contratos sin pagos). Manual (por decisión de un administrador).
+        require_method('POST');
+        $u = require_role('admin');
+        require_csrf();
+        $res = prev_normalizar_cuotas_desalineadas();
+        audit('prev_cuotas.normalizar_moneda', 'prev_contratos', null, $res);
         json_out(['ok' => true] + $res);
     }
 

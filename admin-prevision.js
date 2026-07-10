@@ -1877,6 +1877,7 @@ function pvSetTasa() {
             </div>
         </form>
         <div id="pvTasaApply"></div>
+        <div id="pvNormApply"></div>
         <h4 class="prev-h4">Histórico de tasas</h4>
         <div id="pvTasaHist" class="table-responsive"></div>`);
     $('#pvTasaForm').addEventListener('submit', async (e) => {
@@ -1893,6 +1894,35 @@ function pvSetTasa() {
     pvTasaHistorial();
     // Permite recalcular a la tasa vigente sin tener que registrar una nueva.
     if (Number(Prevision.tasaActual) > 0) pvTasaApplyBox(Prevision.tasaActual);
+    // Rutina masiva para reparar contratos heredados (cuotas en otra moneda).
+    pvNormalizarBox();
+}
+
+// Caja para alinear en bloque las cuotas cuya moneda difiere de la de su contrato
+// (contratos sin pagos). Repara los contratos creados en Bs y luego pasados a USD.
+async function pvNormalizarBox() {
+    const box = $('#pvNormApply');
+    if (!box) return;
+    if (!pvEsAdmin()) { box.innerHTML = ''; return; }
+    try {
+        const r = await API.req('prevision_contratos.php?action=cuotas_desalineadas_preview');
+        if (!r.cuotas) { box.innerHTML = ''; return; }
+        box.innerHTML = `
+            <div class="admin-card settings-card">
+                <p><strong>Normalizar cuotas con moneda distinta a su contrato</strong></p>
+                <p class="setting-help">Se detectaron ${r.contratos} contrato(s) sin pagos con ${r.cuotas} cuota(s) pendientes en una moneda distinta a la del contrato (p. ej. creados en Bs y luego pasados a USD). Al alinearlas, el monto y el «por cobrar» quedan en la moneda correcta. No afecta contratos con pagos ni cuotas abonadas.</p>
+                <button class="btn btn-danger" onclick="pvNormalizarCuotas()">Normalizar ${r.cuotas} cuota(s) ahora</button>
+            </div>`;
+    } catch (e) { box.innerHTML = ''; }
+}
+
+async function pvNormalizarCuotas() {
+    if (!confirmAction('¿Alinear las cuotas pendientes a la moneda de su contrato? Solo afecta contratos sin pagos y cuotas sin abonos. Modifica los montos por cobrar.')) return;
+    try {
+        const r = await API.req('prevision_contratos.php?action=cuotas_normalizar', { method: 'POST', json: {} });
+        toast(`Normalizadas ${r.cuotas} cuota(s) de ${r.contratos} contrato(s).`);
+        pvNormalizarBox(); Prevision.loadStats();
+    } catch (e) { toast(e.message); }
 }
 
 // Caja para actualizar (manualmente) las cuotas en Bs a la tasa recién guardada.

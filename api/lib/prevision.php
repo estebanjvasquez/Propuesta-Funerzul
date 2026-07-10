@@ -173,6 +173,69 @@ function prev_actualizar_cuotas_bs(float $tasa): array
     return ['tasa' => $tasa, 'contratos' => $nCont, 'cuotas' => $nCuo];
 }
 
+// Cuotas "desalineadas": su moneda no coincide con la del contrato (p.ej. el
+// contrato se creó en Bs, se generaron las cuotas y luego se pasó a USD). Solo se
+// consideran contratos SIN pagos y cuotas 'programada' pendientes sin abonos, para
+// poder alinearlas sin falsear ningún cobro histórico.
+const PREV_DESALINEADAS_SQL =
+    "FROM prev_cuotas q
+     JOIN prev_contratos c ON c.id = q.contrato_id
+     WHERE c.estatus IN ('activo','suspendido')
+       AND q.tipo = 'programada' AND q.estado = 'pendiente' AND q.saldo = q.monto
+       AND q.moneda <> c.moneda
+       AND NOT EXISTS (SELECT 1 FROM prev_pagos g WHERE g.contrato_id = c.id)";
+
+/** Cuántos contratos/cuotas quedaron con la cuota en otra moneda que el contrato. */
+function prev_preview_cuotas_desalineadas(): array
+{
+    $contratos = (int)db()->query("SELECT COUNT(DISTINCT c.id) " . PREV_DESALINEADAS_SQL)->fetchColumn();
+    $cuotas    = (int)db()->query("SELECT COUNT(*) " . PREV_DESALINEADAS_SQL)->fetchColumn();
+    return ['contratos' => $contratos, 'cuotas' => $cuotas];
+}
+
+/**
+ * Alinea en bloque las cuotas 'programada' pendientes sin abonos a la moneda y al
+ * monto de su contrato, en los contratos SIN pagos cuyas cuotas quedaron en otra
+ * moneda. Repara de una sola vez los contratos creados en Bs y luego pasados a USD
+ * (o viceversa), sin depender de re-guardarlos uno por uno. No toca cuotas
+ * cobradas/parciales/anuladas ni contratos con pagos. Devuelve conteos.
+ */
+function prev_normalizar_cuotas_desalineadas(): array
+{
+    $pdo = db();
+    $rows = $pdo->query(
+        "SELECT c.id, c.moneda, c.monto_cuota
+         FROM prev_contratos c
+         WHERE c.estatus IN ('activo','suspendido')
+           AND c.monto_cuota > 0
+           AND NOT EXISTS (SELECT 1 FROM prev_pagos g WHERE g.contrato_id = c.id)
+           AND EXISTS (SELECT 1 FROM prev_cuotas q WHERE q.contrato_id = c.id
+                        AND q.tipo = 'programada' AND q.estado = 'pendiente'
+                        AND q.saldo = q.monto AND q.moneda <> c.moneda)"
+    )->fetchAll();
+
+    $nCont = 0; $nCuo = 0;
+    $pdo->beginTransaction();
+    try {
+        $upQ = $pdo->prepare(
+            "UPDATE prev_cuotas SET moneda = ?, monto = ?, saldo = ?
+             WHERE contrato_id = ? AND tipo = 'programada'
+               AND estado = 'pendiente' AND saldo = monto"
+        );
+        foreach ($rows as $r) {
+            $monto = (float)$r['monto_cuota'];
+            $upQ->execute([$r['moneda'], $monto, $monto, (int)$r['id']]);
+            $nCuo += $upQ->rowCount();
+            $nCont++;
+        }
+        $pdo->commit();
+    } catch (\Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+    return ['contratos' => $nCont, 'cuotas' => $nCuo];
+}
+
 /** Edad en años a una fecha dada (o hoy). */
 function prev_edad(?string $fechaNac, ?string $al = null): ?int
 {
