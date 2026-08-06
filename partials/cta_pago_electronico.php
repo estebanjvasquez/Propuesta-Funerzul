@@ -18,7 +18,7 @@ $peApiUrl     = ($base ?? '') . 'api/prevision_solicitudes.php?action=crear';
         <p>Déjenos sus datos y un asesor le contactará para completar el pago de <?= esc($peInteresVal) ?> de forma segura.</p>
     </div>
     <div class="cta-band-actions">
-        <button type="button" class="btn btn-outline btn-lg" onclick="openModal('peModal')">Solicitar con pago electrónico</button>
+        <button type="button" class="btn btn-secondary btn-lg" onclick="openModal('peModal')">Solicitar con pago electrónico</button>
     </div>
 </div>
 
