@@ -19,7 +19,8 @@
 - Panel admin (`admin.html` + `admin-prevision.js`): pestaña "Solicitudes" y botón "Cobro electrónico" (con badge de modo simulado) en el detalle de cada cuota pendiente de un contrato.
 - CTA público "Solicitar con pago electrónico" (`partials/cta_pago_electronico.php`) agregado en las 4 páginas de plan, `planes/index.php`, `servicios/index.php` y las 4 páginas de servicio — crea una `prev_solicitudes_publicas` (lead), nunca ejecuta un cobro real.
 - `api/prevision_mercantil_callback.php` (URL de retorno/OAuth) y `api/prevision_mercantil_webhook.php` (webhook de confirmación) creados para poder completar el registro de la aplicación en el Portal API — ver bloqueo MRC-001 arriba.
-- Verificado con `php -l` en todos los archivos PHP nuevos/editados y `node --check` en `admin-prevision.js`. No se probó contra una base de datos real (no hay `api/config.php` local con el esquema importado) ni contra el banco (sin credenciales) — pendiente de que el usuario lo pruebe en un entorno con MySQL antes de desplegar.
+- Verificado con `php -l` en todos los archivos PHP nuevos/editados y `node --check` en `admin-prevision.js`.
+- **Probado end-to-end contra MySQL local real** (base `legadoholding_obituarios`, que ya tenía la migración 10 importada): `api/prevision_solicitudes.php?action=crear` crea el lead correctamente; `PaymentService::crearIntento()` → `conciliar()` aprueba el intento, inserta en `prev_pagos` y marca la cuota `cobrada`; un segundo `conciliar()` sobre el mismo intento es rechazado como se espera (protección de máquina de estados). Datos de prueba limpiados después de verificar. Sigue pendiente probar contra el banco real (sin credenciales todavía) y contra el servidor de prueba remoto.
 
 ## Bloqueo MRC-001
 
