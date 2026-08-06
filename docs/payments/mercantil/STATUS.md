@@ -1,14 +1,15 @@
 # Estado de integración Mercantil
 
-- Estado global: PROJECT_DISCOVERY
+- Estado global: SANDBOX_CREDENTIALS_RECEIVED
 - Fecha: 2026-08-06
 - Responsable: por asignar
 - Producto: Botón de Pagos Web + Búsquedas de Pagos Móviles (planeado); Pago Móvil C2P (planeado)
-- Ambiente: sandbox — **desplegado actualmente en dominio de prueba** `https://legadoholding.com/funerzul` (NO es el dominio final `https://www.funerariadelzulia.com`). Ver `MIGRATION_PLAN.md` para el paso a producción.
-- Próximo paso: crear cuenta en el Portal API de Mercantil (https://apiportal.mercantilbanco.com) y registrar la aplicación con los datos de la Funeraria del Zulia.
-- Bloqueos: ver abajo.
-- Evidencias: ninguna todavía.
-- Última comunicación con el banco: ninguna todavía.
+- Ambiente: sandbox — **desplegado y verificado en dominio de prueba** `https://legadoholding.com/funerzul` (NO es el dominio final `https://www.funerariadelzulia.com`). Ver `MIGRATION_PLAN.md` para el paso a producción.
+- Próximo paso: probar en el navegador el flujo simulado completo (solicitud pública → panel "Solicitudes" → cobro electrónico en una cuota) en el servidor de pruebas; en paralelo, solicitar a Mercantil la especificación completa del endpoint de creación de pago (MRC-003) y la MasterKey del webhook (MRC-004).
+- Bloqueos: ver abajo (MRC-003 y MRC-004 siguen abiertos).
+- Evidencias:
+  - `api/diag.php` en el servidor de pruebas confirma: BD conectada, las 3 tablas nuevas existen, `curl` activo, conectividad HTTPS al gateway de Mercantil (`reachable: true`, HTTP 404 en la raíz — normal sin autenticación), y `client_id`/`client_secret` cargados en `api/config.php` del servidor.
+- Última comunicación con el banco: cuenta creada y aplicación registrada en el Portal API (client_id/client_secret de sandbox recibidos); pendiente solicitar formalmente la especificación completa (MRC-003) y la MasterKey del webhook (MRC-004).
 
 ## Trabajo ya realizado (sin depender del banco)
 
