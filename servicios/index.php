@@ -61,6 +61,8 @@ require __DIR__ . '/../partials/site_header.php';
     $ctaSub     = 'Llámenos o escríbanos por WhatsApp. Atendemos las 24 horas en Maracaibo y todo el Zulia.';
     $ctaWaText  = 'Hola, quisiera información sobre sus servicios funerarios.';
     require __DIR__ . '/../partials/cta_contacto.php';
+    $peInteres = 'un servicio funerario'; $peTipo = 'servicio';
+    require __DIR__ . '/../partials/cta_pago_electronico.php';
     ?>
 
     <p class="service-related" style="text-align:center">¿Desea organizarlo con anticipación? Conozca nuestros <a href="../planes/">Planes de Previsión Familiar</a>.</p>

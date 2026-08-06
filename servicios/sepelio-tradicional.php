@@ -47,6 +47,8 @@ require __DIR__ . '/../partials/site_header.php';
         $ctaSub     = 'Estamos disponibles las 24 horas en Maracaibo y todo el Estado Zulia.';
         $ctaWaText  = 'Hola, deseo información sobre el servicio de sepelio tradicional.';
         require __DIR__ . '/../partials/cta_contacto.php';
+        $peInteres = 'Sepelio Tradicional'; $peTipo = 'servicio';
+        require __DIR__ . '/../partials/cta_pago_electronico.php';
         ?>
 
         <div class="service-related">

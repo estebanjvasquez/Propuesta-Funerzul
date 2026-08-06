@@ -45,4 +45,29 @@ return [
         'env'       => 'production',  // 'development' muestra errores
         'site_url'  => 'https://www.funerariadelzulia.com',
     ],
+
+    // Pagos electrónicos (previsión). Ver docs/mercantil.md y
+    // docs/payments/mercantil/STATUS.md antes de tocar esta sección.
+    // Mientras 'provider' sea 'simulado', ningún cobro es real: el staff debe
+    // confirmar manualmente cada intento desde el panel (nunca es automático).
+    'payments' => [
+        'provider' => 'simulado', // 'simulado' | 'mercantil' (no cambiar a 'mercantil' sin credenciales reales)
+        'mercantil' => [
+            'environment'      => 'sandbox',
+            'base_url'         => '',
+            'client_id'        => '',
+            'client_secret'    => '',
+            'integrator_id'    => '',
+            'merchant_id'      => '',
+            'terminal_id'      => '',
+            // AMBIENTE DE PRUEBA ACTUAL: https://legadoholding.com/funerzul (ver
+            // docs/payments/mercantil/MIGRATION_PLAN.md para el cambio a producción
+            // en https://www.funerariadelzulia.com cuando corresponda).
+            // URL registrada en el Portal API como redirección OAuth / retorno de la operación.
+            'return_url'       => 'https://legadoholding.com/funerzul/api/prevision_mercantil_callback.php',
+            'cancel_url'       => 'https://legadoholding.com/funerzul/api/prevision_mercantil_callback.php',
+            // Webhook server-to-server (Servicio de Confirmación de Operación).
+            'notification_url' => 'https://legadoholding.com/funerzul/api/prevision_mercantil_webhook.php',
+        ],
+    ],
 ];

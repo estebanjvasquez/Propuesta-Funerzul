@@ -73,6 +73,8 @@ require __DIR__ . '/../partials/site_header.php';
     $ctaWa         = '584146523319';
     $ctaWaText     = 'Hola, deseo asesoría sobre los planes de previsión funeraria.';
     require __DIR__ . '/../partials/cta_contacto.php';
+    $peInteres = 'un plan de previsión'; $peTipo = 'plan';
+    require __DIR__ . '/../partials/cta_pago_electronico.php';
     ?>
 
     <p class="service-related" style="text-align:center">¿Necesita un servicio inmediato? Conozca nuestros <a href="../servicios/">Servicios Funerarios</a>.</p>

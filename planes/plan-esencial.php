@@ -49,6 +49,8 @@ require __DIR__ . '/../partials/site_header.php';
         $ctaWa        = '584146523319';
         $ctaWaText    = 'Hola, deseo información sobre el Plan Esencial de previsión funeraria.';
         require __DIR__ . '/../partials/cta_contacto.php';
+        $peInteres = 'Plan Esencial'; $peTipo = 'plan';
+        require __DIR__ . '/../partials/cta_pago_electronico.php';
         ?>
 
         <div class="service-related">

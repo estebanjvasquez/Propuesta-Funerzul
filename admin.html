@@ -195,6 +195,7 @@
                         <button class="filter-btn" data-sub="clientes" type="button">Clientes</button>
                         <button class="filter-btn" data-sub="siniestros" type="button">Siniestros</button>
                         <button class="filter-btn" data-sub="cobranza" type="button">Cobranza</button>
+                        <button class="filter-btn" data-sub="solicitudes" type="button">Solicitudes</button>
                     </div>
                     <div class="prev-subnav-group">
                         <span class="prev-subnav-label">Comercial</span>
@@ -294,6 +295,24 @@
                         <button class="filter-btn" data-vista="hoja" type="button">Hoja de cobro</button>
                     </div>
                     <div id="pvCobContent"></div>
+                </div>
+
+                <!-- Solicitudes públicas (leads de pago electrónico) -->
+                <div id="pvSub-solicitudes" class="prev-subpanel" hidden>
+                    <div class="admin-toolbar"><h2>Solicitudes de Pago Electrónico</h2></div>
+                    <p class="row-sub">Leads capturados en planes.php/servicios.php. No son contratos: hay que contactar al cliente y crear el contrato manualmente antes de convertir.</p>
+                    <div class="filter-group" id="pvSolFilters">
+                        <button class="filter-btn active" data-estado="nueva" type="button">Nuevas</button>
+                        <button class="filter-btn" data-estado="contactada" type="button">Contactadas</button>
+                        <button class="filter-btn" data-estado="convertida" type="button">Convertidas</button>
+                        <button class="filter-btn" data-estado="descartada" type="button">Descartadas</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="admin-table">
+                            <thead><tr><th>Fecha</th><th>Interés</th><th>Nombre</th><th>Teléfono</th><th>Método</th><th>Acciones</th></tr></thead>
+                            <tbody id="pvSolBody"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Planes -->

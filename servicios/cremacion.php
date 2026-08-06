@@ -47,6 +47,8 @@ require __DIR__ . '/../partials/site_header.php';
         $ctaSub     = 'Atención inmediata las 24 horas en Maracaibo y todo el Estado Zulia.';
         $ctaWaText  = 'Hola, deseo información sobre el servicio de cremación en Maracaibo.';
         require __DIR__ . '/../partials/cta_contacto.php';
+        $peInteres = 'Cremación'; $peTipo = 'servicio';
+        require __DIR__ . '/../partials/cta_pago_electronico.php';
         ?>
 
         <div class="service-related">

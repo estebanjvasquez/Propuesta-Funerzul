@@ -16,6 +16,7 @@ const Prevision = {
     sin: { q: '', estado: '', offset: 0, limit: 25, total: 0 },
     comVista: 'por_calcular',
     cobVista: 'morosos',
+    solVista: 'nueva',
     repVista: 'aging',
     msgVista: 'enviar',
     env: { offset: 0, limit: 25, total: 0 },
@@ -65,6 +66,13 @@ const Prevision = {
             this.cobVista = btn.dataset.vista;
             pvLoadCobranza();
         }));
+        // Solicitudes públicas
+        $all('#pvSolFilters .filter-btn').forEach(btn => btn.addEventListener('click', () => {
+            $all('#pvSolFilters .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.solVista = btn.dataset.estado;
+            pvLoadSolicitudes();
+        }));
         // Reportes
         $all('#pvRepFilters .filter-btn').forEach(btn => btn.addEventListener('click', () => {
             $all('#pvRepFilters .filter-btn').forEach(b => b.classList.remove('active'));
@@ -110,6 +118,7 @@ const Prevision = {
         if (this.sub === 'clientes') pvLoadClientes();
         if (this.sub === 'siniestros') pvLoadSiniestros();
         if (this.sub === 'cobranza') pvLoadCobranza();
+        if (this.sub === 'solicitudes') pvLoadSolicitudes();
         if (this.sub === 'planes') pvLoadPlanes();
         if (this.sub === 'vendedores') pvLoadVendedores();
         if (this.sub === 'comisiones') pvLoadComisiones();
@@ -633,6 +642,7 @@ async function pvVerContrato(id) {
                 <td><div class="admin-actions">
                     ${['pendiente', 'parcial'].includes(q.estado) ? `
                         <button class="btn btn-outline btn-sm" onclick="pvRegistrarPago(${c.id}, ${q.id})">Cobrar</button>
+                        <button class="btn btn-outline btn-sm" onclick="pvCobroElectronico(${c.id}, ${q.id}, ${q.saldo}, '${q.moneda}')">Cobro electrónico</button>
                         <button class="btn btn-outline btn-sm" onclick="pvAnularCuota(${q.id}, ${c.id})">Anular</button>` : ''}
                 </div></td>
             </tr>`).join('') || `<tr><td colspan="7" class="empty-row">Sin cuotas generadas.</td></tr>`;
@@ -970,6 +980,124 @@ async function pvDeletePago(id, contratoId) {
     try {
         await API.req('prevision_contratos.php?action=pago_delete', { method: 'POST', json: { id } });
         toast('Pago revertido.'); pvVerContrato(contratoId); Prevision.loadStats();
+    } catch (e) { toast(e.message); }
+}
+
+// ---------- Cobro electrónico (proveedor simulado hasta certificar Mercantil) ----------
+function pvCobroElectronico(contratoId, cuotaId, saldo, moneda) {
+    openModal('Cobro electrónico', `
+        <div class="prev-import-result">
+            <strong>⚠ MODO SIMULADO</strong> — Mercantil Banco aún no está certificado (ver docs/payments/mercantil/STATUS.md).
+            Ningún cobro hecho aquí es un pago real; requiere aprobación manual explícita.
+        </div>
+        <form id="pvPagoElecForm">
+            <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Método</label>
+                    ${pvSelect('pe_metodo', { boton_web: 'Botón de Pagos Web', c2p: 'Pago Móvil C2P', otro: 'Otro' }, 'boton_web')}</div>
+                <div class="form-group"><label class="form-label">Monto (${escapeHtml(moneda)})</label>
+                    <input type="number" step="0.01" min="0.01" id="pe_monto" class="form-control" value="${Number(saldo).toFixed(2)}" required></div>
+            </div>
+            <div id="pe_error" class="form-error" hidden></div>
+            <div class="modal-actions"><button type="submit" class="btn btn-primary">Crear intento de cobro</button></div>
+        </form>
+        <div id="pe_resultado"></div>`);
+    $('#pvPagoElecForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = $('#pe_error'); err.hidden = true;
+        try {
+            const r = await API.req('prevision_pagos.php?action=crear_intento', { method: 'POST', json: {
+                contrato_id: contratoId, cuota_id: cuotaId, moneda, monto: $('#pe_monto').value, metodo: $('#pe_metodo').value,
+            }});
+            pvPintarIntento(r.item, contratoId);
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
+}
+
+function pvPintarIntento(item, contratoId) {
+    const abierto = ['PENDING', 'PROCESSING', 'REQUIRES_CUSTOMER_ACTION'].includes(item.estado);
+    $('#pe_resultado').innerHTML = `
+        <div class="prev-kv">
+            <div><span>Estado del intento</span>${pvBadge(item.estado)}</div>
+            <div><span>Proveedor</span><strong>${item.simulado ? 'Simulado (no es un banco real)' : 'Mercantil'}</strong></div>
+        </div>
+        ${abierto ? `
+        <div class="modal-actions">
+            <button type="button" class="btn btn-primary btn-sm" onclick="pvConciliarIntento(${item.id}, ${contratoId})">Conciliar (simular aprobación)</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="pvCancelarIntento(${item.id})">Cancelar intento</button>
+        </div>` : ''}`;
+}
+
+async function pvConciliarIntento(id, contratoId) {
+    try {
+        await API.req('prevision_pagos.php?action=conciliar', { method: 'POST', json: { id } });
+        toast('Pago electrónico aprobado (simulado) y aplicado a la cuota.');
+        closeModal(); pvVerContrato(contratoId); Prevision.loadStats();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvCancelarIntento(id) {
+    try {
+        await API.req('prevision_pagos.php?action=cancelar', { method: 'POST', json: { id } });
+        toast('Intento de cobro cancelado.'); closeModal();
+    } catch (e) { toast(e.message); }
+}
+
+// ---------- Solicitudes públicas (leads de pago electrónico) ----------
+const PV_SOL_METODOS = { boton_web: 'Botón de Pagos Web', c2p: 'Pago Móvil C2P', otro: 'Otro' };
+
+async function pvLoadSolicitudes() {
+    const body = $('#pvSolBody');
+    body.innerHTML = '<tr><td colspan="6" class="empty-row">Cargando…</td></tr>';
+    try {
+        const r = await API.req('prevision_solicitudes.php?action=list&estado=' + Prevision.solVista);
+        Prevision._solCache = {};
+        body.innerHTML = r.items.map(s => {
+            Prevision._solCache[s.id] = s;
+            return `
+            <tr>
+                <td>${fmtDate(s.created_at)}</td>
+                <td>${escapeHtml(s.interes)}</td>
+                <td>${escapeHtml(s.nombre_completo)}${s.cedula ? '<div class="row-sub">' + escapeHtml(s.cedula) + '</div>' : ''}</td>
+                <td>${escapeHtml(s.telefono)}${s.email ? '<div class="row-sub">' + escapeHtml(s.email) + '</div>' : ''}</td>
+                <td>${escapeHtml(PV_SOL_METODOS[s.metodo_pago] || s.metodo_pago)}</td>
+                <td><div class="admin-actions">
+                    ${s.estado === 'nueva' ? `<button class="btn btn-outline btn-sm" onclick="pvSolAccion(${s.id}, 'contactada')">Marcar contactada</button>` : ''}
+                    ${['nueva', 'contactada'].includes(s.estado) ? `
+                        <button class="btn btn-primary btn-sm" onclick="pvSolConvertir(${s.id})">Convertir</button>
+                        <button class="btn btn-outline btn-sm" onclick="pvSolVincular(${s.id})">Vincular contrato</button>
+                        <button class="btn btn-outline btn-sm" onclick="pvSolAccion(${s.id}, 'descartada')">Descartar</button>` : ''}
+                    ${s.contrato_id ? `<span class="row-sub">Contrato #${s.contrato_id}</span>` : ''}
+                </div></td>
+            </tr>`;
+        }).join('') || `<tr><td colspan="6" class="empty-row">Sin solicitudes en este estado.</td></tr>`;
+    } catch (e) { body.innerHTML = `<tr><td colspan="6" class="empty-row">${escapeHtml(e.message)}</td></tr>`; }
+}
+
+async function pvSolAccion(id, estado) {
+    try {
+        await API.req('prevision_solicitudes.php?action=actualizar_estado', { method: 'POST', json: { id, estado } });
+        toast('Solicitud actualizada.'); pvLoadSolicitudes();
+    } catch (e) { toast(e.message); }
+}
+
+async function pvSolConvertir(id) {
+    const s = (Prevision._solCache || {})[id];
+    if (!s) return;
+    await Prevision.loadCatalogos();
+    pvFormCliente({ nacionalidad: 'V', cedula: s.cedula || '', nombres: s.nombres, apellidos: s.apellidos,
+                     telefono_celular: s.telefono, email: s.email || '' }, (cli) => {
+        openModalWide('Nuevo contrato de previsión', pvContratoFormHtml({}, cli));
+        pvWireContratoForm();
+        toast('Al guardar el contrato, vuelve a "Solicitudes" y usa "Vincular contrato" con su ID para marcarla convertida.');
+    });
+}
+
+async function pvSolVincular(id) {
+    const contratoId = prompt('ID interno del contrato ya creado (no el número visible del contrato, sino su ID):');
+    if (!contratoId) return;
+    try {
+        await API.req('prevision_solicitudes.php?action=vincular_contrato', { method: 'POST', json: { id, contrato_id: Number(contratoId) } });
+        toast('Solicitud vinculada al contrato.'); pvLoadSolicitudes();
     } catch (e) { toast(e.message); }
 }
 
