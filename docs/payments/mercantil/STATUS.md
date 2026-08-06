@@ -5,7 +5,7 @@
 - Responsable: por asignar
 - Producto: Botón de Pagos Web + Búsquedas de Pagos Móviles (planeado); Pago Móvil C2P (planeado)
 - Ambiente: sandbox — **desplegado y verificado en dominio de prueba** `https://legadoholding.com/funerzul` (NO es el dominio final `https://www.funerariadelzulia.com`). Ver `MIGRATION_PLAN.md` para el paso a producción.
-- Próximo paso: probar en el navegador el flujo simulado completo (solicitud pública → panel "Solicitudes" → cobro electrónico en una cuota) en el servidor de pruebas; en paralelo, solicitar a Mercantil la especificación completa del endpoint de creación de pago (MRC-003) y la MasterKey del webhook (MRC-004).
+- Próximo paso: enviar a Mercantil (apisupport@mercantilbanco.com) la solicitud formal de la especificación completa de POST /api (esquema, auth, códigos de error), Postman, dataset de sandbox y la MasterKey/detalle criptográfico del webhook — resuelve MRC-003 y MRC-004 a la vez. Borrador de correo listo (no versionado, pendiente de completar datos de contacto y enviar).
 - Bloqueos: ver abajo (MRC-003 y MRC-004 siguen abiertos).
 - Evidencias:
   - `api/diag.php` en el servidor de pruebas confirma: BD conectada, las 3 tablas nuevas existen, `curl` activo, conectividad HTTPS al gateway de Mercantil (`reachable: true`, HTTP 404 en la raíz — normal sin autenticación), y `client_id`/`client_secret` cargados en `api/config.php` del servidor.
