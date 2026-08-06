@@ -65,17 +65,26 @@ $report['payments'] = [
 // Conectividad de salida hacia el host de Mercantil (solo TCP/TLS, sin credenciales).
 // Un error aquí (timeout, no se pudo resolver, conexión rechazada) suele indicar que
 // el hosting bloquea salidas HTTPS o que la IP del servidor no está autorizada por
-// el banco — no que el código esté mal.
-$host = 'https://gw.3be3-22336bfa.us-east.apiconnect.appdomain.cloud/';
-$ch = curl_init($host);
-curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8, CURLOPT_NOBODY => true]);
-$ok = curl_exec($ch);
-$report['mercantil_connectivity'] = [
-    'host'      => $host,
-    'reachable' => $ok !== false,
-    'http_code' => curl_getinfo($ch, CURLINFO_RESPONSE_CODE),
-    'curl_error' => curl_error($ch) ?: null,
-];
-curl_close($ch);
+// el banco — no que el código esté mal. La extensión curl también la usa
+// api/lib/prevision.php (prev_msg_http) para WhatsApp/SMS, así que si falta aquí
+// hay que activarla en cPanel de todas formas.
+if (!function_exists('curl_init')) {
+    $report['mercantil_connectivity'] = [
+        'reachable' => false,
+        'error' => "La extensión 'curl' de PHP no está activada en este servidor. Actívala en cPanel → Select PHP Version → Extensions (también la necesita la mensajería de WhatsApp/SMS de Previsión).",
+    ];
+} else {
+    $host = 'https://gw.3be3-22336bfa.us-east.apiconnect.appdomain.cloud/';
+    $ch = curl_init($host);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8, CURLOPT_NOBODY => true]);
+    $ok = curl_exec($ch);
+    $report['mercantil_connectivity'] = [
+        'host'      => $host,
+        'reachable' => $ok !== false,
+        'http_code' => curl_getinfo($ch, CURLINFO_RESPONSE_CODE),
+        'curl_error' => curl_error($ch) ?: null,
+    ];
+    curl_close($ch);
+}
 
 json_out(['ok' => true, 'diag' => $report]);
