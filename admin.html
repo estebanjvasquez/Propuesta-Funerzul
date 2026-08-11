@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Administración | Funeraria del Zulia</title>
     <link rel="icon" href="favicon.png" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20260711">
+    <link rel="stylesheet" href="styles.css?v=20260811">
 </head>
 <body class="admin-body">
 
@@ -174,47 +174,53 @@
             </section>
 
             <!-- ---------- PREVISIÓN ---------- -->
-            <section id="tab-prevision" class="admin-tab-panel" hidden>
+            <section id="tab-prevision" class="admin-tab-panel prev-console" hidden>
                 <div class="dashboard-stats">
-                    <div class="stat-card"><span class="stat-label">Contratos activos</span><span class="stat-value" id="pvStatContratos">0</span></div>
-                    <div class="stat-card"><span class="stat-label">Clientes</span><span class="stat-value" id="pvStatClientes">0</span></div>
-                    <div class="stat-card"><span class="stat-label">Cuotas vencidas</span><span class="stat-value" id="pvStatVencidas">0</span><span class="stat-sub" id="pvStatVencidasMonto"></span></div>
-                    <div class="stat-card"><span class="stat-label">Cobrado este mes</span><span class="stat-value" id="pvStatCobrado">0</span><span class="stat-sub" id="pvStatCobradoBs"></span></div>
-                    <div class="stat-card"><span class="stat-label">Siniestros abiertos</span><span class="stat-value" id="pvStatSiniestros">0</span></div>
+                    <div class="stat-card"><span class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="m9 15 2 2 4-4"/></svg></span><span class="stat-label">Contratos activos</span><span class="stat-value" id="pvStatContratos">0</span></div>
+                    <div class="stat-card"><span class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="stat-label">Clientes</span><span class="stat-value" id="pvStatClientes">0</span></div>
+                    <div class="stat-card is-danger"><span class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span><span class="stat-label">Cuotas vencidas</span><span class="stat-value" id="pvStatVencidas">0</span><span class="stat-sub" id="pvStatVencidasMonto"></span></div>
+                    <div class="stat-card is-success"><span class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg></span><span class="stat-label">Cobrado este mes</span><span class="stat-value" id="pvStatCobrado">0</span><span class="stat-sub" id="pvStatCobradoBs"></span></div>
+                    <div class="stat-card"><span class="stat-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"/></svg></span><span class="stat-label">Siniestros abiertos</span><span class="stat-value" id="pvStatSiniestros">0</span></div>
                     <div class="stat-card stat-card-action">
-                        <span class="stat-label">Tasa del día (Bs/USD)</span>
-                        <span class="stat-value" id="pvStatTasa">—</span>
+                        <div>
+                            <span class="stat-label">Tasa del día (Bs/USD)</span>
+                            <span class="stat-value" id="pvStatTasa">—</span>
+                        </div>
                         <button class="btn btn-outline btn-sm" id="pvTasaBtn" type="button">Actualizar</button>
                     </div>
                 </div>
 
+                <div class="prev-console-body">
+                <aside class="prev-console-nav">
                 <div class="prev-subnav" id="pvSubNav">
                     <div class="prev-subnav-group">
                         <span class="prev-subnav-label">Operación</span>
-                        <button class="filter-btn active" data-sub="contratos" type="button">Contratos</button>
-                        <button class="filter-btn" data-sub="clientes" type="button">Clientes</button>
-                        <button class="filter-btn" data-sub="siniestros" type="button">Siniestros</button>
-                        <button class="filter-btn" data-sub="cobranza" type="button">Cobranza</button>
-                        <button class="filter-btn" data-sub="solicitudes" type="button">Solicitudes</button>
+                        <button class="filter-btn active" data-sub="contratos" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>Contratos</button>
+                        <button class="filter-btn" data-sub="clientes" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Clientes</button>
+                        <button class="filter-btn" data-sub="siniestros" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"/></svg>Siniestros</button>
+                        <button class="filter-btn" data-sub="cobranza" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>Cobranza</button>
+                        <button class="filter-btn" data-sub="solicitudes" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/></svg>Solicitudes</button>
                     </div>
                     <div class="prev-subnav-group">
                         <span class="prev-subnav-label">Comercial</span>
-                        <button class="filter-btn" data-sub="vendedores" type="button">Vendedores</button>
-                        <button class="filter-btn" data-sub="comisiones" type="button">Comisiones</button>
+                        <button class="filter-btn" data-sub="vendedores" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Vendedores</button>
+                        <button class="filter-btn" data-sub="comisiones" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>Comisiones</button>
                     </div>
                     <div class="prev-subnav-group">
                         <span class="prev-subnav-label">Configuración</span>
-                        <button class="filter-btn" data-sub="planes" type="button">Planes</button>
-                        <button class="filter-btn" data-sub="catalogos" type="button">Catálogos</button>
-                        <button class="filter-btn" data-sub="ajustes" type="button">Ajustes de tarifas</button>
-                        <button class="filter-btn" data-sub="mensajes" type="button">Mensajes</button>
+                        <button class="filter-btn" data-sub="planes" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>Planes</button>
+                        <button class="filter-btn" data-sub="catalogos" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Catálogos</button>
+                        <button class="filter-btn" data-sub="ajustes" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>Ajustes de tarifas</button>
+                        <button class="filter-btn" data-sub="mensajes" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Mensajes</button>
                     </div>
                     <div class="prev-subnav-group">
                         <span class="prev-subnav-label">Gestión</span>
-                        <button class="filter-btn" data-sub="reportes" type="button">Reportes</button>
-                        <button class="filter-btn" data-sub="importar" type="button">Importar</button>
+                        <button class="filter-btn" data-sub="reportes" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>Reportes</button>
+                        <button class="filter-btn" data-sub="importar" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Importar</button>
                     </div>
                 </div>
+                </aside>
+                <div class="prev-console-content">
 
                 <!-- Contratos -->
                 <div id="pvSub-contratos" class="prev-subpanel">
@@ -446,6 +452,8 @@
                         </table>
                     </div>
                 </div>
+                </div><!-- /.prev-console-content -->
+                </div><!-- /.prev-console-body -->
             </section>
 
             <!-- ---------- PLANTILLAS ---------- -->

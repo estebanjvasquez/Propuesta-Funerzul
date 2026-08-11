@@ -2184,6 +2184,71 @@ textarea.form-control {
 .prev-error-text { color: #a03030; font-weight: 600; }
 .prev-error-list { margin: 10px 0 0 18px; font-size: 13px; color: #a03030; max-height: 220px; overflow-y: auto; }
 
+/* ==========================================================================
+   PREVISIÓN — Consola rediseñada (layout limpio tipo autogestión)
+   Todo scopeado bajo .prev-console para NO afectar otras pestañas del panel
+   (obituarios, config, usuarios comparten .stat-card, .admin-table, .filter-btn).
+   No cambia la lógica JS: se conservan #pvSubNav, .filter-btn[data-sub] y
+   los .prev-subpanel con sus ids #pvSub-*.
+   ========================================================================== */
+/* KPIs como cabecera compacta con jerarquía + acento semántico */
+.prev-console .dashboard-stats { grid-template-columns: repeat(auto-fit, minmax(186px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.prev-console .stat-card { position: relative; padding: 16px 18px; border: 1px solid var(--color-surface-high); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); gap: 2px; overflow: hidden; }
+.prev-console .stat-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--color-celeste); }
+.prev-console .stat-ico { position: absolute; top: 14px; right: 14px; color: var(--color-celeste); opacity: 0.9; }
+.prev-console .stat-ico svg { width: 20px; height: 20px; display: block; }
+.prev-console .stat-label { font-size: 11px; letter-spacing: 0.05em; }
+.prev-console .stat-value { font-size: 28px; line-height: 1.05; margin-top: 6px; }
+.prev-console .stat-sub { margin-top: 2px; }
+.prev-console .stat-card.is-danger::before { background: var(--color-error); }
+.prev-console .stat-card.is-danger .stat-value,
+.prev-console .stat-card.is-danger .stat-ico { color: var(--color-error); }
+.prev-console .stat-card.is-success::before { background: #1a7a43; }
+.prev-console .stat-card.is-success .stat-value,
+.prev-console .stat-card.is-success .stat-ico { color: #1a7a43; }
+.prev-console .stat-card-action { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
+.prev-console .stat-card-action > div { display: flex; flex-direction: column; }
+.prev-console .stat-card-action .btn { margin: 0; flex: 0 0 auto; }
+
+/* Layout de dos columnas: barra lateral + contenido */
+.prev-console-body { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 22px; align-items: start; }
+
+/* Barra lateral de navegación (reusa #pvSubNav / .filter-btn) */
+.prev-console-nav { position: sticky; top: 84px; background: var(--color-surface); border: 1px solid var(--color-surface-high); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 10px; }
+.prev-console-nav #pvSubNav { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; border: none; }
+.prev-console-nav .prev-subnav-group { flex-direction: column; gap: 2px; padding: 6px 0; }
+.prev-console-nav .prev-subnav-group + .prev-subnav-group { border-top: 1px solid var(--color-surface-high); margin-top: 4px; }
+.prev-console-nav .prev-subnav-label { flex-basis: auto; padding: 4px 10px 2px; margin-bottom: 2px; }
+.prev-console-nav #pvSubNav .filter-btn { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; justify-content: flex-start; padding: 9px 11px; border: none; border-radius: var(--radius-md); background: transparent; color: var(--color-text-muted); font-size: 13.5px; font-weight: 500; position: relative; }
+.prev-console-nav #pvSubNav .filter-btn svg { width: 17px; height: 17px; flex: 0 0 auto; opacity: 0.75; }
+.prev-console-nav #pvSubNav .filter-btn:hover { background: var(--color-surface-low); color: var(--color-primary); }
+.prev-console-nav #pvSubNav .filter-btn.active { background: var(--color-celeste-light); color: var(--color-primary-dark); font-weight: 600; }
+.prev-console-nav #pvSubNav .filter-btn.active svg { opacity: 1; }
+.prev-console-nav #pvSubNav .filter-btn.active::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 0 3px 3px 0; background: var(--color-primary); }
+
+/* Columna de contenido: cabecera de sección + tablas más limpias */
+.prev-console-content { min-width: 0; }
+.prev-console-content .admin-toolbar { margin-top: 4px; }
+.prev-console-content .admin-toolbar h2 { font-size: 20px; color: var(--color-primary); }
+.prev-console .table-responsive { border: 1px solid var(--color-surface-high); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-sm); }
+.prev-console .admin-table th { background: var(--color-surface-low); text-transform: none; border-bottom: 1px solid var(--color-surface-high); }
+.prev-console .admin-table th, .prev-console .admin-table td { padding: 13px 16px; }
+.prev-console .admin-table tbody tr:last-child td { border-bottom: none; }
+.prev-console .prev-pager { margin-top: 14px; }
+.prev-console .filter-group { margin-bottom: 16px; }
+
+/* Responsive: la barra lateral se convierte en una tira de píldoras arriba */
+@media (max-width: 900px) {
+    .prev-console-body { grid-template-columns: 1fr; }
+    .prev-console-nav { position: static; padding: 8px; }
+    .prev-console-nav #pvSubNav { flex-direction: row; flex-wrap: wrap; }
+    .prev-console-nav .prev-subnav-group { flex-direction: row; flex-wrap: wrap; align-items: center; padding: 4px 0; }
+    .prev-console-nav .prev-subnav-group + .prev-subnav-group { border-top: none; margin-top: 0; }
+    .prev-console-nav .prev-subnav-label { flex-basis: 100%; }
+    .prev-console-nav #pvSubNav .filter-btn { width: auto; }
+    .prev-console-nav #pvSubNav .filter-btn.active::before { display: none; }
+}
+
 /* Previsión v2: siniestros y cobranza */
 .prev-checks { list-style: none; margin: 0 0 12px; padding: 0; font-size: 13px; }
 .prev-checks li { padding: 3px 0; }
