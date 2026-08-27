@@ -11,6 +11,34 @@
 
 ---
 
+## Cierre: 2026-08-27 (verificación del sistema de cierre)
+
+**Rama:** `feature/modulo-prevision` (1 commit sin push desde el cierre
+anterior de hoy; 26 commits vs. `main`, sin cambios respecto a la entrada
+previa).
+
+**Hecho hoy:** Nada nuevo — el usuario pidió "cerrar proyecto" para probar el
+flujo recién construido (`.claude/skills/cerrar-proyecto/`). Se ejecutó el
+procedimiento completo (esta entrada, verificación de Notion) para
+confirmar que funciona de punta a punta. No hubo cambios de código ni de
+documentación más allá de esta entrada.
+
+**Validaciones:** `git status`/`git log` confirman que no hay commits ni
+archivos nuevos desde el cierre anterior (commit `c39cee3`). No se corrió
+build/test — no aplica a un cierre sin cambios de código.
+
+**Bloqueos:** sin cambios — los mismos de la entrada anterior (merge a
+`main` sin decidir, spec de Mercantil pendiente del banco, proveedor de
+mensajería sin contratar, rol futuro del módulo PHP frente a
+`Prevision-Funeraria`).
+
+**Siguiente acción:** las mismas de la entrada anterior — ver Backlog en
+Notion (sin cambios de estado en esta verificación).
+
+**Notion:** [Registro de Proyecto — 27 de agosto, 2026 (verificación)](https://app.notion.com/p/3c96989da22e8187bc65ed97075190cb)
+
+---
+
 ## Cierre: 2026-08-27
 
 **Rama:** `feature/modulo-prevision` (25 commits sin mergear a `main`; sin
