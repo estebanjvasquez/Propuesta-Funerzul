@@ -5,6 +5,12 @@ obituarios en línea** completo: panel de administración con login, base de dat
 MySQL, backend PHP, subida de fotos al disco con purga automática, moderación de
 condolencias, plantillas editables y páginas públicas optimizadas para SEO/GEO.
 
+> **¿Eres un agente de IA (Claude Code, Codex u otro) retomando este proyecto?**
+> Lee primero [`ONBOARDING-AGENTES.md`](ONBOARDING-AGENTES.md) — resume el estado
+> real del repositorio (ramas, qué está commiteado y qué no), cómo se relaciona
+> con los repos hermanos (`legado-holding`, `Prevision-Funeraria`) y qué
+> documento leer según la tarea. Evita tener que escanear todo el repo.
+
 ---
 
 ## Índice

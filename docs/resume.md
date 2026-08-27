@@ -1,5 +1,11 @@
 # resume.md — Contexto del Módulo de Previsión (para continuar en próximos sprints)
 
+> **Histórico.** El documento vigente es [`docs/SPEC.md`](SPEC.md) — este
+> archivo queda como bitácora detallada de cómo se llegó hasta la Ronda 2
+> (útil para entender el porqué de convenciones de código puntuales), pero
+> no se sigue actualizando. Para el estado actual del proyecto usa `SPEC.md`
+> y `task.md`.
+
 > Documento de trabajo interno. Resume la arquitectura, convenciones y el plan
 > por rondas del módulo de Previsión, para retomar el desarrollo sin perder contexto.
 > Última actualización: 2026-07-07 (Ronda 2 completada, commit `d0c0923`).
