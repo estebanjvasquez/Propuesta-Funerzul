@@ -5,6 +5,17 @@ obituarios en línea** completo: panel de administración con login, base de dat
 MySQL, backend PHP, subida de fotos al disco con purga automática, moderación de
 condolencias, plantillas editables y páginas públicas optimizadas para SEO/GEO.
 
+> **¿Eres un agente de IA (Claude Code, Codex u otro) retomando este proyecto?**
+> Lee primero [`ONBOARDING-AGENTES.md`](ONBOARDING-AGENTES.md) — resume el estado
+> real del repositorio (ramas, qué está commiteado y qué no), cómo se relaciona
+> con los repos hermanos (`legado-holding`, `Prevision-Funeraria`) y qué
+> documento leer según la tarea. Evita tener que escanear todo el repo.
+>
+> Nota: esta rama (`main`) contiene solo el sistema de obituarios base. El
+> módulo de previsión, la capa de pagos y la documentación de trabajo
+> ampliada viven en la rama `feature/modulo-prevision` — el onboarding lo
+> explica con detalle.
+
 ---
 
 ## Índice
