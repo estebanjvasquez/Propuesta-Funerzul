@@ -173,11 +173,11 @@ completo pueden costar dinero real o exponer datos personales:
   sigue haciendo falta: `Prevision-Funeraria` ya está en producción
   sirviendo a `legado-holding` desde el 2026-08-27 — ver sección 3.
 - ¿Qué pasa con el módulo de previsión de **este** repo (PHP/MySQL) ahora
-  que `Prevision-Funeraria` ya sirve en producción a Legado Holding? ¿Se
-  planea migrar también la operación de Funeraria del Zulia hacia allá, o
-  este módulo sigue siendo el sistema real de esta marca por ahora? — no
-  hay respuesta registrada; confirmar con el usuario antes de asumir
-  cualquiera de las dos.
+  que `Prevision-Funeraria` ya sirve en producción a Legado Holding? **Ya
+  hay un plan concreto**, pendiente de aprobación del usuario:
+  `docs/specs/2026-08-28-migracion-a-prevision-funeraria.md` (análisis de
+  huecos reales + qué parte de la página web migra). No asumir que ya está
+  aprobado ni empezar a ejecutarlo sin confirmar con el usuario.
 
 ## 8. Cómo arrancar una sesión nueva sobre este proyecto
 

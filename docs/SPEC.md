@@ -46,6 +46,17 @@ Detalle de arquitectura y estructura de carpetas: `README.md`.
 Ronda 2 (convenciones de código detalladas incluidas). Este documento
 (`SPEC.md`) es el que se mantiene vigente hacia adelante.
 
+**Actualización 2026-08-28 — el módulo de previsión de este repo tiene un
+plan de salida.** `Prevision-Funeraria` (repo hermano, ya en producción)
+cubre o supera casi todo lo de este módulo. Hay un plan concreto para migrar
+Funerzul hacia ese sistema, con análisis de huecos reales (no solo
+funcionalidad, también bloqueos operativos) y qué parte de la página web
+pública migra vs. qué se queda en PHP: ver
+[`docs/specs/2026-08-28-migracion-a-prevision-funeraria.md`](specs/2026-08-28-migracion-a-prevision-funeraria.md).
+Ronda 3 y Ronda 4 de la tabla de arriba (y las seis mejoras propuestas) están
+en pausa hasta que se confirme si compite o queda reemplazado por ese plan —
+ver riesgo #5 de ese documento.
+
 ## 3. Los tres repositorios del negocio
 
 Ver `ONBOARDING-AGENTES.md`, sección 3, para la tabla completa y las reglas
@@ -61,16 +72,24 @@ de límites entre repos. Resumen de una línea cada uno:
 
 ## 4. Roadmap / próximos pasos priorizados
 
-1. Rehacer `docs/legado-holding-prevision/` (se perdió sin commitear el
-   2026-08-27 — ver `task.md`, entrada del cierre de ese día) si se retoma
-   la integración con `legado-holding`.
-2. Decidir si `feature/modulo-prevision` se mergea a `main`.
-3. Ronda 3 del módulo de previsión (domiciliación, empleadores, documentos
-   imprimibles, envejecimiento de dependientes) — sin fecha.
-4. Priorizar con el cliente cuáles de las seis mejoras propuestas se
-   implementan y en qué orden (`docs/propuesta-mejoras-prevision.md`).
+1. Decidir el plan de migración a `Prevision-Funeraria`
+   (`docs/specs/2026-08-28-migracion-a-prevision-funeraria.md`) — usuario
+   confirma orden de fases y el riesgo #5 (si reemplaza las seis mejoras
+   propuestas en vez de ejecutarlas en paralelo). Esto probablemente
+   resuelve los puntos 3 y 4 de abajo, no los duplica.
+2. Rehacer `docs/legado-holding-prevision/` (se perdió sin commitear el
+   2026-08-27) **solo si**, tras el punto 1, sigue haciendo falta algo que
+   `Prevision-Funeraria` no cubra ya para Legado Holding — verificar antes
+   de asumirlo (ya cubre el tenant `lh` en producción).
+3. Decidir si `feature/modulo-prevision` se mergea a `main` — probablemente
+   ligado a la decisión del punto 1 (si el módulo PHP se apaga, puede no
+   valer la pena mergear).
+4. Ronda 3 y Ronda 4 del módulo PHP, y las seis mejoras propuestas — en
+   pausa hasta resolver el punto 1 (ver nota de la sección 2).
 5. Retomar con Mercantil la solicitud de spec completa (bloqueado del lado
-   del banco).
+   del banco) — relevante para **ambos** sistemas (PHP y `Prevision-Funeraria`
+   comparten el mismo bloqueo, aunque por razones ligeramente distintas, ver
+   sección 2 del plan de migración).
 
 El backlog operativo día a día (con estado Not started/In progress/Done) vive
 en Notion — ver sección 6.
