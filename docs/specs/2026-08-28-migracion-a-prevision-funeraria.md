@@ -263,9 +263,14 @@ mientras se resuelve lo que sí depende de terceros (Mercantil, R2, mensajería)
 2. **Qué contenido de `planes/`/`servicios/` sigue siendo texto editorial
    fijo vs. qué se vuelve dinámico desde PF** (sección 3) — puede decidirse
    página por página, no requiere ser todo-o-nada desde el día uno.
-3. **Alcance real de "importar el resto de las tablas" desde SIEMPRE** —
-   solo lo puede confirmar quien tenga acceso al estado actual de PF
-   (`task.md` del 27-ago no lo detalla).
+3. ~~Alcance real de "importar el resto de las tablas" desde SIEMPRE~~ —
+   **resuelto**: ya se importó (2026-08-19, 118 clientes/contratos, 471
+   beneficiarios, 2881 cuotas, 10 planes, 13 vendedores) directo desde
+   `database/SIEMPRE.sql` de este repo, no desde las tablas `prev_*` de
+   MySQL (esas nunca tuvieron datos reales). Pendiente real: confirmar si la
+   migración de moneda del historial importado (Fase B2 de PF) ya corrió
+   contra producción — ver
+   [`docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`](2026-08-28-fase-e-corte-admin-prevision.md).
 4. **Si se desactiva el módulo PHP de previsión del panel admin, o se borra
    directamente** — este plan recomienda ocultarlo primero y evaluar borrar
    más adelante, pero es una decisión de producto, no técnica.

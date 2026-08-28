@@ -58,11 +58,20 @@ en pausa hasta que se confirme si compite o queda reemplazado por ese plan —
 ver riesgo #5 de ese documento.
 
 **Mismo día — Fases A, B y C del plan ya están implementadas** (catálogo de
-planes con precio real, reenvío de leads, triage de emergencias), apagadas
-por defecto (`prevision_funeraria.enabled => false`). Ver sección "7bis.
-Progreso real" del spec para el detalle, incluidos dos huecos de datos reales
-encontrados en el catálogo de Prevision-Funeraria que alguien con acceso a
-ese panel debe revisar antes de activarlo en producción.
+planes con precio real, reenvío de leads, triage de emergencias), y ya
+**activadas** en el `config.php` de prueba (`enabled => true`). Ver sección
+"7bis. Progreso real" del spec para el detalle, incluidos dos huecos de datos
+reales encontrados en el catálogo de Prevision-Funeraria que alguien con
+acceso a ese panel debe revisar antes de confiar en él en producción.
+
+**Fase E (corte del panel admin) — planeada, no ejecutada.** Activar
+`enabled` en Fases A/B/C **no cambia el panel admin** (`admin.html` tab
+"Previsión") — eso nunca estuvo en su alcance. El plan del corte real,
+incluido un hallazgo que corrige la spec de migración (Prevision-Funeraria
+ya importó los datos reales de Funerzul desde `database/SIEMPRE.sql` el
+2026-08-19, no hay nada que migrar de las tablas `prev_*` de MySQL — esas
+nunca tuvieron datos reales), vive en
+[`docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`](specs/2026-08-28-fase-e-corte-admin-prevision.md).
 
 ## 3. Los tres repositorios del negocio
 
