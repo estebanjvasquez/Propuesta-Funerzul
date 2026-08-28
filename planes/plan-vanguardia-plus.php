@@ -27,6 +27,8 @@ require __DIR__ . '/../partials/site_header.php';
         <h1>Plan Vanguardia Plus de Previsión Funeraria</h1>
         <p class="service-lead">El <strong>Plan Vanguardia Plus</strong> es nuestra cobertura más completa, con modalidad de <strong>pago anual</strong> y <strong>beneficios especiales</strong>. Servicio integral con cremación o inhumación, para las familias del Zulia que desean lo mejor en previsión.</p>
 
+        <?php $pePlanSlug = 'vanguardia-plus'; require __DIR__ . '/../partials/pf_precio_plan.php'; ?>
+
         <h2>¿Qué incluye el Plan Vanguardia Plus?</h2>
         <ul class="service-list">
             <li><strong>Cobertura ampliada y servicio integral</strong></li>

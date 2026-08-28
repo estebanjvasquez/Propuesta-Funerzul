@@ -27,6 +27,8 @@ require __DIR__ . '/../partials/site_header.php';
         <h1>Plan Esencial de Previsión Funeraria</h1>
         <p class="service-lead">El <strong>Plan Esencial</strong> es la protección básica para las familias que buscan una alternativa económica y tranquila. Planifique hoy, con cuotas accesibles, y evite cargas inesperadas a sus seres queridos en el Estado Zulia.</p>
 
+        <?php $pePlanSlug = 'esencial'; require __DIR__ . '/../partials/pf_precio_plan.php'; ?>
+
         <h2>¿Qué incluye el Plan Esencial?</h2>
         <ul class="service-list">
             <li><strong>Velación y cremación</strong></li>

@@ -27,6 +27,8 @@ require __DIR__ . '/../partials/site_header.php';
         <h1>Plan Vanguardia de Previsión Funeraria <span class="inline-badge">Más elegido</span></h1>
         <p class="service-lead">El <strong>Plan Vanguardia</strong> ofrece cobertura integral para la disposición final, con la flexibilidad de elegir <strong>cremación o inhumación</strong>. Es el plan más elegido por las familias del Estado Zulia que buscan tranquilidad total.</p>
 
+        <?php $pePlanSlug = 'vanguardia'; require __DIR__ . '/../partials/pf_precio_plan.php'; ?>
+
         <h2>¿Qué incluye el Plan Vanguardia?</h2>
         <ul class="service-list">
             <li><strong>Servicio funerario completo</strong></li>

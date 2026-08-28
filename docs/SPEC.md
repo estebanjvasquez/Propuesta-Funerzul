@@ -57,6 +57,13 @@ Ronda 3 y Ronda 4 de la tabla de arriba (y las seis mejoras propuestas) están
 en pausa hasta que se confirme si compite o queda reemplazado por ese plan —
 ver riesgo #5 de ese documento.
 
+**Mismo día — Fases A, B y C del plan ya están implementadas** (catálogo de
+planes con precio real, reenvío de leads, triage de emergencias), apagadas
+por defecto (`prevision_funeraria.enabled => false`). Ver sección "7bis.
+Progreso real" del spec para el detalle, incluidos dos huecos de datos reales
+encontrados en el catálogo de Prevision-Funeraria que alguien con acceso a
+ese panel debe revisar antes de activarlo en producción.
+
 ## 3. Los tres repositorios del negocio
 
 Ver `ONBOARDING-AGENTES.md`, sección 3, para la tabla completa y las reglas

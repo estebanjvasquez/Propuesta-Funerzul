@@ -102,6 +102,43 @@ las eliminaciones definitivas requieren **admin**.
 | `prevision_ajustes.php?action=list\|get\|preview\|aplicar\|revertir` | GET/POST | **Ajuste masivo de tarifas** (% o monto, por plan/moneda, con redondeo): vista previa sin guardar, aplicación con detalle valor anterior → nuevo y **reverso completo** (admin). Requiere `06_prevision_v3.sql`. |
 | `prevision_mensajes.php?action=config\|config_set\|test\|plantillas\|plantilla_save\|plantilla_toggle\|plantilla_delete\|enviar\|preparar\|enviar_morosos\|envios` | GET/POST | **Notificaciones WhatsApp/SMS** con proveedor configurable por canal: `manual` (registra y abre wa.me), `whatsapp_cloud` (Meta), `twilio`, `http` (gateway genérico). Plantillas con variables `{{cliente}}`, `{{cedula}}`, `{{contrato}}`, `{{saldo_vencido}}`... `preparar` filtra contratos y devuelve los enlaces wa.me listos (consola «Enviar por WhatsApp», sin registrar); `enviar_morosos` es el lote registrado. |
 | `prevision_reportes.php?action=aging\|produccion\|cobranza\|cartera` | GET | **Reportes**: antigüedad de CxC (1-30/31-60/61-90/+90), producción por vendedor, cobranza por período/forma de pago y cartera por plan. Todos con `&formato=csv`. |
+| `prevision_solicitudes.php?action=crear` | POST | **Público** — captura un lead desde `planes/`/`servicios/` (CTA "pago electrónico"); no cobra ni crea contrato. Desde 2026-08-28 también reenvía de mejor esfuerzo a Prevision-Funeraria (ver abajo). |
+| `prevision_solicitudes.php?action=list\|actualizar_estado\|vincular_contrato` | GET/POST | Staff — gestión de leads capturados (estado, vínculo a contrato). |
+
+## Integración con Prevision-Funeraria (Fases A/B/C, 2026-08-28)
+
+Ver `docs/specs/2026-08-28-migracion-a-prevision-funeraria.md` para el plan
+completo. Cliente HTTP en `api/lib/prevision_funeraria.php`, configurado en
+`config.php` bajo la clave `prevision_funeraria` (ver `config.example.php`).
+**Apagado por defecto** (`enabled => false`): mientras no se active, ninguna
+página ni endpoint llama a Prevision-Funeraria y todo se comporta igual que
+antes de estos cambios.
+
+- **Fase A** — `planes/plan-*.php` muestran la cuota mensual real leída de
+  `GET /api/public/t/fdz/planes` (partial `partials/pf_precio_plan.php`),
+  con cache de `cache_ttl` segundos en `cache/prevision_funeraria/*.json`
+  (no en `app_settings` — es cache HTTP interno, no configuración
+  administrable). `servicios/` todavía no muestra precio: el catálogo de
+  servicios de Prevision-Funeraria para el tenant `fdz` está vacío al
+  2026-08-28.
+- **Fase B** — `prevision_solicitudes.php?action=crear` reenvía cada lead a
+  `POST /api/public/t/fdz/solicitudes` después de guardarlo localmente
+  (mejor esfuerzo: un fallo de red no afecta la respuesta al visitante ni el
+  guardado en `prev_solicitudes_publicas`, solo queda en el log del
+  servidor). El frontend manda `plan_slug`/`servicio_slug`; el backend
+  resuelve el `plan_id`/`servicio_id` real de Prevision-Funeraria antes de
+  reenviar.
+- **Fase C** — `partials/cta_pago_electronico.php` reemplaza el formulario
+  de lead por un botón directo a WhatsApp cuando el servicio está marcado
+  `es_emergencia` en el catálogo de Prevision-Funeraria. Inerte hoy por el
+  mismo motivo que Fase A (catálogo de servicios vacío para `fdz`).
+
+**Para activar en el servidor:** copiar el bloque `prevision_funeraria` de
+`config.example.php` a `config.php` con `enabled => true`, y confirmar que
+`cache/prevision_funeraria/` es escribible por PHP (mismo criterio que
+`uploads/`, normalmente 755) — si no lo es, la integración sigue funcionando
+pero sin cache (pide el catálogo a Prevision-Funeraria en cada carga de
+página).
 
 ## Seguridad
 

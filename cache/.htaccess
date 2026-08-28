@@ -1,0 +1,2 @@
+# Denegar todo acceso web: cache interno, nunca debe servirse directo.
+Require all denied

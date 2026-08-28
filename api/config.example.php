@@ -70,4 +70,19 @@ return [
             'notification_url' => 'https://legadoholding.com/funerzul/api/prevision_mercantil_webhook.php',
         ],
     ],
+
+    // Integración con Prevision-Funeraria (repo hermano, tenant `fdz`). Ver
+    // docs/specs/2026-08-28-migracion-a-prevision-funeraria.md antes de tocar esto.
+    // Mientras 'enabled' sea false, ninguna página ni endpoint la llama -- se
+    // sigue usando el catálogo/flujo local de MySQL sin cambios.
+    'prevision_funeraria' => [
+        'enabled'   => false,
+        'base_url'  => 'https://prevision-funeraria.sisteg.workers.dev/api/public/t/fdz',
+        // Ninguno de los endpoints usados hoy (planes, servicios, solicitudes) pide
+        // token -- déjalo vacío salvo que se empiece a usar /compras o /parentescos.
+        'api_token' => '',
+        // Segundos que se cachea el catálogo de planes/servicios en cache/prevision_funeraria/
+        // antes de volver a pedirlo. No bajar de 60 (protege a PF de tráfico repetido).
+        'cache_ttl' => 900,
+    ],
 ];

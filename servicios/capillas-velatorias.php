@@ -47,7 +47,7 @@ require __DIR__ . '/../partials/site_header.php';
         $ctaSub     = 'Disponibilidad y atención inmediata las 24 horas en Maracaibo.';
         $ctaWaText  = 'Hola, deseo información sobre las capillas velatorias.';
         require __DIR__ . '/../partials/cta_contacto.php';
-        $peInteres = 'Capillas Velatorias'; $peTipo = 'servicio';
+        $peInteres = 'Capillas Velatorias'; $peTipo = 'servicio'; $peServicioSlug = 'capillas-velatorias';
         require __DIR__ . '/../partials/cta_pago_electronico.php';
         ?>
 

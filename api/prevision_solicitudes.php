@@ -83,6 +83,42 @@ switch ($action) {
         $id = (int)db()->lastInsertId();
         audit('prev_solicitud.crear', 'prev_solicitudes_publicas', $id, ['interes' => $interes, 'tipo' => $tipo]);
 
+        // Fase B del plan de migración a Prevision-Funeraria (ver
+        // docs/specs/2026-08-28-migracion-a-prevision-funeraria.md): reenvío de
+        // mejor esfuerzo. Nunca bloquea ni afecta la respuesta al usuario — el
+        // guardado local de arriba es y sigue siendo la fuente de verdad mientras
+        // el panel de Solicitudes de este repo siga en uso.
+        require_once __DIR__ . '/lib/prevision_funeraria.php';
+        if (pf_habilitado()) {
+            $pfPlanId     = null;
+            $pfServicioId = null;
+            if ($tipo === 'plan' && !empty($b['plan_slug'])) {
+                $pfPlan = pf_find_plan_by_slug(clean_str((string)$b['plan_slug'], 60));
+                $pfPlanId = $pfPlan['id'] ?? null;
+            }
+            if ($tipo === 'servicio' && !empty($b['servicio_slug'])) {
+                $pfServicio = pf_find_servicio_by_slug(clean_str((string)$b['servicio_slug'], 60));
+                $pfServicioId = $pfServicio['id'] ?? null;
+            }
+            $pfResultado = pf_crear_solicitud([
+                'tipo'                => $tipo,
+                'plan_id'             => $pfPlanId,
+                'servicio_id'         => $pfServicioId,
+                'interes'             => $interes,
+                'nombres'             => $nombres,
+                'apellidos'           => $apellidos,
+                'documento_identidad' => $cedula,
+                'telefono'            => $telefono,
+                'email'               => $email,
+            ]);
+            if (!$pfResultado['ok']) {
+                // No es un error para el visitante (el lead local ya se guardó);
+                // queda en el log del servidor para que el staff lo note si se repite.
+                error_log('[prevision_funeraria] solicitud ' . $id . ' no se pudo reenviar: ' . $pfResultado['error']);
+            }
+            audit('prev_solicitud.reenvio_pf', 'prev_solicitudes_publicas', $id, ['ok' => $pfResultado['ok']]);
+        }
+
         json_out([
             'ok' => true,
             'message' => 'Hemos recibido tu solicitud. Un asesor te contactará en breve para completar el pago de forma segura.',

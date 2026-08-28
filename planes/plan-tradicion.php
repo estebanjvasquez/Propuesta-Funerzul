@@ -27,6 +27,8 @@ require __DIR__ . '/../partials/site_header.php';
         <h1>Plan Tradición de Previsión Funeraria</h1>
         <p class="service-lead">El <strong>Plan Tradición</strong> está pensado para las familias que ya poseen bóveda o espacio para inhumación y desean un <strong>servicio funerario completo</strong>, con todos los detalles cubiertos y la tranquilidad de tenerlo planificado.</p>
 
+        <?php $pePlanSlug = 'tradicion'; require __DIR__ . '/../partials/pf_precio_plan.php'; ?>
+
         <h2>¿Qué incluye el Plan Tradición?</h2>
         <ul class="service-list">
             <li><strong>Servicio funerario completo</strong></li>

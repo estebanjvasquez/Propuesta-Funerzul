@@ -1,10 +1,11 @@
 # Plan — Migrar el módulo de Previsión de Funerzul a Prevision-Funeraria
 
 **Fecha:** 2026-08-28
-**Estado:** Plan para revisión. No implementar sin aprobación explícita del
-usuario sobre el orden de fases y, en particular, sobre la fecha de corte del
-módulo PHP (afecta a clientes reales en producción del lado comercial, aunque
-el módulo de previsión en sí nunca se puso en producción — ver sección 2).
+**Estado:** Fases A, B y C **implementadas** (mismo día, a pedido del
+usuario) y **apagadas por defecto** (`enabled => false` en config) — no
+afectan producción hasta que alguien las active explícitamente. El resto del
+plan (fases D, E, F y las decisiones de la sección 6) sigue siendo un plan
+para revisión, no implementar sin aprobación explícita.
 **Relacionado:** `docs/SPEC.md` (roadmap #1), `ONBOARDING-AGENTES.md`
 (sección 3 y 7), Notion → tarjeta "Confirmar con el usuario: ¿sigue el módulo
 PHP de previsión, o se migra a Prevision-Funeraria?" en el Backlog.
@@ -277,6 +278,60 @@ mientras se resuelve lo que sí depende de terceros (Mercantil, R2, mensajería)
    feedback de priorización sobre esas seis mejoras directamente al equipo
    de PF (`docs/PLAN.md` de PF, sección 6) — evitar que este repo y PF le
    pidan la misma decisión dos veces por separado.
+
+## 7bis. Progreso real (actualizado 2026-08-28, mismo día del plan)
+
+Implementación verificada contra la API real de producción (no contra
+documentación) — ver `api/README.md`, sección "Integración con
+Prevision-Funeraria", para el detalle técnico completo.
+
+- **Fase A (catálogo)** — ✅ código listo, planes con precio real
+  (`GET /api/public/t/fdz/planes` probado en vivo: 9 planes en el tenant
+  `fdz`, incluye 4 duplicados/variantes de import que no se muestran en este
+  sitio porque el mapeo es por slug explícito, no por listar todo el
+  catálogo — ver huecos de datos abajo). Servicios sin cambios: el catálogo
+  de servicios de PF para `fdz` está **vacío** (`GET /servicios` → `{items:
+  []}`), así que no hay nada que mostrar todavía.
+- **Fase B (leads)** — ✅ código listo, `POST /api/public/t/fdz/solicitudes`
+  probado en vivo (sin token, sin problema de CORS server-to-server —
+  verificado con el honeypot, no se creó ningún lead real de prueba).
+  Reenvío de mejor esfuerzo, guardado local sigue intacto.
+- **Fase C (triage de emergencias)** — ✅ código listo, pero **inerte**
+  hasta que el catálogo de servicios de `fdz` tenga al menos un ítem — no
+  hay nada que probar en vivo todavía (mismo motivo que Fase A/servicios).
+
+**Huecos de datos encontrados al implementar** (no eran visibles solo
+leyendo código, hacía falta llamar la API real):
+
+1. El catálogo de planes de `fdz` en PF tiene **9 entradas**, no 4 — junto a
+   `esencial`/`tradicion`/`vanguardia`/`vanguardia-plus` (los 4 que este
+   sitio muestra) hay `emp-esencial-30`, `emple-esencial-50`,
+   `esencial-new`, `tradicion-new`, `vanguardia-total`, con nombres que
+   sugieren restos de la importación desde SIEMPRE (planes de empleador,
+   duplicados con precio distinto). Este sitio los ignora a propósito (solo
+   busca los 4 slugs conocidos), pero alguien con acceso al panel de PF
+   debería revisar si esas 5 entradas son datos reales que faltan
+   depurar/renombrar o basura de importación — no es algo que se pueda
+   decidir desde este repo.
+2. Confirmado en vivo: `precio_mensual_centavos` de `tradicion` (1200) es
+   **menor** que el de `esencial` (1370) en el catálogo de PF, aunque en
+   este sitio Tradición se presenta como el plan "de más categoría" que
+   Esencial. Puede ser un dato de importación sin depurar (mismo origen que
+   el punto 1) — vale la pena confirmarlo antes de mostrar el precio en
+   producción, para no exhibir una inconsistencia real al público.
+
+**Qué falta para que esto quede visible en producción:**
+
+1. Copiar el bloque `prevision_funeraria` de `api/config.example.php` a
+   `api/config.php` en el servidor, con `enabled => true`.
+2. Confirmar permisos de escritura de `cache/prevision_funeraria/` (o
+   aceptar que funcione sin cache, más lento).
+3. Resolver los dos huecos de datos de arriba con quien tenga acceso al
+   panel de Prevision-Funeraria — **idealmente antes** de activar `enabled`,
+   para no mostrarle al público un precio de Tradición más barato que
+   Esencial.
+4. Decidir si se activa ya, o se espera a tener también servicios cargados
+   en PF (para que Fase C deje de estar inerte).
 
 ## 7. Checklist antes de ejecutar cualquier fase
 

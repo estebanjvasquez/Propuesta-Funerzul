@@ -47,7 +47,7 @@ require __DIR__ . '/../partials/site_header.php';
         $ctaSub     = 'Respuesta inmediata las 24 horas, los 7 días de la semana.';
         $ctaWaText  = 'Hola, necesito coordinar un traslado funerario.';
         require __DIR__ . '/../partials/cta_contacto.php';
-        $peInteres = 'Traslados'; $peTipo = 'servicio';
+        $peInteres = 'Traslados'; $peTipo = 'servicio'; $peServicioSlug = 'traslados';
         require __DIR__ . '/../partials/cta_pago_electronico.php';
         ?>
 

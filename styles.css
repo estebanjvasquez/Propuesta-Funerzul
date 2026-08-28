@@ -2090,6 +2090,19 @@ textarea.form-control {
 .service-list li::before { content: "✓"; position: absolute; left: 0; top: 6px; color: var(--color-secondary); font-weight: 700; }
 .inline-badge { display: inline-block; vertical-align: middle; background: var(--color-secondary); color: #fff; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-full); margin-left: 8px; }
 
+/* Precio en vivo desde Prevision-Funeraria (Fase A de la migración, ver
+   docs/specs/2026-08-28-migracion-a-prevision-funeraria.md). Ausente por
+   completo si la integración no está habilitada o el plan no tiene precio. */
+.plan-price-badge {
+    display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px;
+    background: var(--color-surface); border: 1px solid var(--color-surface-high);
+    border-radius: var(--radius-lg); padding: 14px 20px; margin: 4px 0 20px;
+}
+.plan-price-amount { font-size: 28px; font-weight: 700; color: var(--color-primary-dark); }
+.plan-price-label { font-size: 14px; color: var(--color-text-muted); }
+.plan-price-note { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--color-text-muted); }
+.plan-price-source { font-style: italic; }
+
 .service-related { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--color-surface-high); }
 .service-related h3 { font-size: 18px; margin-bottom: 10px; }
 .service-related ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 24px; }
@@ -2104,6 +2117,9 @@ textarea.form-control {
 .cta-band-text h2 { color: #fff; font-size: 24px; margin: 0 0 6px; }
 .cta-band-text p { color: var(--color-celeste-light); margin: 0; font-size: 15px; }
 .cta-band-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+/* Fase C de la migración a Prevision-Funeraria: servicio marcado es_emergencia
+   (ver partials/cta_pago_electronico.php). */
+.cta-band-emergencia { background: linear-gradient(135deg, var(--color-error), var(--color-error-hover)); }
 .btn-lg { padding: 14px 22px; font-size: 16px; display: inline-flex; align-items: center; gap: 8px; }
 .btn-whatsapp { background: #25D366; color: #fff; border: none; }
 .btn-whatsapp:hover { background: #1ebe5b; color: #fff; }
