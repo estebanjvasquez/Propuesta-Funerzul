@@ -46,10 +46,20 @@ return [
         'site_url'  => 'https://www.funerariadelzulia.com',
     ],
 
-    // Pagos electrónicos (previsión). Ver docs/mercantil.md y
+    // Pagos electrónicos. Ver docs/mercantil.md y
     // docs/payments/mercantil/STATUS.md antes de tocar esta sección.
-    // Mientras 'provider' sea 'simulado', ningún cobro es real: el staff debe
-    // confirmar manualmente cada intento desde el panel (nunca es automático).
+    // Mientras 'provider' sea 'simulado', ningún cobro es real.
+    //
+    // ARCHIVADO (2026-08-28): los endpoints prevision_mercantil_callback.php /
+    // prevision_mercantil_webhook.php a los que apuntaban return_url/cancel_url/
+    // notification_url se retiraron junto con el módulo de Previsión (consultaban
+    // prev_pagos_electronicos / prev_pago_eventos, ver
+    // docs/specs/2026-08-28-fase-e-corte-admin-prevision.md). api/lib/payments/
+    // (PaymentProviderInterface, PaymentService, MercantilProvider) se conserva
+    // como referencia de diseño para el adaptador de pagos de Prevision-Funeraria,
+    // pero este bloque y sus URLs ya no apuntan a nada real — si este repo vuelve
+    // a necesitar cobro electrónico propio (no ligado a previsión), hay que
+    // reconstruir los endpoints antes de activar 'provider' => 'mercantil'.
     'payments' => [
         'provider' => 'simulado', // 'simulado' | 'mercantil' (no cambiar a 'mercantil' sin credenciales reales)
         'mercantil' => [
@@ -60,14 +70,9 @@ return [
             'integrator_id'    => '',
             'merchant_id'      => '',
             'terminal_id'      => '',
-            // AMBIENTE DE PRUEBA ACTUAL: https://legadoholding.com/funerzul (ver
-            // docs/payments/mercantil/MIGRATION_PLAN.md para el cambio a producción
-            // en https://www.funerariadelzulia.com cuando corresponda).
-            // URL registrada en el Portal API como redirección OAuth / retorno de la operación.
-            'return_url'       => 'https://legadoholding.com/funerzul/api/prevision_mercantil_callback.php',
-            'cancel_url'       => 'https://legadoholding.com/funerzul/api/prevision_mercantil_callback.php',
-            // Webhook server-to-server (Servicio de Confirmación de Operación).
-            'notification_url' => 'https://legadoholding.com/funerzul/api/prevision_mercantil_webhook.php',
+            'return_url'       => '',
+            'cancel_url'       => '',
+            'notification_url' => '',
         ],
     ],
 

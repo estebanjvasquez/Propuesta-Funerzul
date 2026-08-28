@@ -60,8 +60,6 @@ Propuesta Funerzul/
 │  styles.css              Estilos globales
 │  .cpanel.yml             Despliegue automático en cPanel
 │
-│  admin-prevision.js      Lógica del módulo de Previsión del panel
-│
 ├─ api/                    Backend PHP
 │   config.example.php     Plantilla de configuración (copiar a config.php)
 │   auth.php               Login / logout / sesión
@@ -71,20 +69,12 @@ Propuesta Funerzul/
 │   settings.php           Configuración (purga, portada, moderación)
 │   users.php              Gestión de usuarios
 │   upload.php             Subida de fotos al disco
-│   prevision_clientes.php    Previsión: clientes titulares
-│   prevision_planes.php      Previsión: planes
-│   prevision_vendedores.php  Previsión: vendedores y comisiones
-│   prevision_contratos.php   Previsión: contratos, beneficiarios, cuotas y pagos
-│   prevision_import.php      Previsión: importación CSV desde otros sistemas
-│   prevision_siniestros.php  Previsión: siniestros/reclamos con validación de cobertura
-│   prevision_cobranza.php    Previsión: morosos, gestiones, auto-lapsado, hoja de cobro
-│   prevision_catalogos.php   Previsión: sucursales, servicios, cobradores y rutas
-│   prevision_ajustes.php     Previsión: ajuste masivo de tarifas (con reverso)
-│   prevision_mensajes.php    Previsión: WhatsApp/SMS con proveedor configurable
-│   prevision_reportes.php    Previsión: aging CxC, producción, cobranza, cartera (CSV)
+│   pf_solicitud.php       Lead público de planes/servicios -> Prevision-Funeraria
 │   diag.php               Diagnóstico de instalación (protegido)
 │   cron/purge_photos.php  Rutina de purga de fotos
-│   lib/                   Núcleo (BD, auth, helpers, render, previsión)
+│   lib/                   Núcleo (BD, auth, helpers, render)
+│   lib/prevision_funeraria.php  Cliente de la API pública de Prevision-Funeraria
+│   lib/payments/          Capa de pagos Mercantil (referencia de diseño, ver abajo)
 │
 ├─ partials/               Cabecera, pie y banda de contacto compartidos (PHP)
 ├─ servicios/img/          Imágenes SVG de cada servicio
@@ -117,9 +107,11 @@ La barra superior agrupa el trabajo en dos menús y un acceso directo:
 
 - **Sitio web** (contenido público): Obituarios, Condolencias, Directorio Médico,
   Recursos, Preguntas frecuentes y Plantillas de obituario (esta última, admin).
-- **Previsión** (proceso administrativo): el módulo de planes de previsión, con
-  su propia sub-navegación por grupos (Operación, Comercial, Configuración, Gestión).
 - **Sistema** (solo admin): Configuración y Usuarios.
+
+> El módulo administrativo de Previsión (contratos, cobranza, comisiones,
+> siniestros...) que vivía aquí en PHP/MySQL fue retirado — ver sección 14
+> más abajo.
 
 ### 2. Roles de usuario
 
@@ -293,96 +285,29 @@ Lo administra todo el personal.
 > (crea la tabla `faqs` con las preguntas que ya estaban en la portada, incluida la de
 > atención 24 horas que solo figuraba en los datos estructurados).
 
-### 14. Módulo de Previsión (pestaña Previsión)
+---
 
-Administración completa de los **planes de previsión funeraria**, modelada sobre la
-base de datos del sistema administrativo **SIEMPRE** (`database/SIEMPRE.sql`).
-Lo usa todo el personal (editor y admin); las eliminaciones definitivas y las
-reversiones de pagos son solo del admin.
+### 14. Módulo de Previsión — retirado
 
-**Para activarlo**: importe `database/04_prevision.sql`, luego
-`database/05_prevision_v2.sql` y `database/06_prevision_v3.sql` en phpMyAdmin
-(crean las tablas `prev_*` con los catálogos de SIEMPRE: 18 parentescos y los
-9 planes vigentes — Tradición, Esencial, Vanguardia, etc. — más sucursales,
-servicios, siniestros, cobranza, mensajería y ajustes de tarifas).
+El módulo administrativo de planes de previsión funeraria (contratos,
+beneficiarios, cuotas, cobranza, comisiones, siniestros, mensajería, ajustes
+de tarifa, importación CSV) vivió en este repo (`admin-prevision.js` +
+`api/prevision_*.php` + `database/04_prevision.sql` a `10_...sql`) pero
+**nunca llegó a manejar datos reales de producción**. Se retiró por completo
+el 2026-08-28: el reemplazo multiempresa **Prevision-Funeraria**
+(`prevision-funeraria.sisteg.workers.dev`, tenant `fdz`) ya lo cubre y ya
+tiene los datos reales de Funeraria del Zulia importados. El código sigue
+disponible, sin usarse, en la rama `archive/modulo-prevision-php`
+(**nunca se mergea a `main`**) por si hiciera falta consultarlo. Detalle
+completo: [`docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`](docs/specs/2026-08-28-fase-e-corte-admin-prevision.md).
 
-Al entrar se ven los indicadores del módulo: **contratos activos**, **clientes**,
-**cuotas vencidas** (con su monto), **cobrado en el mes** y la **tasa del día**
-(Bs/USD, con botón para actualizarla). Debajo, doce sub-pestañas:
-
-- **Contratos** — buscar por número/cédula/nombre, filtrar por estatus o por
-  contratos con cuotas vencidas. **“+ Nuevo contrato”**: se busca al titular por su
-  cédula, se elige plan (autocompleta cuota y moneda), vendedor, frecuencia
-  (semanal/quincenal/mensual/trimestral/semestral/anual), forma de cobro, plazo de
-  espera y, opcionalmente, se generan las primeras cuotas. El titular queda
-  registrado automáticamente como primer beneficiario.
-  Desde **“Ver”** se maneja todo el contrato:
-  - *Beneficiarios*: agregar (con validación de edad según el parentesco), editar,
-    excluir, registrar defunción o reactivar.
-  - *Cuotas*: generar por lote según la frecuencia, cobrar o anular.
-  - *Pagos*: se aplican a las cuotas pendientes más antiguas (o a una específica);
-    si el pago viene en otra moneda se convierte con la tasa del día y el
-    excedente queda como abono a favor.
-  - *Estatus*: activo, suspendido, anulado o renuncia (con fecha y motivo; al
-    anular se liquidan las cuotas pendientes).
-- **Clientes** — ficha completa del titular (cédula única, contacto, dirección,
-  empleador). “Ver” muestra sus contratos; la baja es lógica (restaurable).
-- **Planes** — catálogo de planes con cuota, moneda, cuota inicial y cobertura;
-  activar/desactivar sin afectar contratos existentes.
-- **Vendedores** — datos personales, porcentajes de comisión
-  (semanal/mensual/anual) y cuenta bancaria para el pago; retiro y reactivación.
-- **Comisiones** — flujo de aprobación en cuatro pasos según el esquema de
-  SIEMPRE (**Semana 1**, **Fin de mes 1**, **Mes 2** y **Mes 13**):
-  **1) Por calcular** — el sistema detecta las etapas vencidas sin generar y con
-  el botón **“Calcular todas”** (o una a una) las genera con su monto sugerido
-  (% del contrato o del vendedor). **2) Por aprobar** — las comisiones calculadas
-  se **verifican** (se puede ajustar el monto) y se **aprueban**. **3) Por pagar**
-  — las aprobadas se **envían a pagar** registrando el monto en USD y/o Bs con su
-  tasa. **4) Pagadas** — historial con quién aprobó. Más una vista de **resumen**
-  por vendedor. Una etapa no puede generarse ni pagarse dos veces por contrato.
-- **Siniestros** — el corazón del servicio: al fallecer un titular o
-  beneficiario se registra el siniestro en dos pasos (contrato + quién
-  falleció) y el sistema **valida la cobertura automáticamente** (contrato
-  activo, plazo de espera cumplido, beneficiario vigente y solvencia),
-  dejando constancia de los chequeos en el expediente. Luego se liquida por
-  partidas (servicio funerario, pagos, reintegros, proveedores) y se cierra:
-  si el fallecido es el titular, el contrato pasa a **finalizado** y se
-  anulan las cuotas pendientes. Estados: abierto → liquidado → cerrado, o
-  rechazado con motivo.
-- **Cobranza** — vista de **morosos** (cuotas vencidas, días de mora, última
-  gestión) con acciones de cobro y gestión; **bitácora de gestiones**
-  (llamada/visita/WhatsApp, con promesas de pago); **auto-lapsado**
-  configurable (suspende contratos con ≥ N cuotas vencidas, con vista previa,
-  ejecución manual y cron diario `api/cron/prevision_lapsar.php`); y **hoja de
-  cobro imprimible** por ruta para el cobrador.
-- **Reportes** — **antigüedad de cuentas por cobrar** (al día, 1-30, 31-60,
-  61-90 y +90 días, con totales por moneda), **producción por vendedor** en un
-  período, **cobranza por período** (por forma de pago y por día) y **cartera
-  por plan** (contratos por estatus y facturación mensual). Todos descargables
-  en **CSV** para Excel.
-- **Mensajes** — notificaciones **WhatsApp/SMS** a los clientes con
-  **plantillas** editables (variables como `{{cliente}}`, `{{contrato}}`,
-  `{{saldo_vencido}}`) y **envío masivo a morosos**. El **proveedor es
-  configurable por canal desde el panel**, sin tocar código: *Manual* (registra
-  el mensaje y abre WhatsApp listo para enviar — modo por defecto mientras no
-  haya proveedor contratado), *WhatsApp Cloud API* (Meta), *Twilio* o *API HTTP
-  genérica* (gateway local de SMS). Incluye mensaje de prueba e historial de
-  envíos con estado y errores.
-- **Ajustes** — **ajuste masivo de tarifas**: sube o baja las cuotas de los
-  contratos activos por **porcentaje o monto fijo**, filtrando por plan y/o
-  moneda, con redondeo a céntimos o al entero; opcionalmente actualiza la
-  cuota de los planes y las cuotas pendientes ya generadas. Siempre con
-  **vista previa** antes de aplicar y con **historial reversible** (el detalle
-  guarda cada valor anterior → nuevo).
-- **Catálogos** — sucursales, **servicios adicionales** (bóveda, cremación,
-  traslados; recurrentes o de cargo único, contratables por contrato),
-  cobradores y **rutas de cobranza** (zona, día de cobro, cobrador asignado).
-- **Importar** — migración desde otros sistemas por **CSV** (clientes,
-  vendedores, contratos, beneficiarios y pagos históricos). Detecta el separador,
-  acepta alias de encabezados y fechas DD/MM/AAAA, actualiza por cédula/número
-  (sin duplicar) y tiene **modo simulación** para validar antes de guardar.
-  Plantillas CSV descargables y bitácora de importaciones con errores por fila.
-  Orden recomendado: clientes → vendedores → contratos → beneficiarios → pagos.
+Lo que **sigue** en este repo (sin cambios de arquitectura): las páginas
+públicas `planes/` y `servicios/` siguen viviendo aquí en PHP, pero leen
+precio y disponibilidad en vivo desde Prevision-Funeraria
+(`api/lib/prevision_funeraria.php`), y el formulario de interés del
+visitante (`partials/cta_pago_electronico.php`) envía el lead directo a
+Prevision-Funeraria (`api/pf_solicitud.php`) — el staff lo trabaja desde el
+panel de Prevision-Funeraria, no desde este sitio.
 
 ---
 
@@ -411,10 +336,7 @@ Resumen (guías detalladas en `database/README.md` y `api/README.md`):
 1. **Base de datos**: crear la BD MySQL en cPanel e importar
    [`database/01_schema.sql`](database/01_schema.sql) y, para el Directorio Médico y
    los Recursos, [`database/02_directorio_recursos.sql`](database/02_directorio_recursos.sql), con phpMyAdmin.
-   Para el **módulo de Previsión**, importar además
-   [`database/04_prevision.sql`](database/04_prevision.sql),
-   [`database/05_prevision_v2.sql`](database/05_prevision_v2.sql) y
-   [`database/06_prevision_v3.sql`](database/06_prevision_v3.sql).
+   (El módulo de Previsión y sus migraciones `04`-`10` se retiraron — sección 14.)
 2. **Backend**: copiar `api/config.example.php` → `api/config.php` y poner las
    credenciales de MySQL y un `cron_secret` aleatorio.
 3. **Extensiones PHP** (cPanel → *Select PHP Version → Extensions*): activar

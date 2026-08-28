@@ -1,191 +1,161 @@
 ---
-Estado: Plan (sin ejecutar) — ver "Alcance" y "Plan" abajo antes de tocar nada.
+Estado: **Ejecutado** (2026-08-28) — corte inmediato, ver "Qué se ejecutó" abajo.
 ---
 
-# Fase E — Corte del panel admin de Previsión hacia Prevision-Funeraria
+# Fase E — Corte del módulo PHP de Previsión hacia Prevision-Funeraria
 
-Desglosa la Fase E de
-[`docs/specs/2026-08-28-migracion-a-prevision-funeraria.md`](2026-08-28-migracion-a-prevision-funeraria.md#4-plan-de-migración-por-fases-funeraria-del-zulia),
-con hallazgos nuevos que **corrigen una suposición** de ese documento. Este
-plan no ejecuta nada todavía — es la respuesta a "planear la Fase E" pedida
-el 2026-08-28, después de que activar `prevision_funeraria.enabled` (Fases
-A/B/C, ya hechas) no cambió el panel admin — porque nunca estaba en su
-alcance. Ver también [`docs/SPEC.md`](../SPEC.md) sección 2.
+Desglosa y cierra la Fase E de
+[`docs/specs/2026-08-28-migracion-a-prevision-funeraria.md`](2026-08-28-migracion-a-prevision-funeraria.md#4-plan-de-migración-por-fases-funeraria-del-zulia).
+Primera versión de este documento (mismo día) proponía un corte gradual con
+ventana de verificación de staff antes de tocar código; **el usuario decidió
+un corte inmediato** y pidió remover el módulo PHP directamente, no solo
+ocultarlo. Esta versión documenta lo que realmente se ejecutó.
 
-## Resumen
+## Decisiones del usuario (2026-08-28, verbatim resumido)
 
-El staff de Funeraria del Zulia hoy gestiona clientes/contratos/cobros desde
-`admin.html` (tab "Previsión") de este repo, contra MySQL. El objetivo de la
-Fase E es que dejen de usar ese panel y pasen a usar el panel de
-Prevision-Funeraria (`https://prevision-funeraria.sisteg.workers.dev`,
-tenant `fdz`) para el trabajo real del día a día. Esto **no es un cambio de
-código en este repo** más allá de un paso final (ocultar el tab) — es
-principalmente coordinación: confirmar datos, crear cuentas de staff en PF y
-fijar una fecha, todo del lado de Prevision-Funeraria (otro repo, otra
-infraestructura, sin acceso desde esta sesión).
+1. **Tasa de cambio no es problema de este repo.** Prevision-Funeraria, al
+   configurar una empresa como multimoneda, se conecta a una API que consulta
+   la tasa oficial Bs/USD todos los días — eso resuelve el manejo de tasa en
+   el tenant. Cualquier fricción entre el precio de catálogo y lo que paga el
+   cliente **se resuelve en Prevision-Funeraria, no en este repo**. Esto
+   descarta el "blocker" de la Fase B2 (migración de moneda del historial
+   importado) como algo que este plan deba bloquear o monitorear — es un
+   asunto interno de PF.
+2. **Corte inmediato.** El módulo PHP de Previsión no se va a usar más y debe
+   **quitarse** del código activo (no solo ocultar el tab).
+3. **Respaldo en una rama que nunca se mergea a `main`.**
+4. **Login del panel admin de este sitio (aspectos de contenido — obituarios,
+   directorio médico, recursos, FAQs) debe integrarse a futuro con el inicio
+   de sesión de los usuarios del tenant `fdz` en Prevision-Funeraria** (SSO
+   único). **Ese módulo de autenticación compartida no existe todavía del
+   lado de Prevision-Funeraria** — queda como dependencia externa bloqueada,
+   documentada abajo, sin fecha.
 
-## Hallazgo clave (corrige la Fase E de la spec del 2026-08-28)
+## Qué se ejecutó
 
-La spec anterior asumía "no hay big-bang de datos porque el módulo PHP nunca
-tuvo datos reales". Es correcto, pero por una razón más específica que vale
-la pena dejar registrada — investigado directamente en el repo
-`Prevision-Funeraria` (`docs/PLAN.md`, ítem fechado 2026-08-19):
+### Estrategia de ramas
 
-- **La migración de datos reales de Funeraria del Zulia ya se ejecutó**, y no
-  vino de las tablas `prev_*` de MySQL de este repo (esas nunca se
-  poblaron en producción — no hay evidencia de datos reales de cliente en
-  ellas, solo el tab de admin sin uso confirmado). Vino directo del dump
-  legacy **`database/SIEMPRE.sql`** — que sí vive en este repo — parseado por
-  `scripts/extraer-siempre.ts` e importado a D1 (`fdz`) el 2026-08-19.
-- Resultado de esa importación: **118 clientes/contratos, 471 beneficiarios,
-  2881 cuotas, 10 planes, 13 vendedores**, vía `POST /importacion/{preview,aplicar}`
-  (idempotente, columna `legacy_id`). Solo se importó la capa "actual" del
-  dump (limpia, autoconsistente); la capa `-orig` (10466 filas de historial
-  de pagos huérfano, sin cabecera de cliente/contrato) quedó **fuera de
-  alcance por decisión ya tomada del usuario** — no hace falta revisitar esa
-  decisión acá.
-- **Blocker real pendiente, del lado de PF, no de este repo:** al
-  2026-08-27, la migración de moneda del historial de FDZ ("Fase B2" en el
-  plan de PF) tenía el `preview` corrido y validado contra los 118
-  contratos/2881 cuotas reales, pero **`aplicar` no se había corrido contra
-  producción** — a la espera de que alguien confirme el preview. Si esto
-  sigue así, los contratos importados pueden estar mostrando montos
-  derivados de bolívares crudos del legacy en vez de convertidos
-  correctamente. **Hay que reconfirmar el estado actual (puede haber
-  cambiado desde el 27-ago) antes de poner a un solo miembro del staff a
-  trabajar con esos contratos en PF.**
+- **`archive/modulo-prevision-php`** — snapshot completo del repo con el
+  módulo PHP de Previsión íntegro (código + las dos specs de migración
+  anteriores), creada desde `feature/modulo-prevision` en el commit
+  `1e9e0d5` y **pusheada a `origin`**. Esta rama es el respaldo pedido por el
+  usuario. **Regla dura: nunca se mergea a `main`.** Si algún día hay que
+  consultar cómo funcionaba `prevision_contratos.php` o cualquier otro
+  archivo retirado, está completo ahí.
+- **`feature/prevision-funeraria`** — rama nueva desde el mismo punto, donde
+  se ejecutó el corte. Es la que continúa hacia `main` cuando corresponda.
+  `feature/modulo-prevision` (la rama de trabajo original) queda intacta en
+  el remoto, sin más commits — un respaldo adicional, aunque
+  `archive/modulo-prevision-php` es la referencia oficial.
 
-Esto responde y cierra el punto 3 de la sección 6 de la spec de migración
-("alcance real de la importación desde SIEMPRE") — ya no es una incógnita,
-es un hecho verificado con fecha y cifras. Se actualiza esa sección abajo.
+### Código retirado (26 archivos)
 
-## Alcance
+- `admin-prevision.js` (consola completa del panel).
+- 16 endpoints `api/prevision_*.php`: `adjuntos`, `ajustes`, `catalogos`,
+  `clientes`, `cobranza`, `contratos`, `import`, `mensajes`,
+  `mercantil_callback`, `mercantil_webhook`, `pagos`, `planes`, `reportes`,
+  `siniestros`, `solicitudes`, `vendedores`.
+- `api/lib/prevision.php` (librería compartida del módulo).
+- `api/cron/prevision_lapsar.php` (cron de auto-lapsado de contratos).
+- `database/04_prevision.sql` a `database/10_prevision_pagos_electronicos.sql`
+  (7 migraciones, tablas `prev_*`).
 
-Incluye:
+Confirmado antes de borrar (no se repite la investigación, ya estaba hecha):
+estas tablas **nunca tuvieron datos reales de producción** — la migración de
+datos real de Funerzul a Prevision-Funeraria ya se había ejecutado el
+2026-08-19 desde `database/SIEMPRE.sql` (dump del legacy), no desde estas
+tablas `prev_*`. No hubo nada que migrar al borrar.
 
-- Confirmar el estado real de la Fase B2 de PF (migración de moneda del
-  historial FDZ) antes de fijar fecha de corte.
-- Crear cuentas de staff de Funerzul en el `usuarios`/`usuario_tenant` de
-  `DB_CONTROL` de PF (tabla y flujo documentados abajo).
-- Verificación manual del staff: login, selección de tenant `fdz`, revisión
-  de una muestra de los 118 contratos importados contra lo que conocen del
-  cliente real (sanity check, no auditoría exhaustiva).
-- Fecha de corte y comunicación al staff.
-- Este repo: ocultar (no borrar) el tab "Previsión" de `admin.html`
-  (`data-tab="prevision"`, línea 59; panel `id="tab-prevision"`, línea 177)
-  una vez el corte esté confirmado — **último paso, no el primero**.
+`api/lib/payments/` (`PaymentProviderInterface`, `PaymentService`,
+`MercantilProvider`, `SimuladoProvider`) **se conserva**, por la regla ya
+vigente en `CLAUDE.md`: sigue siendo la referencia de diseño para el
+adaptador de pagos de Prevision-Funeraria. Quedó con comentarios que ya no
+apuntan a archivos existentes (`api/lib/prevision.php`) — es código de
+referencia, no llamado por nada activo, así que no se corrigieron esas
+referencias cruzadas; ver el propio archivo si hace falta entender el
+acoplamiento original.
 
-No incluye:
+### Reemplazo del lead público
 
-- Migrar nada de las tablas `prev_*` de MySQL — no hay datos reales que
-  migrar de ahí (ver hallazgo arriba). Quedan como están, sin tocar.
-- Tocar la integración pública (Fases A/B/C, sitio web) — ya está hecha y es
-  independiente de esto.
-- Resolver la Fase B2 de PF en sí (migración de moneda) — eso lo ejecuta
-  quien tenga acceso al repo/Cloudflare de PF, no esta sesión.
-- Borrar `admin-prevision.js` / `api/prevision_*.php` — se ocultan primero,
-  se evalúa borrar meses después (ya acordado en la spec de migración,
-  sección 5).
+`api/prevision_solicitudes.php` tenía una acción pública (`crear`, usada por
+el formulario del sitio) mezclada con acciones de staff. Se reemplazó por
+**`api/pf_solicitud.php`** — solo la parte pública, sin escribir en MySQL
+(la tabla `prev_solicitudes_publicas` ya no existe): reenvía el lead directo
+a `POST /api/public/t/fdz/solicitudes` de Prevision-Funeraria vía
+`api/lib/prevision_funeraria.php` (que se conserva sin cambios). Si
+Prevision-Funeraria no responde, se le informa al visitante en vez de
+fingir que quedó guardado — ya no hay respaldo local.
+`partials/cta_pago_electronico.php` se actualizó para llamar a este nuevo
+endpoint.
 
-## Reglas de negocio / condiciones
+### Panel admin (`admin.html` / `admin.js`)
 
-- **No se crea ninguna cuenta de staff en PF, ni se fija fecha de corte,
-  hasta confirmar el estado de la Fase B2** (montos en Bs vs. USD de los
-  118 contratos importados) — un staff viendo montos incorrectos el primer
-  día mata la confianza en el corte.
-- Dado que no hay datos reales en MySQL, **no hace falta una ventana de
-  "corrida en paralelo" con reconciliación de totales** — no hay dos fuentes
-  de verdad que cuadrar. El corte puede ser el mismo día que el staff
-  termine de validar el login y la muestra de contratos (paso de
-  verificación abajo), no un proceso de semanas.
-- Cada miembro de staff de Funerzul necesita su **propia cuenta** (`usuarios`
-  + fila en `usuario_tenant` con `tenant_slug='fdz'`) — no se comparte una
-  cuenta genérica entre varias personas (auditoría/trazabilidad).
-- El login de PF es compartido entre tenants (`fdz`/`lh`) por diseño de PF
-  — al crear la cuenta, la fila de `usuario_tenant` debe llevar
-  **exactamente** `tenant_slug='fdz'`, nunca `'lh'` por error de copiar/pegar
-  (un staff de Funerzul no debe terminar viendo datos de Legado Holding).
+- Tab "Previsión" y su sección completa (~280 líneas) removidos de
+  `admin.html`.
+- `<script src="admin-prevision.js">` removido.
+- `admin.js`: removido el hook `if (tab === 'prevision') Prevision.open()`.
+- El resto del panel (Obituarios, Condolencias, Directorio Médico, Recursos,
+  FAQs, Plantillas, Configuración, Usuarios) no se tocó.
 
-## Riesgos
+### Despliegue
 
-- **Riesgo de datos:** si se crea acceso y el staff empieza a trabajar antes
-  de confirmar la Fase B2, pueden registrarse cobros/decisiones sobre montos
-  mostrados incorrectamente (Bs crudo vs. convertido). Mitigación: el paso 1
-  del plan es explícitamente bloqueante.
-- **Riesgo de aislamiento entre tenants:** un error al insertar
-  `usuario_tenant` (tenant_slug equivocado) filtraría acceso cruzado entre
-  Funerzul y Legado Holding. Mitigación: verificar cada alta con una
-  consulta `SELECT` antes de entregar la contraseña al staff.
-- **Riesgo operativo/humano:** el staff no tiene experiencia con el panel de
-  PF (interfaz distinta, aunque cubre lo mismo). Mitigación: sesión de
-  verificación supervisada (paso 4) antes de anunciar el corte como
-  definitivo, no como parte del entrenamiento formal en sí.
-- **Sin acceso de esta sesión a PF:** todos los pasos que tocan
-  `DB_CONTROL`/D1 de Prevision-Funeraria requieren credenciales de Cloudflare
-  de ese proyecto, que esta sesión (trabajando en `Propuesta-Funerzul`) no
-  tiene. Cada paso marcado "(fuera de este repo)" abajo lo ejecuta quien
-  tenga acceso a `Prevision-Funeraria`.
+- `.cpanel.yml`: quitado `admin-prevision.js` de la lista de `cp -R` (si se
+  hubiera dejado, el deploy habría fallado o copiado un archivo inexistente).
+- Nadie tiene que tocar nada más en cPanel para este corte — no había cron
+  job de `prevision_lapsar.php` documentado como configurado en producción
+  (si el usuario sí lo configuró manualmente en cPanel → Cron Jobs, **hay
+  que borrar esa entrada a mano**, este repo no puede hacerlo).
 
-## Plan
+### Documentación actualizada
 
-1. **(fuera de este repo, bloqueante)** Confirmar con quien administre
-   Prevision-Funeraria si la Fase B2 (migración de moneda del historial FDZ,
-   `aplicar` de `src/routes/migracion-moneda.ts`) ya se corrió contra
-   producción desde el 2026-08-27. Si no, decidir si se corre antes de dar
-   acceso a staff, o si se documenta la limitación y se corre en paralelo
-   sin bloquear el corte (decisión de quien tenga ese contexto, no se asume
-   acá).
-2. **(fuera de este repo)** Por cada persona de staff de Funerzul que va a
-   usar el panel: generar hash con
-   `npm run hash-password -- "<contraseña-fuerte>"` en el repo
-   `Prevision-Funeraria`, luego:
-   ```sql
-   INSERT INTO usuarios (email, password_hash, nombre)
-     VALUES ('correo@dominio', '<hash>', 'Nombre Apellido');
-   INSERT INTO usuario_tenant (usuario_id, tenant_slug, rol)
-     VALUES (<id insertado>, 'fdz', 'staff');
-   ```
-   vía `wrangler d1 execute prevision-control --remote --command "..."`.
-   Verificar con un `SELECT` que `tenant_slug='fdz'` quedó correcto antes de
-   entregar la contraseña.
-3. **(supervisado, con staff real)** Login de prueba en
-   `https://prevision-funeraria.sisteg.workers.dev/login.html`, confirmar
-   que ve el tenant Funeraria del Zulia, y revisar 5-10 contratos conocidos
-   contra lo que el staff recuerda del cliente real (nombre, plan, cuota
-   aproximada) — sanity check, no cuadre contable exhaustivo.
-4. Si el paso 3 pasa sin sorpresas: fijar y comunicar fecha de corte al
-   staff (puede ser inmediata, no requiere ventana de semanas — ver "Reglas
-   de negocio").
-5. **En este repo**, el día del corte: ocultar el tab "Previsión" en
-   `admin.html` (línea 59 `data-tab="prevision"`, línea 177
-   `id="tab-prevision"`) — cambio pequeño y reversible (comentar el botón o
-   agregar `hidden` fijo), sin borrar `admin-prevision.js` ni
-   `api/prevision_*.php`.
-6. Actualizar documentación (ver sección de abajo).
+- `README.md` — árbol de archivos, manual de usuario (sección 14 reescrita
+  como "retirado"), paso de instalación de BD.
+- `database/README.md` — nota de archivado arriba del todo, tabla de
+  esquema `prev_*` retirada, paso de instalación de BD corregido.
+- `api/README.md` — tabla de endpoints de previsión reemplazada por una nota
+  de archivado + el nuevo `pf_solicitud.php`; sección de integración con
+  Prevision-Funeraria actualizada (ya no es "Fases A/B/C", es el estado
+  activo real); nota nueva sobre el login del panel admin (ver abajo).
+- `api/config.example.php` (y el `api/config.php` local de pruebas) — el
+  bloque `payments.mercantil` se conserva como referencia, pero
+  `return_url`/`cancel_url`/`notification_url` quedan vacíos (apuntaban a
+  archivos retirados).
+- Banner de "archivado" agregado a los documentos históricos del módulo:
+  `docs/propuesta-mejoras-prevision.md`,
+  `docs/specs/2026-08-11-mejoras-prevision-plan-tecnico.md`,
+  `docs/specs/2026-08-11-prevision-ui-redesign.md`,
+  `docs/prevision/plan-2026-08-07.md` — se conservan como referencia
+  histórica, no se borraron (siguen completos en `main` tras el corte, a
+  diferencia del código, que solo vive en la rama archive).
 
-## Verificación
+## Pendiente real: SSO del panel admin con Prevision-Funeraria
 
-- Rol: staff de Funerzul con cuenta nueva en PF.
-- Pantalla: `prevision-funeraria.sisteg.workers.dev/login.html` → dashboard
-  del tenant `fdz`.
-- Dato de prueba: 5-10 contratos reales importados (de los 118).
-- Resultado esperado: login exitoso, tenant correcto (nunca `lh`), montos de
-  cuota/contrato razonables (no bolívares crudos mostrados como si fueran
-  USD — ver hallazgo de la Fase B2).
-- Después de ocultar el tab en `admin.html`: recargar el panel admin de este
-  repo, confirmar que el tab "Previsión" ya no aparece pero el resto del
-  panel (usuarios, plantillas, configuración, obituarios) sigue funcionando
-  igual.
+Decisión del usuario, no ejecutable hoy: el login de `admin.html` (gestión
+de contenido del sitio — obituarios, directorio médico, recursos, FAQs)
+debería integrarse con el inicio de sesión de los usuarios del tenant `fdz`
+en Prevision-Funeraria, para que el staff tenga una sola cuenta en vez de
+dos sistemas de login separados.
 
-## Documentación a actualizar
+**Bloqueador real: ese módulo no existe en Prevision-Funeraria.** Hoy PF
+solo tiene su propio login (`usuarios`/`usuario_tenant` en `DB_CONTROL`,
+sesión propia vía cookie firmada — ver `src/auth/` del repo PF) sin ninguna
+forma de que otro sitio (este) valide una sesión contra él (no hay OAuth,
+no hay endpoint de verificación de token pensado para terceros, no hay
+API pública de autenticación). Construirlo es trabajo nuevo **del lado de
+Prevision-Funeraria**, no de este repo — no se puede planear en detalle
+desde acá sin inventar un diseño que el equipo de PF no ha decidido.
 
-- [`docs/specs/2026-08-28-migracion-a-prevision-funeraria.md`](2026-08-28-migracion-a-prevision-funeraria.md) —
-  sección 6, punto 3: ya no es una incógnita, referenciar este documento.
-- `docs/SPEC.md` — marcar Fase E como "planeada" (no ejecutada) con link a
-  este archivo.
-- `ONBOARDING-AGENTES.md` — si el corte se ejecuta, actualizar la fila de
-  Prevision-Funeraria (sección 3) para reflejar que ya es la fuente de
-  verdad operativa para FDZ, no solo un plan.
-- `api/README.md` — cuando el tab se oculte, nota breve en la sección
-  "Módulo de Previsión" indicando que quedó en modo legado/solo lectura de
-  referencia.
+**No se toca `api/auth.php` de este repo mientras tanto** — el panel admin
+de contenido sigue con su propio login local (usuarios en MySQL,
+`bcrypt`/sesión PHP nativa) hasta que exista algo del lado de PF con lo que
+integrarse. Cuando ese módulo exista, retomar este punto con una spec nueva.
+
+## Documentación a actualizar (hecho)
+
+- [x] `README.md`
+- [x] `database/README.md`
+- [x] `api/README.md`
+- [x] `docs/SPEC.md`
+- [x] `ONBOARDING-AGENTES.md`
+- [x] `.cpanel.yml`
+- [x] `api/config.example.php`

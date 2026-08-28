@@ -162,7 +162,6 @@ function switchTab(tab, btn) {
     syncMenuActive(tab);
     closeAllMenus();
     if (tab === 'condolencias') loadCondolences();
-    if (tab === 'prevision' && window.Prevision) Prevision.open();
     if (tab === 'medicos') loadDoctors();
     if (tab === 'recursos') loadArticles();
     if (tab === 'faqs') loadFaqs();

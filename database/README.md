@@ -4,6 +4,14 @@ Esquema MySQL/MariaDB para el sistema de obituarios en línea de Funeraria del Z
 Se ejecuta en el **mismo hosting cPanel** del sitio (base de datos, imágenes en
 disco y backend PHP, todo junto).
 
+> **El módulo de Previsión (`04_prevision.sql` a `10_prevision_pagos_electronicos.sql`,
+> tablas `prev_*`) se retiró el 2026-08-28** — nunca manejó datos reales de
+> producción; su reemplazo (Prevision-Funeraria, tenant `fdz`) ya los tiene
+> importados. Los archivos `.sql` ya no están en este repo, solo en la rama
+> `archive/modulo-prevision-php` (nunca se mergea a `main`). Detalle:
+> [`docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`](../docs/specs/2026-08-28-fase-e-corte-admin-prevision.md).
+> Esta guía documenta desde acá solo lo que sigue vigente (`01`-`03`).
+
 ## Contenido
 
 - **`01_schema.sql`** — Esquema completo: 7 tablas, índices, claves foráneas y
@@ -11,58 +19,13 @@ disco y backend PHP, todo junto).
 - **`02_directorio_recursos.sql`** — Tablas `doctors` y `articles` (Directorio
   Médico y Recursos de Lectura).
 - **`03_faqs.sql`** — Tabla `faqs` (Preguntas Frecuentes de la portada).
-- **`04_prevision.sql`** — **Módulo de Previsión**: 11 tablas `prev_*` modeladas
-  sobre la base de datos del sistema administrativo SIEMPRE (`SIEMPRE.sql`):
-  clientes, contratos, beneficiarios, planes, vendedores y comisiones, cuotas
-  por cobrar, pagos, tasas de cambio y lotes de importación. Incluye los
-  catálogos reales de SIEMPRE (18 parentescos y los 9 planes vigentes).
-- **`05_prevision_v2.sql`** — **Previsión, Ronda 2**: sucursales, servicios
-  adicionales (bóveda, cremación, traslados), cobradores y rutas de cobranza,
-  **siniestros/reclamos** con validación de cobertura (equivale a
-  `cm_siniestros` de SIEMPRE), gestiones de mora y configuración del
-  **auto-lapsado**. Requiere `04_prevision.sql` importado previamente.
-- **`06_prevision_v3.sql`** — **Previsión, Ronda 3**: **ajustes masivos de
-  tarifas** (`prev_ajustes` + detalle reversible), **mensajería WhatsApp/SMS**
-  (`prev_msg_plantillas` con 7 plantillas iniciales y `prev_msg_envios`) y la
-  configuración del proveedor de mensajería en `app_settings` (manual,
-  WhatsApp Cloud API, Twilio o API HTTP genérica — se elige desde el panel).
-  Requiere `05_prevision_v2.sql` importado previamente.
-- **`07_prevision_v4.sql`** — **Previsión, comisiones por estados**: añade a
-  `prev_comisiones` el flujo *calculada → aprobada → pagada* (columnas `estado`,
-  `base_monto`, `porcentaje`, `monto_calculado`, `fecha_calculo`, `aprobado_por`,
-  `fecha_aprobacion`) para generar, verificar/aprobar y luego pagar las
-  comisiones. Requiere `04_prevision.sql`. (Las comisiones ya existentes quedan
-  como *pagada*.)
-- **`08_prevision_v5.sql`** — **Previsión, cuotas en Bs ancladas a la tasa**:
-  añade a `prev_contratos` las columnas `monto_ref_usd` (referencia en USD por
-  cuota) y `tasa_cambio` (tasa con la que se calculó el monto en Bs), para
-  recalcular las cuotas en bolívares cuando cambie la tasa **sin perder el valor
-  real del plan**. El histórico de tasas ya vive en `prev_tasas`. La actualización
-  de cuotas es **manual** (botón en el panel). Requiere `04_prevision.sql`.
-- **`09_prevision_v6.sql`** — **Previsión, paridad con el flujo SIEMPRE/KM**:
-  `fecha_corte` en contratos (base de las etapas de comisión), jerarquía del
-  vendedor (`cargo`, `supervisor_id`) + `zelle`, `estado_civil` del beneficiario,
-  tabla `prev_adjuntos` (documentos por contrato en `uploads/prevision/`) y tabla
-  `prev_com_descuentos` (descuentos al vendedor por anulación de contratos con
-  comisión pagada, compensados en el siguiente pago). Requiere `04_prevision.sql`.
+- ~~`04_prevision.sql` a `10_prevision_pagos_electronicos.sql`~~ — módulo de
+  Previsión completo (contratos, cobranza, comisiones, siniestros, mensajería,
+  ajustes de tarifa, pagos electrónicos simulados). **Retirado, ver nota
+  arriba** — el detalle de qué tenía cada archivo queda solo en
+  `archive/modulo-prevision-php`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
-
-### Módulo de Previsión (`04_prevision.sql`)
-
-| Tabla | Propósito | Equivale en SIEMPRE |
-|---|---|---|
-| `prev_clientes` | Titulares de contratos (cédula única, datos personales y de contacto). | `clientes` |
-| `prev_planes` | Planes de previsión con cuota, moneda y cobertura. | `planes` / `planesunidos` |
-| `prev_vendedores` | Vendedores con % de comisión y datos bancarios. | `vendedores` + `vendedores_bancos` |
-| `prev_contratos` | Contratos: plan, vendedor, frecuencia, forma de cobro, estatus (activo/suspendido/anulado/renuncia). | `contratos` + `cmestadoscontrato` |
-| `prev_beneficiarios` | Beneficiarios por contrato con parentesco, exclusión y defunción. | `cmbeneficiarios` |
-| `prev_parentescos` | Catálogo de parentescos con rangos de edad. | `parentesco` |
-| `prev_cuotas` | Cuotas por cobrar con vencimiento, saldo y estado. | `cuotascxc` |
-| `prev_pagos` | Pagos/abonos aplicados a cuotas (con tasa del día). | `abonoscxc` + `caja1` |
-| `prev_comisiones` | Comisiones pagadas por contrato/etapa (semana1, fin_mes1, mes2, mes13). | `comisiones_pagadas` |
-| `prev_tasas` | Tasa de cambio Bs/USD por día. | `tasas_diarias` |
-| `prev_import_lotes` | Bitácora de importaciones desde otros sistemas. | — |
 
 > El control de acceso (roles) y la **auditoría** se implementan en la capa **PHP**
 > (Fase 2/3), ya que MySQL no tiene RLS ni autenticación integrada como Supabase.
@@ -102,12 +65,7 @@ disco y backend PHP, todo junto).
 1. cPanel → **phpMyAdmin** → selecciona la base recién creada (panel izquierdo).
 2. Pestaña **Importar** → **Seleccionar archivo** → `database/01_schema.sql` → **Continuar**.
 3. Verifica que aparezcan las **7 tablas**.
-4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
-   `04_prevision.sql`, `05_prevision_v2.sql`, `06_prevision_v3.sql`,
-   `07_prevision_v4.sql`, `08_prevision_v5.sql` y `09_prevision_v6.sql`
-   (módulo de Previsión, en ese orden). El `04` requiere que `users` (del `01`)
-   ya exista; el `05` requiere el `04`, el `06` el `05`, y el `07`, `08` y `09`
-   requieren el `04`.
+4. Repite la importación con `02_directorio_recursos.sql` y `03_faqs.sql`.
 
 ### 3. Iniciar sesión y asegurar el admin
 

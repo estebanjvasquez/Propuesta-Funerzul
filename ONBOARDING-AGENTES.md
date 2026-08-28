@@ -33,10 +33,15 @@ en el tiempo; actualízalo cuando la realidad cambie de forma relevante.
 ## 1. Qué es este proyecto, en una frase
 
 Sitio web + sistema administrativo de **Funeraria del Zulia** (Maracaibo,
-Venezuela): PHP 8.1+/PDO/MySQL en cPanel compartido, sin framework ni build,
-con un sistema de obituarios en línea (base original) y un **módulo de
-previsión funeraria** (pólizas, cobranza, comisiones, siniestros) que es hoy
-la parte más grande y activa del código.
+Venezuela): PHP 8.1+/PDO/MySQL en cPanel compartido, sin framework ni build.
+Tiene el sistema de obituarios en línea (base original, admin propio) y las
+páginas públicas de planes/servicios de previsión, que desde el 2026-08-28
+leen precio y capturan leads en vivo desde **Prevision-Funeraria**
+(`prevision-funeraria.sisteg.workers.dev`, tenant `fdz`) — el módulo
+administrativo de previsión que vivía en PHP/MySQL en este repo (contratos,
+cobranza, comisiones, siniestros) **fue retirado ese mismo día**; el staff
+lo gestiona ahora desde el panel de Prevision-Funeraria, no desde aquí. Ver
+`docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`.
 
 ## 2. Estado real del repositorio ahora mismo
 
@@ -44,10 +49,11 @@ la parte más grande y activa del código.
 
 | Dato | Valor |
 |---|---|
-| Rama por defecto (`main`) | Solo tiene el sistema de obituarios base (sin módulo de previsión, sin capa de pagos, sin la documentación de `docs/agent-standards.md` y hermanos). Congelada desde 2026-07-02. |
-| Rama de trabajo activa | `feature/modulo-prevision` — **~25 commits adelante de `main` y sin mergear**. Todo el módulo de previsión, la capa de pagos Mercantil y la documentación de specboot (`AGENTS.md`, `docs/agent-standards.md`, etc.) vive **solo** ahí. |
-| Otra rama existente | `feature/paginas-servicios-planes` — verifica su estado con `git log` antes de asumir qué contiene. |
-| ¿Hay un PR/merge a `main` planeado? | Pendiente de decidir con el usuario (ver `docs/resume.md`, sección "Decisiones abiertas"). No asumas que hay que mergear a `main` sin confirmarlo. |
+| Rama por defecto (`main`) | Solo tiene el sistema de obituarios base (sin previsión, sin capa de pagos, sin la documentación de `docs/agent-standards.md` y hermanos). Congelada desde 2026-07-02. |
+| Rama de trabajo activa | `feature/prevision-funeraria` — creada el 2026-08-28 desde `feature/modulo-prevision`, **sin mergear a `main`**. Tiene el sitio + admin de contenido + integración con Prevision-Funeraria (catálogo, leads) + documentación de specboot. **Ya no tiene** el módulo PHP de previsión (retirado). |
+| Rama de respaldo (**nunca mergear a `main`**) | `archive/modulo-prevision-php` — snapshot completo con el módulo PHP de previsión íntegro (`admin-prevision.js`, `api/prevision_*.php`, `database/04`-`10_*.sql`), por si hace falta consultarlo. Ver `docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`. |
+| Otras ramas existentes | `feature/modulo-prevision` (la rama de trabajo original, sin más commits desde el corte) y `feature/paginas-servicios-planes` — verifica su estado con `git log` antes de asumir qué contienen. |
+| ¿Hay un PR/merge a `main` planeado? | Pendiente de decidir con el usuario. No asumas que hay que mergear a `main` sin confirmarlo. |
 
 ### Comprueba siempre en qué rama estás y qué hay sin commitear
 
@@ -73,7 +79,7 @@ documento o código que vale la pena conservar, coméntaselo al usuario y
 todavía). No confíes en que el entorno de la sesión persista entre
 conversaciones si el archivo no llegó a `git commit`.
 
-### Qué hay sin commitear en `feature/modulo-prevision` ahora mismo
+### Qué hay sin commitear en `feature/prevision-funeraria` ahora mismo
 
 A la fecha de escribir esto, el árbol de trabajo de esa rama tiene sin
 commitear (entre otros): `AGENTS.md`, `docs/agent-standards.md`,
@@ -91,7 +97,7 @@ sigue existiendo.
 
 | Repo | Qué es | Stack | Relación con este repo |
 |---|---|---|---|
-| **Este repo** (`Propuesta-Funerzul`) | Sitio + admin de Funeraria del Zulia, con el módulo de previsión **original** (`admin-prevision.js` + `api/prevision_*.php`). | PHP 8.1+/PDO/MySQL, cPanel, sin framework | — |
+| **Este repo** (`Propuesta-Funerzul`) | Sitio + admin de contenido de Funeraria del Zulia. El módulo de previsión **original** en PHP/MySQL se retiró el 2026-08-28 (respaldo en `archive/modulo-prevision-php`); las páginas públicas de planes/servicios siguen aquí pero leen datos en vivo de Prevision-Funeraria. | PHP 8.1+/PDO/MySQL, cPanel, sin framework | — |
 | `estebanjvasquez/legado-holding` | Sitio + checkout + chatbot de previsión funeraria para venezolanos en EE. UU. Tiene su propio panel admin en producción. | Cloudflare Worker (JS) + Supabase (PostgREST directo) + HTML/CSS/JS sin build + Invoice Ninja | Repo hermano de otra marca del mismo grupo. Según lo verificado el 2026-08-27 (Notion, workspace del usuario): ya migró su facturación de Invoice Ninja a la API pública de `Prevision-Funeraria` (tenant `lh`) — confirma eso con `git log`/código antes de asumir que sigue igual. |
 | `estebanjvasquez/Prevision-Funeraria` | Reemplazo **multiempresa** del módulo de previsión. Según lo verificado el 2026-08-27: **ya está en producción** (`prevision-funeraria.sisteg.workers.dev`, Cloudflare Workers + D1), sirviendo a Funeraria del Zulia (tenant `fdz`) y Legado Holding Inc. (tenant `lh`) desde una sola base de código. Su plan vigente es `docs/PLAN.md` **de ese repo** (no de este). | Cloudflare Workers + D1 | Esfuerzo **paralelo y separado** — no recrear su plan aquí (regla explícita de `CLAUDE.md` y `AGENTS.md` de este repo). Dado que ya está en producción sirviendo ambas marcas, cualquier trabajo nuevo de "llevar previsión a otro lado" debería primero confirmar con el usuario si ese repo ya cubre la necesidad, en vez de asumir que hace falta portar el módulo PHP de este repo. |
 
@@ -111,13 +117,11 @@ No leas todo de entrada. Usa esta tabla para ir directo a lo que necesitas.
 | Tocar HTML, CSS o JS | `docs/frontend-standards.md` |
 | Tocar base de datos, migraciones o entidades | `docs/data-model.md` + `database/README.md` |
 | Entender contratos reales de la API | `api/README.md` |
-| Tocar la capa de pagos Mercantil (`api/lib/payments/`, `api/prevision_mercantil_*.php`) | `docs/payments/mercantil/STATUS.md`, `PROJECT_DISCOVERY.md`, `MIGRATION_PLAN.md` — **superficie crítica**, no cambiar sin leer esto primero |
+| Tocar la capa de pagos Mercantil (`api/lib/payments/`, conservada como referencia de diseño, sin endpoints activos en este repo) | `docs/payments/mercantil/STATUS.md`, `PROJECT_DISCOVERY.md`, `MIGRATION_PLAN.md` — **superficie crítica**, no cambiar sin leer esto primero |
 | Entender el estado vigente del proyecto completo (módulos, roadmap) | `docs/SPEC.md` |
-| Entender el módulo de previsión a fondo (todas las entidades, reglas de negocio, endpoints) | `api/README.md` + `database/README.md` (+ `docs/resume.md` para el histórico por rondas hasta 2026-07) |
+| Entender por qué se retiró el módulo de previsión y qué se conserva | `docs/specs/2026-08-28-fase-e-corte-admin-prevision.md` (código completo del módulo retirado: rama `archive/modulo-prevision-php`, **nunca mergear a `main`**) |
 | Hacer un cambio mediano o riesgoso | Crear/actualizar una especificación en `docs/specs/` usando `docs/spec-template.md` como base, **antes** de implementar |
-| Entender qué se propuso mejorar en previsión (11-ago-2026) | `docs/propuesta-mejoras-prevision.md` (versión cliente) + `docs/specs/2026-08-11-mejoras-prevision-plan-tecnico.md` (versión técnica) |
-| Trabajar en la numeración de contratos configurable | `docs/prevision/plan-2026-08-07.md` |
-| Llevar el módulo de previsión a `legado-holding` | **Confirmar primero con el usuario si sigue haciendo falta** — al 2026-08-27, `Prevision-Funeraria` ya está en producción sirviendo a `legado-holding` (tenant `lh`), lo que puede volver innecesario portar el módulo PHP directamente. Si igual hace falta, había un paquete de referencia en `docs/legado-holding-prevision/` que se perdió sin commitear (ver sección 2) — habría que rehacerlo, pero primero verificar que no sea trabajo redundante. |
+| Entender qué se propuso mejorar en previsión (11-ago-2026, histórico — módulo ya retirado) | `docs/propuesta-mejoras-prevision.md` + `docs/specs/2026-08-11-mejoras-prevision-plan-tecnico.md` |
 | Responder preguntas de arquitectura o navegar el código sin grep manual | Si existe `graphify-out/graph.json`: `graphify query "<pregunta>"` (o `graphify path`/`graphify explain`) antes que lectura cruda |
 
 ## 5. Reglas de trabajo que no cambian
@@ -144,13 +148,15 @@ de disponibilidad en la sección 2).
 Trátalas con más cuidado del habitual — cambios ahí sin entender el contexto
 completo pueden costar dinero real o exponer datos personales:
 
-- **Pagos Mercantil** (`api/lib/payments/`, `api/prevision_mercantil_callback.php`,
-  `api/prevision_mercantil_webhook.php`, `prev_pagos_electronicos`): máquina de
-  estados estricta, idempotencia en callbacks/webhooks, nunca guardar
-  PAN/CVV/PIN/claves. Hay una solicitud **pendiente de spec completa a
-  Mercantil** (esquema de `POST /api` + MasterKey del webhook) — ver commit
-  `d8ffed0`; hasta que eso llegue, el cobro real al banco sigue
-  deshabilitado por diseño (solo modo simulado).
+- **Pagos Mercantil** (`api/lib/payments/`): se conserva **solo como
+  referencia de diseño** (regla de `CLAUDE.md`) para el adaptador de pagos de
+  Prevision-Funeraria — los endpoints que la usaban (`prevision_mercantil_*.php`)
+  se retiraron con el módulo de previsión (2026-08-28), no hay nada activo en
+  este repo que la llame. Si se revive cobro electrónico propio de este repo
+  (no ligado a previsión), leer `docs/payments/mercantil/STATUS.md` primero:
+  máquina de estados estricta, idempotencia, nunca guardar PAN/CVV/PIN/claves.
+  Sigue pendiente la spec completa de Mercantil (esquema de `POST /api` +
+  MasterKey del webhook).
 - **Datos personales**: cédulas, teléfonos, direcciones, datos de pago de
   clientes/beneficiarios/fallecidos/condolientes. Ver `docs/data-model.md`,
   sección "Campos sensibles".
@@ -159,25 +165,25 @@ completo pueden costar dinero real o exponer datos personales:
 
 ## 7. Decisiones abiertas conocidas
 
-- ¿Se hace merge de `feature/modulo-prevision` a `main` (o PR), o se sigue
-  trabajando sobre la rama sin mergear? — sin decidir, confirmar con el
-  usuario.
-- Proveedor de mensajería WhatsApp/SMS del módulo de previsión: sin
-  contratar. El sistema ya quedó configurable desde el panel (manual /
-  WhatsApp Cloud API / Twilio / API HTTP genérica); cuando se contrate uno,
-  solo hace falta cargar credenciales.
+- ¿Se hace merge de `feature/prevision-funeraria` a `main` (o PR)? — sin
+  decidir, confirmar con el usuario.
+- **SSO del panel admin de este sitio con Prevision-Funeraria** (pedido por
+  el usuario el 2026-08-28): el login de `admin.html` debería integrarse con
+  las cuentas de staff del tenant `fdz` en Prevision-Funeraria, en vez de
+  mantener dos sistemas de login separados. **Bloqueado**: ese módulo de
+  autenticación compartida no existe todavía del lado de Prevision-Funeraria
+  (no hay OAuth ni verificación de sesión para terceros). No se puede
+  planear el detalle desde este repo — es trabajo nuevo del otro repo. Ver
+  `docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`, última sección.
 - Spec completa de Mercantil: pendiente de que el banco entregue el esquema
-  de `POST /api` y la MasterKey del webhook (ver sección 6).
+  de `POST /api` y la MasterKey del webhook (ver sección 6) — relevante para
+  Prevision-Funeraria, no para este repo (que ya no tiene endpoints de cobro
+  activos).
 - El paquete `docs/legado-holding-prevision/` (integración con el repo
-  hermano) se perdió sin commitear. **Antes de rehacerlo**, confirmar si
-  sigue haciendo falta: `Prevision-Funeraria` ya está en producción
-  sirviendo a `legado-holding` desde el 2026-08-27 — ver sección 3.
-- ¿Qué pasa con el módulo de previsión de **este** repo (PHP/MySQL) ahora
-  que `Prevision-Funeraria` ya sirve en producción a Legado Holding? **Ya
-  hay un plan concreto**, pendiente de aprobación del usuario:
-  `docs/specs/2026-08-28-migracion-a-prevision-funeraria.md` (análisis de
-  huecos reales + qué parte de la página web migra). No asumir que ya está
-  aprobado ni empezar a ejecutarlo sin confirmar con el usuario.
+  hermano `legado-holding`) se perdió sin commitear en su momento y sigue
+  sin rehacerse — `Prevision-Funeraria` ya está en producción sirviendo a
+  `legado-holding` (tenant `lh`), así que probablemente ya no haga falta;
+  confirmar con el usuario antes de invertir tiempo en rehacerlo.
 
 ## 8. Cómo arrancar una sesión nueva sobre este proyecto
 

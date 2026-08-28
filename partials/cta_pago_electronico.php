@@ -2,12 +2,12 @@
 if (!defined('OBIT_APP')) { exit('Forbidden'); }
 /**
  * CTA de "pago electrónico" reutilizable en planes/servicios. No cobra nada:
- * crea una solicitud (lead) en prev_solicitudes_publicas para que un asesor
- * contacte al cliente y complete el pago de forma segura (ver docs/mercantil.md).
- * Desde la Fase B de la migración a Prevision-Funeraria (ver
- * docs/specs/2026-08-28-migracion-a-prevision-funeraria.md), el mismo envío
- * también se reenvía a Prevision-Funeraria del lado servidor (mejor esfuerzo,
- * nunca bloquea ni rompe el guardado local — ver api/prevision_solicitudes.php).
+ * crea una solicitud (lead) directo en Prevision-Funeraria (tenant `fdz`)
+ * para que un asesor contacte al cliente y complete el pago de forma segura
+ * (ver docs/mercantil.md y api/pf_solicitud.php). Desde el corte del módulo
+ * PHP de Previsión (ver docs/specs/2026-08-28-fase-e-corte-admin-prevision.md)
+ * ya no hay guardado local en MySQL — Prevision-Funeraria es la única fuente
+ * de verdad para estos leads.
  *
  * Fase C (mismo documento): si el servicio está marcado `es_emergencia` en el
  * catálogo de Prevision-Funeraria, este partial NO muestra el formulario de
@@ -27,7 +27,7 @@ require_once __DIR__ . '/../api/lib/prevision_funeraria.php';
 
 $peInteresVal      = $peInteres ?? 'este plan';
 $peTipoVal         = ($peTipo ?? 'plan') === 'servicio' ? 'servicio' : 'plan';
-$peApiUrl          = ($base ?? '') . 'api/prevision_solicitudes.php?action=crear';
+$peApiUrl          = ($base ?? '') . 'api/pf_solicitud.php';
 $pePlanSlugVal     = $pePlanSlug ?? null;
 $peServicioSlugVal = $peServicioSlug ?? null;
 

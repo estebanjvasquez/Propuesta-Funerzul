@@ -1,5 +1,10 @@
 # Rediseño de interfaz — Módulo de Previsión (admin)
 
+> **Archivado (2026-08-28):** el módulo PHP de Previsión (`#tab-prevision`,
+> `admin-prevision.js`) fue retirado (ver
+> [`2026-08-28-fase-e-corte-admin-prevision.md`](2026-08-28-fase-e-corte-admin-prevision.md)).
+> Documento histórico.
+
 ## Resumen
 
 El módulo de Previsión (`#tab-prevision` en `admin.html`, renderizado por
