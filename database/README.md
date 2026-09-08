@@ -28,6 +28,11 @@ disco y backend PHP, todo junto).
   Preguntas Frecuentes) en `1` (activas). Permite apagar cada sección del
   sitio público desde el panel (Configuración) sin tocar código — ver
   `site_section_enabled()` en `api/lib/helpers.php`.
+- **`12_plantillas_esquela.sql`** — No agrega tablas: siembra 2 plantillas
+  nuevas en `obituary_templates` ("Cinta Conmemorativa", "Esquela Familiar",
+  ids 4 y 5) que adaptan los formatos de tarjeta que la funeraria ya usa
+  para anunciar por WhatsApp/redes. Ver
+  `docs/specs/2026-09-08-tarjetas-obituario.md`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -69,8 +74,8 @@ disco y backend PHP, todo junto).
 1. cPanel → **phpMyAdmin** → selecciona la base recién creada (panel izquierdo).
 2. Pestaña **Importar** → **Seleccionar archivo** → `database/01_schema.sql` → **Continuar**.
 3. Verifica que aparezcan las **7 tablas**.
-4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql` y
-   `11_secciones_toggle.sql`.
+4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
+   `11_secciones_toggle.sql` y `12_plantillas_esquela.sql`.
 
 ### 3. Iniciar sesión y asegurar el admin
 

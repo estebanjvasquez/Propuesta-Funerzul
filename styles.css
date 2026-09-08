@@ -1978,10 +1978,65 @@ textarea.form-control {
     filter: brightness(0) saturate(100%) invert(23%) sepia(40%) saturate(900%) hue-rotate(178deg);
 }
 
+/* Plantilla "Cinta Conmemorativa" — adaptación del formato de tarjeta oscura
+   que ya usa la funeraria (ver docs/specs/2026-09-08-tarjetas-obituario.md).
+   Rompe el padding de .obit-detail con márgenes negativos para llenar la
+   tarjeta blanca de borde a borde en vez de quedar como una caja dentro de
+   otra caja. */
+.obit-cinta {
+    position: relative;
+    margin: -48px -48px 0;
+    padding: 56px 40px 44px;
+    background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: #fff;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    overflow: hidden;
+    text-align: center;
+}
+.obit-cinta-kicker { font-family: var(--font-display); font-style: italic; font-size: 19px; color: var(--color-celeste-light); margin-bottom: 2px; position: relative; z-index: 1; }
+.obit-cinta h1 { color: #fff; font-size: 30px; margin-bottom: 8px; position: relative; z-index: 1; }
+.obit-cinta .obit-qepd { color: var(--color-secondary-light); position: relative; z-index: 1; }
+.obit-cinta .obit-dates { color: rgba(255,255,255,0.78); position: relative; z-index: 1; }
+.obit-cinta-cross { font-size: 24px; color: var(--color-secondary-light); margin-bottom: 6px; opacity: 0.9; position: relative; z-index: 1; }
+.obit-cinta .obit-photo { position: relative; z-index: 1; }
+.obit-cinta .obit-photo img { border-color: rgba(255,255,255,0.35); }
+
+/* Cinta blanca doblada en la esquina — evoca el lazo de luto sin depender de
+   una imagen (mismo criterio que el resto del sitio: CSS puro, sin assets
+   nuevos por página). */
+.obit-cinta::before {
+    content: ''; position: absolute; top: -30px; right: -60px; width: 260px; height: 90px;
+    background: linear-gradient(135deg, #fff 0%, #d8dee6 100%);
+    transform: rotate(35deg); box-shadow: 0 6px 16px rgba(0,0,0,0.25); z-index: 0;
+}
+
+/* Marca de agua del ángel, mismo recurso y técnica que el hero (mask-image). */
+.obit-cinta-wing {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background-color: rgba(255,255,255,0.07);
+    -webkit-mask-image: url('img/angel-original-vector.svg');
+    mask-image: url('img/angel-original-vector.svg');
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center 78%; mask-position: center 78%;
+    -webkit-mask-size: auto 70%; mask-size: auto 70%;
+}
+
+/* Plantilla "Esquela Familiar" — adaptación del formato tradicional blanco
+   con cruz e invitación al velatorio. */
+.obit-esquela { font-family: Georgia, 'Times New Roman', serif; }
+.obit-esquela-cross { font-size: 30px; color: var(--color-primary); margin-bottom: 10px; }
+.obit-esquela h1 { font-size: 26px; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 16px; }
+.obit-esquela-lead { font-family: var(--font-sans); font-size: 15px; color: var(--color-text-muted); max-width: 480px; margin: 0 auto 4px; }
+.obit-esquela .obit-photo { margin: 20px auto; }
+.obit-esquela-invite { font-family: var(--font-sans); font-size: 14px; line-height: 1.9; margin-top: 12px; color: var(--color-text-muted); }
+.obit-esquela-invite strong { color: var(--color-primary); font-family: var(--font-display); font-size: 17px; }
+
 @media (max-width: 768px) {
     .obit-detail { padding: 28px 20px; }
     .obit-detail h1 { font-size: 26px; }
     .obit-paper-masthead h1 { font-size: 32px; }
+    .obit-cinta { margin: -28px -20px 0; padding: 40px 24px 32px; }
+    .obit-cinta-wing { -webkit-mask-size: auto 55%; mask-size: auto 55%; }
 }
 
 /* ==========================================================================

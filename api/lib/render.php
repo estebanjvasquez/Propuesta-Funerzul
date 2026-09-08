@@ -53,6 +53,12 @@ function render_obituary_html(array $o): string
 {
     $photoUrl = obit_photo_url($o);
     $photoImg = '<img src="' . esc($photoUrl) . '" alt="Retrato de ' . esc($o['full_name']) . '" class="obit-detail-photo" loading="lazy">';
+    // A diferencia de {{photo}} (siempre muestra algo, foto real o placeholder),
+    // {{photo_optional}} solo imprime la etiqueta <img> si de verdad se subió una
+    // foto -- para plantillas donde la foto es opcional (pedido del usuario,
+    // 2026-09-08): si la familia no la pidió, la plantilla simplemente no la
+    // muestra en vez de rellenar con el placeholder genérico del logo.
+    $photoOptional = (!empty($o['photo_path']) && empty($o['photo_purged'])) ? $photoImg : '';
     $tpl = get_template_for($o);
 
     if (!$tpl) {
@@ -73,6 +79,7 @@ function render_obituary_html(array $o): string
         '{{event_schedule}}'   => esc($o['event_schedule']),
         '{{biography}}'        => nl2br(esc($o['biography'])),
         '{{photo}}'            => $photoImg,
+        '{{photo_optional}}'   => $photoOptional,
     ];
     $html = strtr($tpl['body_html'], $map);
     $css  = !empty($tpl['styles']) ? '<style>' . $tpl['styles'] . '</style>' : '';

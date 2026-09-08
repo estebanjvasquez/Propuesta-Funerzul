@@ -17,10 +17,11 @@ api/
 ├── users.php               → gestión de usuarios (solo admin)
 ├── upload.php              → subida de foto al disco (→ WebP)
 ├── pf_solicitud.php        → lead público de plan/servicio → Prevision-Funeraria
+├── obituary_card.php       → tarjeta de obituario para compartir (PNG, staff)
 ├── cron/
 │   └── purge_photos.php    → rutina de purga (cron de cPanel)
 └── lib/                    → bootstrap, db, helpers, auth, prevision_funeraria.php,
-                               payments/ (no se acceden directo)
+                               obituary_card.php, payments/ (no se acceden directo)
 ```
 
 ## Instalación
@@ -75,6 +76,7 @@ requieren sesión y la cabecera `X-CSRF-Token` (se obtiene al hacer login).
 | `settings.php?action=update` | POST | admin | cambiar purga/portada/**secciones del sitio** (`section_obituarios_enabled`, `section_directorio_medico_enabled`, `section_recursos_enabled`, `section_faqs_enabled` — ver `site_section_enabled()` en `lib/helpers.php`) |
 | `users.php?action=...` | GET/POST | admin | gestión de usuarios |
 | `upload.php` | POST | editor/admin | subir foto (multipart, campo `photo`) |
+| `obituary_card.php?id=&style=cinta\|esquela` | GET | editor/admin | Descarga PNG (1080×1920) de la tarjeta de obituario para compartir — ver `docs/specs/2026-09-08-tarjetas-obituario.md`. Puro GD (sin Imagick), fuentes en `assets/fonts/`. |
 
 \* `list` con `?scope=admin` requiere sesión y devuelve también inactivos.
 

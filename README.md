@@ -70,15 +70,18 @@ Propuesta Funerzul/
 │   users.php              Gestión de usuarios
 │   upload.php             Subida de fotos al disco
 │   pf_solicitud.php       Lead público de planes/servicios -> Prevision-Funeraria
+│   obituary_card.php      Tarjeta de obituario para compartir (PNG, staff)
 │   diag.php               Diagnóstico de instalación (protegido)
 │   cron/purge_photos.php  Rutina de purga de fotos
 │   lib/                   Núcleo (BD, auth, helpers, render)
 │   lib/prevision_funeraria.php  Cliente de la API pública de Prevision-Funeraria
+│   lib/obituary_card.php  Compositor GD de la tarjeta de obituario
 │   lib/payments/          Capa de pagos Mercantil (referencia de diseño, ver abajo)
 │
 ├─ partials/               Cabecera, pie y banda de contacto compartidos (PHP)
 ├─ servicios/img/          Imágenes SVG de cada servicio
 ├─ planes/img/             Imágenes SVG de cada plan
+├─ assets/fonts/           Fuentes reales (Playfair Display, Inter — SIL OFL) para GD
 ├─ database/               Esquema SQL + guía de instalación de la BD
 └─ uploads/obituarios/     Fotos de obituarios (en disco) + placeholder
 ```
@@ -189,19 +192,36 @@ está activada). Desde esta pestaña:
 
 ### 8. Plantillas de obituario *(solo admin)*
 
-Cada obituario se muestra con una **plantilla** (diseño). Hay tres incluidas y puedes
-crear las que quieras.
+Cada obituario se muestra con una **plantilla** (diseño). Hay **cinco** incluidas
+(las 3 originales + **Cinta Conmemorativa** y **Esquela Familiar**, que adaptan los
+formatos que la funeraria ya usa para anunciar en WhatsApp/redes — ver punto 8bis)
+y puedes crear las que quieras.
 
 - **Nueva plantilla / Editar**: defines un **nombre**, una **descripción**, el
   **contenido HTML** y, opcionalmente, **CSS**. En el HTML usa estos marcadores y el
   sistema los reemplaza por los datos reales:
 
-  `{{full_name}}` `{{birth_year}}` `{{death_date}}` `{{photo}}` `{{biography}}`
-  `{{service_type}}` `{{location_name}}` `{{location_address}}` `{{event_schedule}}`
+  `{{full_name}}` `{{birth_year}}` `{{death_date}}` `{{photo}}` `{{photo_optional}}`
+  `{{biography}}` `{{service_type}}` `{{location_name}}` `{{location_address}}`
+  `{{event_schedule}}`
 
+  `{{photo_optional}}` es como `{{photo}}` pero **solo aparece si de verdad se subió
+  una foto** del difunto (si no, no imprime nada — ni el placeholder genérico).
+  Úsalo cuando quieras que la foto sea opcional en vez de forzada.
 - **Predeterminar**: marca la plantilla que se usará por defecto cuando un obituario
   no tenga una asignada. Solo puede haber **una** predeterminada.
 - **Activa/Inactiva**: una plantilla inactiva no se ofrece al crear obituarios.
+
+### 8bis. Tarjeta para compartir (imagen descargable)
+
+En la tabla de **Obituarios**, cada fila tiene dos botones — **"Tarjeta ✝"** (fondo
+azul marino con cinta conmemorativa) y **"Tarjeta 📰"** (esquela blanca tradicional
+con la invitación al velatorio) — que descargan una imagen PNG (1080×1920, formato
+historia) lista para compartir por WhatsApp o redes, generada al vuelo con los datos
+reales del obituario. La foto del difunto es opcional: solo aparece si el obituario
+tiene una foto real subida. No requiere que el obituario esté publicado — sirve para
+preparar el anuncio antes de activarlo. Detalle técnico:
+[`docs/specs/2026-09-08-tarjetas-obituario.md`](docs/specs/2026-09-08-tarjetas-obituario.md).
 
 ### 9. Usuarios *(solo admin)*
 

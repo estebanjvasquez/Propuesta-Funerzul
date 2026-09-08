@@ -237,6 +237,8 @@ function renderObitTable(items) {
                 <div class="admin-actions">
                     <button class="btn btn-outline btn-sm" onclick="togglePin(${o.id}, ${o.is_pinned ? 0 : 1})">${o.is_pinned ? 'Quitar' : 'Fijar'}</button>
                     <button class="btn btn-outline btn-sm" onclick="editObituary(${o.id})">Editar</button>
+                    <a class="btn btn-outline btn-sm" href="api/obituary_card.php?id=${o.id}&style=cinta" target="_blank" rel="noopener" title="Descargar tarjeta para compartir (fondo azul con cinta)">Tarjeta ✝</a>
+                    <a class="btn btn-outline btn-sm" href="api/obituary_card.php?id=${o.id}&style=esquela" target="_blank" rel="noopener" title="Descargar tarjeta para compartir (esquela blanca)">Tarjeta 📰</a>
                     <button class="btn btn-danger btn-sm" onclick="deleteObituary(${o.id}, ${escapeAttr(o.full_name)})">Baja</button>
                 </div>
             </td>
@@ -932,7 +934,7 @@ function templateFormHtml(t = {}) {
             <input type="text" id="tf_desc" class="form-control" value="${escapeHtml(t.description || '')}"></div>
         <div class="form-group"><label class="form-label">Contenido HTML *</label>
             <textarea id="tf_body" class="form-control code-area" required>${escapeHtml(t.body_html || '')}</textarea>
-            <p class="setting-help">Marcadores: {{full_name}}, {{birth_year}}, {{death_date}}, {{photo}}, {{biography}}, {{service_type}}, {{location_name}}, {{event_schedule}}</p></div>
+            <p class="setting-help">Marcadores: {{full_name}}, {{birth_year}}, {{death_date}}, {{photo}}, {{photo_optional}} (solo aparece si de verdad se subió una foto), {{biography}}, {{service_type}}, {{location_name}}, {{location_address}}, {{event_schedule}}</p></div>
         <div class="form-group"><label class="form-label">CSS (opcional)</label>
             <textarea id="tf_styles" class="form-control code-area">${escapeHtml(t.styles || '')}</textarea></div>
         <div class="form-group"><label class="switch-inline"><input type="checkbox" id="tf_active" ${t.is_active !== false ? 'checked' : ''}> Activa</label></div>
