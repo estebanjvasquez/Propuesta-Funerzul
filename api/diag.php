@@ -39,8 +39,7 @@ try {
     json_out(['ok' => true, 'diag' => $report]);
 }
 
-$expected = ['users', 'obituary_templates', 'obituaries', 'condolences', 'flower_offerings', 'app_settings', 'audit_log',
-             'prev_pagos_electronicos', 'prev_pago_eventos', 'prev_solicitudes_publicas'];
+$expected = ['users', 'obituary_templates', 'obituaries', 'condolences', 'flower_offerings', 'app_settings', 'audit_log'];
 foreach ($expected as $t) {
     try {
         $c = (int)db()->query("SELECT COUNT(*) FROM `$t`")->fetchColumn();
@@ -49,6 +48,51 @@ foreach ($expected as $t) {
         $report['tables'][$t] = ['exists' => false, 'error' => $e->getMessage()];
     }
 }
+
+// Plantillas "Cinta Conmemorativa" (id 4) y "Esquela Familiar" (id 5) --
+// confirma si database/12_plantillas_esquela.sql ya se importó.
+try {
+    $tplRows = db()->query("SELECT id, name FROM obituary_templates WHERE id IN (4,5) ORDER BY id")->fetchAll();
+    $report['plantillas_esquela'] = [
+        'migracion_12_aplicada' => count($tplRows) === 2,
+        'encontradas' => $tplRows,
+    ];
+} catch (\Throwable $e) {
+    $report['plantillas_esquela'] = ['error' => $e->getMessage()];
+}
+
+// Tarjeta de obituario descargable (ver docs/specs/2026-09-08-tarjetas-obituario.md):
+// GD necesita FreeType para imagettftext() y las 3 fuentes .ttf tienen que existir en disco.
+// Se hace una prueba real de render (no solo "el archivo existe") para detectar cualquier
+// falla silenciosa de GD/FreeType en este hosting específico.
+$gdInfo = function_exists('gd_info') ? gd_info() : [];
+$fonts = [
+    'PlayfairDisplay-Variable'        => __DIR__ . '/../assets/fonts/PlayfairDisplay-Variable.ttf',
+    'PlayfairDisplay-Italic-Variable' => __DIR__ . '/../assets/fonts/PlayfairDisplay-Italic-Variable.ttf',
+    'Inter-Variable'                  => __DIR__ . '/../assets/fonts/Inter-Variable.ttf',
+];
+$fontStatus = [];
+foreach ($fonts as $name => $path) {
+    $exists = is_file($path);
+    $renderOk = false; $renderError = null;
+    if ($exists && function_exists('imagettftext')) {
+        try {
+            $test = imagecreatetruecolor(10, 10);
+            $box = @imagettftext($test, 20, 0, 0, 15, imagecolorallocate($test, 0, 0, 0), $path, 'Aa');
+            $renderOk = $box !== false;
+            imagedestroy($test);
+        } catch (\Throwable $e) {
+            $renderError = $e->getMessage();
+        }
+    }
+    $fontStatus[$name] = ['file_exists' => $exists, 'size_bytes' => $exists ? filesize($path) : null, 'render_ok' => $renderOk, 'render_error' => $renderError];
+}
+$report['obituary_card'] = [
+    'gd_freetype_support' => $gdInfo['FreeType Support'] ?? null,
+    'gd_png_support'      => $gdInfo['PNG Support'] ?? null,
+    'fonts'                => $fontStatus,
+    'seal_logo_exists'     => is_file(__DIR__ . '/../logo-seal-footer.png'),
+];
 
 // Pagos electrónicos: solo confirma que hay algo configurado, nunca expone el valor del secreto.
 $pay = $GLOBALS['CONFIG']['payments'] ?? [];
