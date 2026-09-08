@@ -15,7 +15,7 @@ $base      = $P['base'] ?? '';   // '' en la raíz, '../' en subcarpetas (servic
     <meta name="description" content="<?= esc($desc) ?>">
     <?php if ($canonical): ?><link rel="canonical" href="<?= esc($canonical) ?>"><?php endif; ?>
     <link rel="icon" href="<?= $base ?>favicon.png" type="image/png">
-    <link rel="stylesheet" href="<?= $base ?>styles.css?v=20260628">
+    <link rel="stylesheet" href="<?= $base ?>styles.css?v=20260908">
     <?= $headExtra ?>
 </head>
 <body>
