@@ -984,6 +984,10 @@ async function loadSettings() {
         $('#set_photo_retention_days').value = s.photo_retention_days?.value ?? 30;
         $('#set_homepage_recent_count').value = s.homepage_recent_count?.value ?? 3;
         $('#set_condolence_moderation').checked = (s.condolence_moderation?.value === '1');
+        $('#set_section_obituarios_enabled').checked = (s.section_obituarios_enabled?.value ?? '1') === '1';
+        $('#set_section_directorio_medico_enabled').checked = (s.section_directorio_medico_enabled?.value ?? '1') === '1';
+        $('#set_section_recursos_enabled').checked = (s.section_recursos_enabled?.value ?? '1') === '1';
+        $('#set_section_faqs_enabled').checked = (s.section_faqs_enabled?.value ?? '1') === '1';
     } catch (e) { toast(e.message); }
 }
 async function saveSettings(e) {
@@ -996,7 +1000,11 @@ async function saveSettings(e) {
                     photo_purge_enabled: $('#set_photo_purge_enabled').checked,
                     photo_retention_days: $('#set_photo_retention_days').value,
                     homepage_recent_count: $('#set_homepage_recent_count').value,
-                    condolence_moderation: $('#set_condolence_moderation').checked
+                    condolence_moderation: $('#set_condolence_moderation').checked,
+                    section_obituarios_enabled: $('#set_section_obituarios_enabled').checked,
+                    section_directorio_medico_enabled: $('#set_section_directorio_medico_enabled').checked,
+                    section_recursos_enabled: $('#set_section_recursos_enabled').checked,
+                    section_faqs_enabled: $('#set_section_faqs_enabled').checked
                 }
             }
         });

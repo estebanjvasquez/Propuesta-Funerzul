@@ -42,10 +42,18 @@ $base      = $P['base'] ?? '';   // '' en la raíz, '../' en subcarpetas (servic
                     <li><a href="<?= $base ?>servicios/">Servicios</a></li>
                     <li><a href="<?= $base ?>crematorios-del-zulia.php">Crematorio</a></li>
                     <li><a href="<?= $base ?>planes/">Previsión</a></li>
+                    <?php if (site_section_enabled('obituarios')): ?>
                     <li><a href="<?= $base ?>obituarios.php">Obituarios</a></li>
+                    <?php endif; ?>
+                    <?php if (site_section_enabled('directorio_medico')): ?>
                     <li><a href="<?= $base ?>directorio-medico.php">Directorio Médico</a></li>
+                    <?php endif; ?>
+                    <?php if (site_section_enabled('recursos')): ?>
                     <li><a href="<?= $base ?>recursos.php">Recursos</a></li>
+                    <?php endif; ?>
+                    <?php if (site_section_enabled('faqs')): ?>
                     <li><a href="<?= $base ?>index.php#preguntas">Preguntas Frecuentes</a></li>
+                    <?php endif; ?>
                     <li><a href="<?= $base ?>index.php#contacto">Contacto</a></li>
                 </ul>
             </nav>

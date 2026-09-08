@@ -5,6 +5,15 @@
  */
 require __DIR__ . '/api/lib/public_init.php';
 
+if (!site_section_enabled('recursos')) {
+    http_response_code(404);
+    $PAGE = ['title' => 'Sección no disponible | Funeraria del Zulia', 'description' => 'Esta sección no está disponible en este momento.'];
+    require __DIR__ . '/partials/site_header.php';
+    echo '<main class="container section"><div class="section-header"><h2>Sección no disponible</h2><p>Esta sección no está disponible en este momento.</p></div><div style="text-align:center"><a class="btn btn-primary" href="index.php">Volver al inicio</a></div></main>';
+    require __DIR__ . '/partials/site_footer.php';
+    exit;
+}
+
 $page   = max(1, (int)($_GET['page'] ?? 1));
 $per    = 12;
 $offset = ($page - 1) * $per;

@@ -224,6 +224,11 @@ Pestaña **Configuración**:
   (30 por defecto).
 - **Obituarios en la portada**: cuántos se muestran en la página principal.
 - **Moderar condolencias**: si las condolencias requieren aprobación.
+- **Secciones del sitio** (4 interruptores: Obituarios, Directorio Médico,
+  Recursos de Lectura, Preguntas Frecuentes): al desactivar una, desaparece
+  del menú, del pie de página y de la portada, y su página directa deja de
+  mostrarse (muestra "Sección no disponible" en su lugar). El contenido no
+  se borra — vuelve a aparecer tal cual estaba al reactivarla.
 
 **¿Qué es la purga?** Para ahorrar espacio en el disco, una rutina automática
 **borra la foto** de los obituarios con más de N días y la reemplaza por una imagen

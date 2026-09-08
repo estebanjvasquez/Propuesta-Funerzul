@@ -10,7 +10,6 @@ disco y backend PHP, todo junto).
 > importados. Los archivos `.sql` ya no están en este repo, solo en la rama
 > `archive/modulo-prevision-php` (nunca se mergea a `main`). Detalle:
 > [`docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`](../docs/specs/2026-08-28-fase-e-corte-admin-prevision.md).
-> Esta guía documenta desde acá solo lo que sigue vigente (`01`-`03`).
 
 ## Contenido
 
@@ -24,6 +23,11 @@ disco y backend PHP, todo junto).
   ajustes de tarifa, pagos electrónicos simulados). **Retirado, ver nota
   arriba** — el detalle de qué tenía cada archivo queda solo en
   `archive/modulo-prevision-php`.
+- **`11_secciones_toggle.sql`** — No agrega tablas: siembra en `app_settings`
+  las 4 claves `section_*_enabled` (Obituarios, Directorio Médico, Recursos,
+  Preguntas Frecuentes) en `1` (activas). Permite apagar cada sección del
+  sitio público desde el panel (Configuración) sin tocar código — ver
+  `site_section_enabled()` en `api/lib/helpers.php`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -65,7 +69,8 @@ disco y backend PHP, todo junto).
 1. cPanel → **phpMyAdmin** → selecciona la base recién creada (panel izquierdo).
 2. Pestaña **Importar** → **Seleccionar archivo** → `database/01_schema.sql` → **Continuar**.
 3. Verifica que aparezcan las **7 tablas**.
-4. Repite la importación con `02_directorio_recursos.sql` y `03_faqs.sql`.
+4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql` y
+   `11_secciones_toggle.sql`.
 
 ### 3. Iniciar sesión y asegurar el admin
 

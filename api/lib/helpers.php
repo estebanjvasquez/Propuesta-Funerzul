@@ -96,6 +96,26 @@ function setting_bool(string $key, bool $default): bool
     return $v === '1' || $v === 'true';
 }
 
+/**
+ * Secciones del sitio público que el admin puede activar/desactivar desde el
+ * panel (Configuración → Secciones del sitio). Todas empiezan habilitadas
+ * (default true) -- apagar una es una decisión explícita, nunca el estado por
+ * defecto de una instalación nueva ni el resultado de que la BD no responda.
+ * Usarla en cada página pública y partial que muestre/enlace la sección.
+ */
+function site_section_enabled(string $section): bool
+{
+    static $map = [
+        'obituarios'        => 'section_obituarios_enabled',
+        'directorio_medico' => 'section_directorio_medico_enabled',
+        'recursos'          => 'section_recursos_enabled',
+        'faqs'              => 'section_faqs_enabled',
+    ];
+    $key = $map[$section] ?? null;
+    if ($key === null) return true; // sección desconocida: nunca se oculta por un typo
+    return setting_bool($key, true);
+}
+
 function set_setting(string $key, string $value): void
 {
     $u = auth_user();

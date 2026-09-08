@@ -17,10 +17,18 @@ $base = ($PAGE['base'] ?? ''); ?>
                         <li><a href="<?= $base ?>servicios/">Servicios</a></li>
                         <li><a href="<?= $base ?>crematorios-del-zulia.php">Crematorios del Zulia</a></li>
                         <li><a href="<?= $base ?>planes/">Previsión Familiar</a></li>
+                        <?php if (site_section_enabled('obituarios')): ?>
                         <li><a href="<?= $base ?>obituarios.php">Obituarios</a></li>
+                        <?php endif; ?>
+                        <?php if (site_section_enabled('directorio_medico')): ?>
                         <li><a href="<?= $base ?>directorio-medico.php">Directorio Médico</a></li>
+                        <?php endif; ?>
+                        <?php if (site_section_enabled('recursos')): ?>
                         <li><a href="<?= $base ?>recursos.php">Recursos de Lectura</a></li>
+                        <?php endif; ?>
+                        <?php if (site_section_enabled('faqs')): ?>
                         <li><a href="<?= $base ?>index.php#preguntas">Preguntas Frecuentes</a></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
                 <div>

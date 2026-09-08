@@ -332,6 +332,27 @@ a {
     z-index: 2;
 }
 
+/* Marca de agua del ángel del logo (img/angel-original-vector.svg), centrada
+   detrás del contenido del hero. Se usa como máscara CSS (no <img>) para poder
+   recolorearla en celeste claro a baja opacidad sin tocar el SVG original;
+   "auto <alto>%" en mask-size preserva el aspect ratio del vector — nunca se
+   distorsiona, solo cambia de tamaño según el alto disponible. */
+.hero-angel-watermark {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background-color: rgba(195, 218, 238, 0.12); /* --color-celeste-light a baja opacidad */
+    -webkit-mask-image: url('img/angel-original-vector.svg');
+    mask-image: url('img/angel-original-vector.svg');
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: auto 88%;
+    mask-size: auto 88%;
+}
+
 .hero .container {
     position: relative;
     z-index: 3;
@@ -1370,7 +1391,14 @@ textarea.form-control {
     .section-header h2 {
         font-size: 28px;
     }
-    
+
+    /* Hero apila más contenido en móvil (queda más alto) — se achica el
+       ángel para que no domine visualmente sobre el texto. */
+    .hero-angel-watermark {
+        -webkit-mask-size: auto 60%;
+        mask-size: auto 60%;
+    }
+
     .hero-title {
         font-size: 32px;
     }
@@ -1848,6 +1876,10 @@ textarea.form-control {
 .setting-help { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; max-width: 420px; }
 .setting-input { width: 110px; }
 .setting-actions { padding: 20px 0; }
+.settings-subheading {
+    font-size: 15px; font-weight: 700; color: var(--color-primary);
+    margin: 12px 0 2px; padding-top: 16px; border-top: 1px solid var(--color-surface-high);
+}
 
 /* Switch (toggle) */
 .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }

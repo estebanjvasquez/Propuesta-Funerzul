@@ -24,6 +24,7 @@ Detalle de arquitectura y estructura de carpetas: `README.md`.
 |---|---|---|
 | Sitio público (obituarios, directorio médico, recursos, FAQs) | Producción, estable | `README.md` (manual de usuario, secciones 3-13) |
 | Panel admin base (usuarios, plantillas, configuración) | Producción, estable | `README.md`, `api/README.md` |
+| Secciones del sitio activables/desactivables (Obituarios, Directorio Médico, Recursos, FAQs) + marca de agua del ángel en el hero | Hecho (2026-09-08) | `docs/specs/2026-09-08-secciones-activables-y-marca-agua-hero.md` |
 | **Módulo de Previsión** (`admin-prevision.js` + `api/prevision_*.php`) | **Retirado el 2026-08-28** (corte inmediato). Código completo solo en la rama `archive/modulo-prevision-php` (nunca se mergea a `main`). | `docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`; histórico previo en `docs/resume.md` |
 | Capa de pagos electrónicos (`api/lib/payments/`, Mercantil) | Modo simulado únicamente. Cobro real al banco bloqueado hasta que Mercantil entregue el esquema completo de `POST /api` y la MasterKey del webhook. | `docs/payments/mercantil/STATUS.md`, `PROJECT_DISCOVERY.md`, `MIGRATION_PLAN.md` |
 | Numeración de contratos configurable | Diseñado, no implementado (plan del día 2026-08-07) | `docs/prevision/plan-2026-08-07.md` |

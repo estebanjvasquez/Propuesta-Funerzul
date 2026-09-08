@@ -6,21 +6,33 @@
  * disponible, se usa un respaldo mínimo para que la página nunca quede incompleta.
  */
 $faqs = [];
+// Secciones del sitio activables/desactivables desde el panel (Configuración).
+// Fallan abiertas (true): si la BD no responde, nunca se oculta contenido por
+// una falla de infraestructura, solo por una decisión explícita del admin.
+$secObituarios       = true;
+$secDirectorioMedico = true;
+$secRecursos         = true;
+$secFaqs             = true;
 $cfgFile = __DIR__ . '/api/config.php';
 if (is_file($cfgFile)) {
     try {
         if (!defined('OBIT_APP')) define('OBIT_APP', true);
         $GLOBALS['CONFIG'] = require $cfgFile;
         require_once __DIR__ . '/api/lib/db.php';
-        $faqs = db()->query(
+        require_once __DIR__ . '/api/lib/helpers.php';
+        $secObituarios       = site_section_enabled('obituarios');
+        $secDirectorioMedico = site_section_enabled('directorio_medico');
+        $secRecursos         = site_section_enabled('recursos');
+        $secFaqs             = site_section_enabled('faqs');
+        $faqs = $secFaqs ? db()->query(
             "SELECT question, answer FROM faqs WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
-        )->fetchAll(PDO::FETCH_ASSOC);
+        )->fetchAll(PDO::FETCH_ASSOC) : [];
     } catch (\Throwable $e) {
         $faqs = [];
     }
 }
-// Respaldo SOLO si la BD no respondió (no es una segunda fuente a mantener).
-if (!$faqs) {
+// Respaldo SOLO si la BD no respondió Y la sección sigue activa (no es una segunda fuente a mantener).
+if (!$faqs && $secFaqs) {
     $faqs = [
         ['question' => '¿Cómo tramitar un acta de defunción en Maracaibo?', 'answer' => 'El acta de defunción debe tramitarse ante el Registro Civil correspondiente al municipio en el Estado Zulia donde ocurrió el deceso. Nuestro equipo de asesores se encarga de guiarle paso a paso, requiriendo inicialmente el Certificado Médico de Defunción (EV-14) y las cédulas de identidad.'],
         ['question' => '¿Cuáles son los requisitos de cremación en el Estado Zulia?', 'answer' => 'Para realizar una cremación en el Estado Zulia se requieren cuatro documentos: el Certificado Médico de Defunción (Forma EV-14), el acta de defunción emitida por el Registro Civil, el permiso sanitario de cremación de la autoridad competente y la autorización escrita del familiar responsable.'],
@@ -145,10 +157,18 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                     <li><a href="#servicios" class="active">Servicios</a></li>
                     <li><a href="crematorios-del-zulia.php">Crematorio</a></li>
                     <li><a href="#prevision">Previsión</a></li>
+                    <?php if ($secObituarios): ?>
                     <li><a href="#obituarios">Obituarios</a></li>
+                    <?php endif; ?>
+                    <?php if ($secDirectorioMedico): ?>
                     <li><a href="directorio-medico.php">Directorio Médico</a></li>
+                    <?php endif; ?>
+                    <?php if ($secRecursos): ?>
                     <li><a href="recursos.php">Recursos</a></li>
+                    <?php endif; ?>
+                    <?php if ($secFaqs): ?>
                     <li><a href="#preguntas">Preguntas Frecuentes</a></li>
+                    <?php endif; ?>
                     <li><a href="#contacto">Contacto</a></li>
                     <li><a href="admin.html" class="nav-admin-link">Panel Admin</a></li>
                 </ul>
@@ -169,6 +189,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     <section class="hero">
         <div class="hero-bg"></div>
         <div class="hero-overlay"></div>
+        <div class="hero-angel-watermark" aria-hidden="true"></div>
         <div class="container">
             <span class="hero-eyebrow">Desde 1942 · Más de 80 años acompañando a las familias zulianas</span>
             <h1 class="hero-title">
@@ -348,6 +369,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
         </div>
     </section>
 
+    <?php if ($secObituarios): ?>
     <!-- 5. OBITUARIOS Y HOMENAJES SECTION -->
     <section id="obituarios" class="section obituaries-section">
         <div class="container">
@@ -368,7 +390,9 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if ($secFaqs): ?>
     <!-- 6. SECCION DE PREGUNTAS FRECUENTES (FAQ) -->
     <section id="preguntas" class="section">
         <div class="container">
@@ -391,7 +415,9 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if ($secRecursos || $secDirectorioMedico): ?>
     <!-- 7. SECCIÓN DE ACOMPAÑAMIENTO EN EL DUELO -->
     <section class="section grief-section">
         <div class="container">
@@ -401,6 +427,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
             </div>
 
             <div class="grief-grid">
+                <?php if ($secRecursos): ?>
                 <!-- Card 1 -->
                 <div class="grief-card">
                     <div class="grief-icon">
@@ -419,7 +446,9 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                         </a>
                     </div>
                 </div>
+                <?php endif; ?>
 
+                <?php if ($secDirectorioMedico): ?>
                 <!-- Card 2 -->
                 <div class="grief-card">
                     <div class="grief-icon">
@@ -438,9 +467,11 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                         </a>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
     <!-- 8. CONTACTO / FOOTER -->
     <footer id="contacto" class="footer">
@@ -462,10 +493,18 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                     <ul class="footer-links-list">
                         <li><a href="#servicios">Servicios</a></li>
                         <li><a href="crematorios-del-zulia.php">Crematorios del Zulia</a></li>
+                        <?php if ($secObituarios): ?>
                         <li><a href="#obituarios">Obituarios</a></li>
+                        <?php endif; ?>
+                        <?php if ($secDirectorioMedico): ?>
                         <li><a href="directorio-medico.php">Directorio Médico</a></li>
+                        <?php endif; ?>
+                        <?php if ($secRecursos): ?>
                         <li><a href="recursos.php">Recursos de Lectura</a></li>
+                        <?php endif; ?>
+                        <?php if ($secFaqs): ?>
                         <li><a href="#preguntas">Preguntas Frecuentes</a></li>
+                        <?php endif; ?>
                         <li><a href="admin.html">Panel de Administración</a></li>
                     </ul>
                 </div>

@@ -16,6 +16,11 @@ const EDITABLE_SETTINGS = [
     'photo_placeholder_path' => 'string',
     'homepage_recent_count'  => 'int',
     'condolence_moderation'  => 'bool',
+    // Secciones del sitio público (ver site_section_enabled() en lib/helpers.php)
+    'section_obituarios_enabled'        => 'bool',
+    'section_directorio_medico_enabled' => 'bool',
+    'section_recursos_enabled'          => 'bool',
+    'section_faqs_enabled'              => 'bool',
 ];
 
 switch ($action) {

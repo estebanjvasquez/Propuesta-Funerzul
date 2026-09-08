@@ -72,7 +72,7 @@ requieren sesión y la cabecera `X-CSRF-Token` (se obtiene al hacer login).
 | `templates.php?action=list\|get` | GET | público | plantillas activas |
 | `templates.php?action=create\|update\|set_default\|delete` | POST | admin | gestión |
 | `settings.php?action=get` | GET | staff | leer configuración |
-| `settings.php?action=update` | POST | admin | cambiar purga/portada |
+| `settings.php?action=update` | POST | admin | cambiar purga/portada/**secciones del sitio** (`section_obituarios_enabled`, `section_directorio_medico_enabled`, `section_recursos_enabled`, `section_faqs_enabled` — ver `site_section_enabled()` en `lib/helpers.php`) |
 | `users.php?action=...` | GET/POST | admin | gestión de usuarios |
 | `upload.php` | POST | editor/admin | subir foto (multipart, campo `photo`) |
 
