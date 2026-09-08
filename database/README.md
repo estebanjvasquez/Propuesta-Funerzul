@@ -33,6 +33,10 @@ disco y backend PHP, todo junto).
   ids 4 y 5) que adaptan los formatos de tarjeta que la funeraria ya usa
   para anunciar por WhatsApp/redes. Ver
   `docs/specs/2026-09-08-tarjetas-obituario.md`.
+- **`13_plantilla_cinta_imagen_real.sql`** — `UPDATE` sobre la plantilla
+  "Cinta Conmemorativa" (id 4): pasa a usar `img/obit-cinta-header.png`
+  (recorte de la imagen real de la funeraria) en vez de una cinta dibujada
+  con CSS/GD. Segura de correr aunque la 12 todavía no se haya aplicado.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -75,7 +79,8 @@ disco y backend PHP, todo junto).
 2. Pestaña **Importar** → **Seleccionar archivo** → `database/01_schema.sql` → **Continuar**.
 3. Verifica que aparezcan las **7 tablas**.
 4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
-   `11_secciones_toggle.sql` y `12_plantillas_esquela.sql`.
+   `11_secciones_toggle.sql`, `12_plantillas_esquela.sql` y
+   `13_plantilla_cinta_imagen_real.sql` (en ese orden).
 
 ### 3. Iniciar sesión y asegurar el admin
 

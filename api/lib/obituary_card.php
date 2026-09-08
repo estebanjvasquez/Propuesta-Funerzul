@@ -34,32 +34,6 @@ function oc_color($img, string $hex)
     return imagecolorallocate($img, $r, $g, $b);
 }
 
-/** Color con transparencia (0 = opaco, 100 = invisible). */
-function oc_color_alpha($img, string $hex, int $transparentPct)
-{
-    $hex = ltrim($hex, '#');
-    [$r, $g, $b] = [hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2))];
-    $alpha = (int)round(127 * max(0, min(100, $transparentPct)) / 100);
-    return imagecolorallocatealpha($img, $r, $g, $b, $alpha);
-}
-
-/** Degradado vertical simple entre dos colores hex. */
-function oc_vertical_gradient($img, string $hexTop, string $hexBottom): void
-{
-    $w = imagesx($img); $h = imagesy($img);
-    $hexTop = ltrim($hexTop, '#'); $hexBottom = ltrim($hexBottom, '#');
-    [$r1, $g1, $b1] = [hexdec(substr($hexTop, 0, 2)), hexdec(substr($hexTop, 2, 2)), hexdec(substr($hexTop, 4, 2))];
-    [$r2, $g2, $b2] = [hexdec(substr($hexBottom, 0, 2)), hexdec(substr($hexBottom, 2, 2)), hexdec(substr($hexBottom, 4, 2))];
-    for ($y = 0; $y < $h; $y++) {
-        $t = $y / max(1, $h - 1);
-        $r = (int)($r1 + ($r2 - $r1) * $t);
-        $g = (int)($g1 + ($g2 - $g1) * $t);
-        $b = (int)($b1 + ($b2 - $b1) * $t);
-        $c = imagecolorallocate($img, $r, $g, $b);
-        imageline($img, 0, $y, $w, $y, $c);
-    }
-}
-
 /** Parte un texto en líneas que quepan en $maxWidth para esa fuente/tamaño. */
 function oc_wrap_lines(string $text, string $font, float $size, int $maxWidth): array
 {
@@ -108,28 +82,34 @@ function oc_cross($img, int $cx, int $cy, int $size, $color): void
     imagefilledrectangle($img, $cx - (int)($size * 0.32), $cy - (int)($size * 0.18), $cx + (int)($size * 0.32), $cy - (int)($size * 0.18) + $bar, $color);
 }
 
-/** Rectángulo rotado (grados) relleno -- usado para la cinta conmemorativa. */
-function oc_rotated_rect($img, float $cx, float $cy, float $w, float $h, float $deg, $color): void
+/** Carga un jpg/png/webp por extensión (helper compartido). */
+function oc_load_image(string $path)
 {
-    $rad = deg2rad($deg);
-    $cos = cos($rad); $sin = sin($rad);
-    $corners = [[-$w / 2, -$h / 2], [$w / 2, -$h / 2], [$w / 2, $h / 2], [-$w / 2, $h / 2]];
-    $pts = [];
-    foreach ($corners as [$dx, $dy]) {
-        $pts[] = $cx + $dx * $cos - $dy * $sin;
-        $pts[] = $cy + $dx * $sin + $dy * $cos;
-    }
-    imagefilledpolygon($img, $pts, $color);
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    return match ($ext) {
+        'jpg', 'jpeg' => @imagecreatefromjpeg($path),
+        'png'         => @imagecreatefrompng($path),
+        'webp'        => @imagecreatefromwebp($path),
+        default       => null,
+    };
 }
 
-/** Cinta doblada en la esquina superior derecha (evoca el lazo de luto). */
-function oc_ribbon($img): void
+/**
+ * Compone una imagen (p.ej. img/obit-cinta-header.png) a todo lo ancho del
+ * canvas, alineada arriba, preservando su proporción original (nunca la
+ * distorsiona). Devuelve el alto real que ocupó, para que el llamador sepa
+ * dónde sigue el contenido de abajo.
+ */
+function oc_header_image($img, string $path): int
 {
-    $white   = oc_color($img, '#F4F6F9');
-    $shadow  = oc_color_alpha($img, '#0B1B2B', 55);
-    oc_rotated_rect($img, OC_WIDTH - 210, 230, 640, 150, 35, $shadow);   // sombra sutil
-    oc_rotated_rect($img, OC_WIDTH - 200, 220, 640, 150, 35, $white);
-    oc_rotated_rect($img, OC_WIDTH - 200, 220, 640, 26, 35, oc_color($img, '#C7CFDA')); // línea de pliegue
+    $src = oc_load_image($path);
+    if (!$src) return 0;
+    $sw = imagesx($src); $sh = imagesy($src);
+    $targetW = imagesx($img);
+    $targetH = (int)round($targetW * $sh / $sw);
+    imagecopyresampled($img, $src, 0, 0, 0, 0, $targetW, $targetH, $sw, $sh);
+    imagedestroy($src);
+    return $targetH;
 }
 
 /**
@@ -175,13 +155,7 @@ function oc_watermark_seal($img, int $cx, int $cy, int $targetW, int $transparen
 /** Foto del difunto recortada en círculo, centrada en ($cx,$cy). */
 function oc_circle_photo($img, string $photoAbsPath, int $cx, int $cy, int $diameter, $borderColor): void
 {
-    $ext = strtolower(pathinfo($photoAbsPath, PATHINFO_EXTENSION));
-    $src = match ($ext) {
-        'jpg', 'jpeg' => @imagecreatefromjpeg($photoAbsPath),
-        'png'         => @imagecreatefrompng($photoAbsPath),
-        'webp'        => @imagecreatefromwebp($photoAbsPath),
-        default       => null,
-    };
+    $src = oc_load_image($photoAbsPath);
     if (!$src) return;
 
     $sw = imagesx($src); $sh = imagesy($src);
@@ -221,16 +195,23 @@ function oc_has_real_photo(array $o): bool
     return !empty($o['photo_path']) && empty($o['photo_purged']);
 }
 
-/** Plantilla "Cinta Conmemorativa" -- fondo azul marino, cinta blanca, cruz, marca de agua. */
+/**
+ * Plantilla "Cinta Conmemorativa" -- usa img/obit-cinta-header.png (recorte
+ * de la tarjeta real de la funeraria: logo, cinta y cruz) como fondo del
+ * tercio superior, en vez de dibujar la cinta a mano; el resto es el mismo
+ * navy exacto (#041D31, tomado con cuentagotas de esa misma imagen), así el
+ * empalme queda sin costura visible.
+ */
 function obit_card_cinta(array $o)
 {
     $img = imagecreatetruecolor(OC_WIDTH, OC_HEIGHT);
-    oc_vertical_gradient($img, '#1F4E79', '#122F4C');
+    $navy = oc_color($img, '#041D31');
+    imagefilledrectangle($img, 0, 0, OC_WIDTH, OC_HEIGHT, $navy);
     imagealphablending($img, true);
     imagesavealpha($img, true);
 
-    oc_ribbon($img);
-    oc_watermark_seal($img, (int)(OC_WIDTH / 2), 1460, 620, 92);
+    $headerH = oc_header_image($img, __DIR__ . '/../../img/obit-cinta-header.png');
+    oc_watermark_seal($img, (int)(OC_WIDTH / 2), (int)($headerH + (OC_HEIGHT - $headerH) * 0.68), 560, 92);
 
     $fPlayfair       = oc_font('PlayfairDisplay-Variable');
     $fPlayfairItalic = oc_font('PlayfairDisplay-Italic-Variable');
@@ -240,9 +221,7 @@ function obit_card_cinta(array $o)
     $white = oc_color($img, '#FFFFFF');
     $mist  = oc_color($img, '#C3DAEE');
 
-    oc_cross($img, 160, 300, 64, $gold);
-
-    $y = 470;
+    $y = $headerH + 90;
     oc_text_center($img, 'En memoria de', $fPlayfairItalic, 42, $mist, $y);
     $y += 100;
 
@@ -278,7 +257,7 @@ function obit_card_esquela(array $o)
 {
     $img = imagecreatetruecolor(OC_WIDTH, OC_HEIGHT);
     $white = oc_color($img, '#FFFFFF');
-    $navy  = oc_color($img, '#1F4E79');
+    $navy  = oc_color($img, '#0B2A54'); // tomado con cuentagotas de la tarjeta de referencia
     $ink   = oc_color($img, '#191C1D');
     $muted = oc_color($img, '#5A5F66');
     imagefilledrectangle($img, 0, 0, OC_WIDTH, OC_HEIGHT, $white);
@@ -286,8 +265,7 @@ function obit_card_esquela(array $o)
     imagerectangle($img, 40, 40, OC_WIDTH - 41, OC_HEIGHT - 41, $navy);
     imagesetthickness($img, 1);
 
-    $fPlayfair = oc_font('PlayfairDisplay-Variable');
-    $fInter    = oc_font('Inter-Variable');
+    $fInter = oc_font('Inter-Variable');
 
     oc_cross($img, (int)(OC_WIDTH / 2), 220, 88, $navy);
 
@@ -299,8 +277,9 @@ function obit_card_esquela(array $o)
     $y = oc_text_block($img, $leadLines, $fInter, 32, $muted, $y, 46);
     $y += 60;
 
-    $nameLines = oc_wrap_lines(mb_strtoupper($o['full_name'] ?? ''), $fPlayfair, 58, OC_WIDTH - 200);
-    $y = oc_text_block($img, $nameLines, $fPlayfair, 58, $ink, $y, 82);
+    // Nombre en sans-serif negrita, igual que la tarjeta de referencia (no serif).
+    $nameLines = oc_wrap_lines(mb_strtoupper($o['full_name'] ?? ''), $fInter, 52, OC_WIDTH - 200);
+    $y = oc_text_block($img, $nameLines, $fInter, 52, $ink, $y, 74);
     $y += 40;
 
     if (oc_has_real_photo($o)) {
@@ -320,7 +299,7 @@ function obit_card_esquela(array $o)
 
     oc_text_center($img, 'Invitamos al servicio velatorio en', $fInter, 28, $muted, $y);
     $y += 46;
-    oc_text_center($img, 'FUNERARIA DEL ZULIA', $fPlayfair, 34, $navy, $y);
+    oc_text_center($img, 'FUNERARIA DEL ZULIA', $fInter, 32, $navy, $y);
     $y += 60;
 
     if (!empty($o['location_name'])) {

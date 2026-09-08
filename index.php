@@ -50,7 +50,7 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     <title>Funeraria del Zulia | Servicios Funerarios y Previsión Familiar 24 Horas</title>
     <link rel="icon" href="favicon.png" type="image/png">
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Estado Zulia. Atención 24/7, cremación, traslados y planes de previsión familiar con dignidad y respeto eterno.">
-    <link rel="stylesheet" href="styles.css?v=20260908-2">
+    <link rel="stylesheet" href="styles.css?v=20260908-3">
     
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">

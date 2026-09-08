@@ -94,6 +94,35 @@ No incluye:
   las fuentes no llegarían al servidor y la tarjeta descargable fallaría en
   producción (la página web no se vería afectada, solo la descarga).
 
+## Revisión 2026-09-08 (mismo día): "Cinta Conmemorativa" pasa a usar la imagen real
+
+El usuario probó el resultado en el servidor y no se parecía lo suficiente
+a su referencia — la cinta/cruz dibujadas a mano en CSS/GD (rectángulos
+rotados) se veían visiblemente peor que el diseño real hecho en Canva.
+Subió los dos archivos de referencia (`img/WhatsApp Image 2026-08-20 at
+21.00.5{7,8}.jpeg`, borrados del repo tras usarlos — no son contenido
+público, son material de referencia con datos de una persona específica).
+
+Cambio para **"Cinta Conmemorativa"** únicamente (la "Esquela Familiar" ya
+era fiel al no depender de una forma difícil de replicar como el lazo):
+
+- Se recortó el tercio superior de esa imagen (logo, cinta y cruz reales,
+  sin texto de nombre — `img/obit-cinta-header.png`, 900×745) y se usa
+  como imagen de fondo real, tanto en CSS (`.obit-cinta-header`) como en
+  GD (`oc_header_image()`), en vez de dibujar la cinta con
+  `imagefilledpolygon`/`clip-path`.
+- El navy del resto de la tarjeta (`#041D31`) se tomó con cuentagotas
+  (`imagecolorat()`) de la propia imagen de referencia — empalme sin
+  costura entre la foto recortada y el relleno sólido de abajo.
+- "Esquela Familiar" recibió un ajuste menor: el nombre pasa de serif
+  (Playfair) a sans-serif en negrita (Inter), y el navy de la cruz/marco a
+  `#0B2A54` — más cerca del tono real de la referencia.
+- Migración nueva `database/13_plantilla_cinta_imagen_real.sql`: `UPDATE`
+  sobre la fila id=4 (no se edita `12_plantillas_esquela.sql`, puede que ya
+  esté aplicada) — quita el `<div class="obit-cinta-cross">` del
+  `body_html` porque la cruz ya viene en la imagen. Seguro correrla aunque
+  la 12 todavía no se haya aplicado (no encuentra la fila y no hace nada).
+
 ## Plan
 
 1. `api/lib/render.php`: marcador `{{photo_optional}}`.
