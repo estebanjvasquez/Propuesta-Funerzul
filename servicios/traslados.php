@@ -4,8 +4,8 @@ require __DIR__ . '/../api/lib/public_init.php';
 
 $canonical = site_url('servicios/traslados.php');
 $img       = site_url('servicios/img/traslados.svg');
-$title     = 'Traslados Funerarios Nacionales | Desde y hacia el Zulia — Funeraria del Zulia';
-$desc      = 'Traslados funerarios nacionales seguros desde y hacia el Estado Zulia. Coordinamos permisos sanitarios y documentación de extremo a extremo, con atención compasiva las 24 horas.';
+$title     = 'Traslados Funerarios Nacionales | Funeraria del Zulia';
+$desc      = 'Traslados funerarios nacionales seguros desde y hacia el Zulia. Coordinamos permisos sanitarios y documentación, con atención 24 horas.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Traslados Funerarios Nacionales', $desc, $canonical, $img)

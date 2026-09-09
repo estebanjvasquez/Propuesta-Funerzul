@@ -4,8 +4,8 @@ require __DIR__ . '/../api/lib/public_init.php';
 
 $canonical = site_url('planes/plan-tradicion.php');
 $img       = site_url('planes/img/plan-tradicion.svg');
-$title     = 'Plan Tradición de Previsión Funeraria en Maracaibo — Funeraria del Zulia';
-$desc      = 'Plan Tradición: servicio funerario completo en Maracaibo para familias que ya poseen bóveda o espacio de inhumación. Incluye sala velatoria, oficios, arreglos florales y gestión administrativa.';
+$title     = 'Plan Tradición de Previsión Funeraria | Funeraria del Zulia';
+$desc      = 'Plan Tradición: servicio funerario completo en Maracaibo para familias con bóveda o espacio de inhumación propio.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Plan Tradición de Previsión Funeraria', $desc, $canonical, $img, 'Plan de previsión funeraria')

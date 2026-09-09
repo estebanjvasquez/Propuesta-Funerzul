@@ -52,13 +52,22 @@ $jsonld = [
 if ($cover) $jsonld['image'] = site_url($cover);
 if (!empty($a['category'])) $jsonld['articleSection'] = $a['category'];
 
+$breadcrumbLd = breadcrumb_jsonld([
+    ['name' => 'Inicio', 'url' => site_url('index.php')],
+    ['name' => 'Recursos', 'url' => site_url('recursos.php')],
+    ['name' => $a['title'], 'url' => $canonical],
+]);
+
 $head = '<meta name="robots" content="index, follow">'
     . '<meta property="og:type" content="article">'
+    . '<meta property="og:site_name" content="Funeraria del Zulia">'
     . '<meta property="og:title" content="' . esc($title) . '">'
     . '<meta property="og:description" content="' . esc($desc) . '">'
     . ($cover ? '<meta property="og:image" content="' . esc(site_url($cover)) . '">' : '')
     . '<meta property="og:url" content="' . esc($canonical) . '">'
-    . '<script type="application/ld+json">' . json_encode($jsonld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>';
+    . '<meta name="twitter:card" content="summary_large_image">'
+    . '<script type="application/ld+json">' . json_encode($jsonld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>'
+    . $breadcrumbLd;
 
 $PAGE = ['title' => $title, 'description' => $desc, 'canonical' => $canonical, 'head' => $head];
 require __DIR__ . '/partials/site_header.php';

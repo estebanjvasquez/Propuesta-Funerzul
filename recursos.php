@@ -39,17 +39,21 @@ $rows = $st->fetchAll();
 
 $cats = db()->query("SELECT DISTINCT category FROM articles WHERE status='active' AND deleted_at IS NULL AND category IS NOT NULL AND category <> '' ORDER BY category ASC")->fetchAll(PDO::FETCH_COLUMN);
 
-$extra = [];
-if ($page > 1) $extra[] = 'page=' . $page;
-if ($q !== '') $extra[] = 'q=' . urlencode($q);
-if ($cat !== '') $extra[] = 'category=' . urlencode($cat);
-$canonical = site_url('recursos.php' . ($extra ? '?' . implode('&', $extra) : ''));
+// Buscar (?q=) o filtrar (?category=) es contenido fino/variable: no se
+// indexa a sí mismo, la canónica consolida en la versión limpia (paginación
+// sin filtro sí puede seguir siendo indexable a su propia página).
+$isFiltered = $q !== '' || $cat !== '';
+$canonical  = site_url('recursos.php' . (!$isFiltered && $page > 1 ? '?page=' . $page : ''));
+$breadcrumbLd = breadcrumb_jsonld([
+    ['name' => 'Inicio', 'url' => site_url('index.php')],
+    ['name' => 'Recursos', 'url' => site_url('recursos.php')],
+]);
 
 $PAGE = [
     'title' => 'Recursos de Lectura y Acompañamiento | Funeraria del Zulia',
     'description' => 'Artículos y guías sobre duelo, trámites y previsión para acompañar a las familias en Maracaibo y el Estado Zulia. Funeraria del Zulia.',
     'canonical' => $canonical,
-    'head' => '<meta name="robots" content="index, follow">',
+    'head' => '<meta name="robots" content="' . ($isFiltered ? 'noindex, follow' : 'index, follow') . '">' . $breadcrumbLd,
 ];
 require __DIR__ . '/partials/site_header.php';
 

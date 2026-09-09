@@ -4,8 +4,8 @@ require __DIR__ . '/../api/lib/public_init.php';
 
 $canonical = site_url('servicios/capillas-velatorias.php');
 $img       = site_url('servicios/img/capillas-velatorias.svg');
-$title     = 'Capillas Velatorias en Maracaibo | Salas de Velación — Funeraria del Zulia';
-$desc      = 'Capillas velatorias en Maracaibo: salas amplias, climatizadas y serenas para la velación, con cómodas instalaciones, privacidad para la familia y atención 24 horas en el Estado Zulia.';
+$title     = 'Capillas Velatorias en Maracaibo | Funeraria del Zulia';
+$desc      = 'Capillas velatorias en Maracaibo: salas amplias, climatizadas y serenas, con privacidad para la familia y atención 24 horas.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Capillas Velatorias', $desc, $canonical, $img)

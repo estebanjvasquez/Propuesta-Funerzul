@@ -3,8 +3,14 @@
 # La portada es ahora index.php (renderiza las Preguntas Frecuentes desde la BD).
 DirectoryIndex index.php index.html
 
+# No listar el contenido de carpetas sin index (evita exponer los nombres de
+# archivo de api/ vía "Index of /api/" -- ver auditoría SEO 2026-09-09).
+Options -Indexes
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     # Redirige la antigua portada estática a la nueva (preserva SEO de enlaces ya indexados).
     RewriteRule ^index\.html$ index.php [R=301,L]
+    # Consolida / e /index.php en una sola URL canónica (evita contenido duplicado).
+    RewriteRule ^index\.php$ / [R=301,L]
 </IfModule>

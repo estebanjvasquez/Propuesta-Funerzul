@@ -4,8 +4,8 @@ require __DIR__ . '/../api/lib/public_init.php';
 
 $canonical = site_url('servicios/cremacion.php');
 $img       = site_url('servicios/img/cremacion.svg');
-$title     = 'Cremación en Maracaibo | Servicio de Cremación 24/7 — Funeraria del Zulia';
-$desc      = 'Servicio de cremación en Maracaibo, Estado Zulia, con crematorio propio. Cremación directa o con velación previa, gestión completa de permisos y acompañamiento las 24 horas.';
+$title     = 'Cremación en Maracaibo | Funeraria del Zulia';
+$desc      = 'Servicio de cremación en Maracaibo con crematorio propio. Cremación directa o con velación previa, permisos y acompañamiento 24 horas.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Cremación en Maracaibo', $desc, $canonical, $img)

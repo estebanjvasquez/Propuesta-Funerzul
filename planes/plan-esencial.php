@@ -4,8 +4,8 @@ require __DIR__ . '/../api/lib/public_init.php';
 
 $canonical = site_url('planes/plan-esencial.php');
 $img       = site_url('planes/img/plan-esencial.svg');
-$title     = 'Plan Esencial de Previsión Funeraria en Maracaibo — Funeraria del Zulia';
-$desc      = 'Plan Esencial: previsión funeraria económica en Maracaibo y el Estado Zulia. Incluye velación y cremación, traslados locales y gestión documental, con cuotas accesibles y cobertura familiar.';
+$title     = 'Plan Esencial de Previsión Funeraria | Funeraria del Zulia';
+$desc      = 'Plan Esencial: previsión funeraria económica en Maracaibo. Incluye velación, cremación, traslados locales y gestión documental.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Plan Esencial de Previsión Funeraria', $desc, $canonical, $img, 'Plan de previsión funeraria')

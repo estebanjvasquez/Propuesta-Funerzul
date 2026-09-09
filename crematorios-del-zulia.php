@@ -4,8 +4,8 @@ require __DIR__ . '/api/lib/public_init.php';
 
 $canonical = site_url('crematorios-del-zulia.php');
 $img       = site_url('img/crematorio.svg');
-$title     = 'Crematorios del Zulia | Crematorio Propio en Maracaibo — Funeraria del Zulia';
-$desc      = 'Crematorios del Zulia: crematorio propio en Maracaibo, Estado Zulia. Cremación digna, con todos los permisos y acompañamiento las 24 horas, sin recorrer largas distancias.';
+$title     = 'Crematorios del Zulia | Crematorio Propio en Maracaibo';
+$desc      = 'Crematorios del Zulia: crematorio propio en Maracaibo. Cremación digna, con todos los permisos y acompañamiento las 24 horas.';
 
 // Preguntas frecuentes sobre cremación (FAQPage JSON-LD)
 $faqs = [

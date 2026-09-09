@@ -41,32 +41,45 @@ if (!$faqs && $secFaqs) {
     ];
 }
 function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+/**
+ * URL absoluta del sitio, igual que site_url() (api/lib/render.php) pero segura
+ * de llamar aunque api/config.php no haya cargado (esta página degrada sin BD).
+ * Si el helper real está disponible lo usa; si no, cae al dominio de producción.
+ */
+function fz_site_url(string $path = ''): string {
+    if (function_exists('site_url')) return site_url($path);
+    return 'https://www.funerariadelzulia.com/' . ltrim($path, '/');
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Funeraria del Zulia | Servicios Funerarios y Previsión Familiar 24 Horas</title>
+    <title>Funeraria del Zulia | Servicios Funerarios en Maracaibo</title>
     <link rel="icon" href="favicon.png" type="image/png">
-    <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Estado Zulia. Atención 24/7, cremación, traslados y planes de previsión familiar con dignidad y respeto eterno.">
-    <link rel="stylesheet" href="styles.css?v=20260908-3">
-    
+    <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+    <link rel="stylesheet" href="styles.css?v=20260909-1">
+
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
     <meta name="geo.region" content="VE-V">
     <meta name="geo.placename" content="Sector Valle Frío, Maracaibo, Estado Zulia">
     <meta name="geo.position" content="10.6580;-71.6035">
     <meta name="ICBM" content="10.6580, -71.6035">
-    <link rel="canonical" href="https://www.funerariadelzulia.com/">
+    <link rel="canonical" href="<?= fz_e(fz_site_url()) ?>">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Funeraria del Zulia">
     <meta property="og:title" content="Funeraria del Zulia | Servicios Funerarios y Previsión Familiar en Maracaibo">
     <meta property="og:description" content="Hacemos de la despedida un homenaje a la vida. Atención inmediata 24/7 en Maracaibo y todo el Zulia.">
     <meta property="og:locale" content="es_VE">
-    <meta property="og:url" content="https://www.funerariadelzulia.com/">
-    <meta property="og:image" content="https://www.funerariadelzulia.com/logo.png">
+    <meta property="og:url" content="<?= fz_e(fz_site_url()) ?>">
+    <meta property="og:image" content="<?= fz_e(fz_site_url('logo.png')) ?>">
+    <meta name="twitter:card" content="summary_large_image">
 
     <!-- JSON-LD: FuneralService (SEO Local + GEO para respuestas de IA) -->
     <script type="application/ld+json">
@@ -75,9 +88,9 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       "@type": "FuneralService",
       "name": "Funeraria del Zulia",
       "description": "Funeraria en Maracaibo con más de 80 años de trayectoria. Servicios funerarios integrales, cremación, traslados nacionales e internacionales y planes de previsión familiar. Atención inmediata 24 horas en Maracaibo y todo el Estado Zulia.",
-      "url": "https://www.funerariadelzulia.com",
-      "logo": "https://www.funerariadelzulia.com/logo.png",
-      "image": "https://www.funerariadelzulia.com/logo.png",
+      "url": "<?= fz_site_url() ?>",
+      "logo": "<?= fz_site_url('logo.png') ?>",
+      "image": "<?= fz_site_url('logo.png') ?>",
       "telephone": "+584246950136",
       "foundingDate": "1942",
       "priceRange": "$$",
@@ -105,7 +118,9 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       ],
       "contactPoint": [
         { "@type": "ContactPoint", "telephone": "+584246950136", "contactType": "emergency", "availableLanguage": "Spanish", "areaServed": "VE" },
-        { "@type": "ContactPoint", "telephone": "+582614176653", "contactType": "customer service", "availableLanguage": "Spanish", "areaServed": "VE" }
+        { "@type": "ContactPoint", "telephone": "+582614176653", "contactType": "customer service", "availableLanguage": "Spanish", "areaServed": "VE" },
+        { "@type": "ContactPoint", "telephone": "+584146523319", "contactType": "sales", "areaServed": "VE" },
+        { "@type": "ContactPoint", "telephone": "+582616177805", "contactType": "sales", "areaServed": "VE" }
       ],
       "openingHoursSpecification": {
         "@type": "OpeningHoursSpecification",
@@ -170,7 +185,6 @@ function fz_e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
                     <li><a href="#preguntas">Preguntas Frecuentes</a></li>
                     <?php endif; ?>
                     <li><a href="#contacto">Contacto</a></li>
-                    <li><a href="admin.html" class="nav-admin-link">Panel Admin</a></li>
                 </ul>
             </nav>
 

@@ -37,17 +37,21 @@ $rows = $st->fetchAll();
 // Lista de especialidades activas para el filtro
 $specs = db()->query("SELECT DISTINCT specialty FROM doctors WHERE status='active' AND deleted_at IS NULL AND specialty <> '' ORDER BY specialty ASC")->fetchAll(PDO::FETCH_COLUMN);
 
-$extra = [];
-if ($page > 1) $extra[] = 'page=' . $page;
-if ($q !== '') $extra[] = 'q=' . urlencode($q);
-if ($sp !== '') $extra[] = 'specialty=' . urlencode($sp);
-$canonical = site_url('directorio-medico.php' . ($extra ? '?' . implode('&', $extra) : ''));
+// Buscar (?q=) o filtrar (?specialty=) es contenido fino/variable: no se
+// indexa a sí mismo, la canónica consolida en la versión limpia (paginación
+// sin filtro sí puede seguir siendo indexable a su propia página).
+$isFiltered = $q !== '' || $sp !== '';
+$canonical  = site_url('directorio-medico.php' . (!$isFiltered && $page > 1 ? '?page=' . $page : ''));
+$breadcrumbLd = breadcrumb_jsonld([
+    ['name' => 'Inicio', 'url' => site_url('index.php')],
+    ['name' => 'Directorio Médico', 'url' => site_url('directorio-medico.php')],
+]);
 
 $PAGE = [
     'title' => 'Directorio Médico en Maracaibo | Funeraria del Zulia',
     'description' => 'Directorio de médicos y especialistas en Maracaibo y el Estado Zulia. Un servicio de apoyo de la Funeraria del Zulia para las familias.',
     'canonical' => $canonical,
-    'head' => '<meta name="robots" content="index, follow">',
+    'head' => '<meta name="robots" content="' . ($isFiltered ? 'noindex, follow' : 'index, follow') . '">' . $breadcrumbLd,
 ];
 require __DIR__ . '/partials/site_header.php';
 

@@ -4,8 +4,8 @@ require __DIR__ . '/../api/lib/public_init.php';
 
 $canonical = site_url('planes/plan-vanguardia.php');
 $img       = site_url('planes/img/plan-vanguardia.svg');
-$title     = 'Plan Vanguardia de Previsión Funeraria en Maracaibo — Funeraria del Zulia';
-$desc      = 'Plan Vanguardia: cobertura integral de previsión funeraria en Maracaibo, con cremación o inhumación, servicio completo y acompañamiento. El plan más elegido por las familias del Zulia.';
+$title     = 'Plan Vanguardia de Previsión Funeraria | Funeraria del Zulia';
+$desc      = 'Plan Vanguardia: cobertura integral de previsión funeraria en Maracaibo, con cremación o inhumación. El plan más elegido del Zulia.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Plan Vanguardia de Previsión Funeraria', $desc, $canonical, $img, 'Plan de previsión funeraria')

@@ -2,8 +2,10 @@
    CSS PRINCIPAL - FUNERARIA DEL ZULIA (SERENITY & LEGACY)
    ========================================================================== */
 
-/* Importación de fuentes premium */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+/* Fuentes premium: enlazadas en el <head> (partials/site_header.php e index.php),
+   no con @import aquí -- @import bloquea el renderizado hasta resolver una
+   cadena en serie (styles.css -> hoja de Google Fonts -> archivos de fuente).
+   Ver docs/specs/2026-09-09-auditoria-seo-funerzul.md. */
 
 /* Variables de Diseño */
 :root {
@@ -318,7 +320,7 @@ a {
 .hero-bg {
     position: absolute;
     inset: 0;
-    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAdDtunYF06J2e7AsvqXg31TjgKM4zF2oaGzss6O4Q_LUjxlyybp78Bw_emoDEFZaLylEHd_6PG5OxdIcTbvSVBJF6roiKvwNXxLFNXiONtrA9lB6aJDgUBmwunrHguJGo9_k0t0HYARY0rDwnDbXGrcxqRP3xrKkUbpQO2ADa5xpvXbL1sUbVGLwai-bK-r3jDe6qOA_-u_qbqDhWrdkqea1naXdEfq_ukcftY84SZGIJ5kMr9mVwFnEEDIrLyHo5BRzav8AKcXB0');
+    background-image: url('img/hero-bg.webp'); /* antes: hotlink temporal a lh3.googleusercontent.com, ver auditoría SEO */
     background-size: cover;
     background-position: center;
     opacity: 0.25;

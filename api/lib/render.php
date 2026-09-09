@@ -124,10 +124,14 @@ function page_head_meta(string $title, string $desc, string $canonical, string $
 {
     return '<meta name="robots" content="index, follow">'
         . '<meta property="og:type" content="' . esc($ogType) . '">'
+        . '<meta property="og:site_name" content="Funeraria del Zulia">'
         . '<meta property="og:title" content="' . esc($title) . '">'
         . '<meta property="og:description" content="' . esc($desc) . '">'
         . '<meta property="og:image" content="' . esc($image) . '">'
         . '<meta property="og:url" content="' . esc($canonical) . '">'
+        // Sin twitter:title/description/image: X usa los og:* de arriba como
+        // respaldo automático cuando no están presentes -- basta declarar el tipo.
+        . '<meta name="twitter:card" content="summary_large_image">'
         . '<meta name="geo.region" content="VE-V">'
         . '<meta name="geo.placename" content="Maracaibo, Estado Zulia">'
         . $extraJsonLd;

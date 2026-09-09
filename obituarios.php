@@ -32,12 +32,19 @@ $st = db()->prepare("SELECT * FROM obituaries WHERE $where ORDER BY is_pinned DE
 $st->execute($params);
 $rows = $st->fetchAll();
 
-$canonical = site_url('obituarios.php' . ($page > 1 ? '?page=' . $page : ''));
+// La búsqueda (?q=) es contenido fino/variable: no se indexa a sí misma, pero
+// sigue enlazando a la versión limpia para que Google la rastree igual.
+$isFiltered = $q !== '';
+$canonical  = site_url('obituarios.php' . (!$isFiltered && $page > 1 ? '?page=' . $page : ''));
+$breadcrumbLd = breadcrumb_jsonld([
+    ['name' => 'Inicio', 'url' => site_url('index.php')],
+    ['name' => 'Obituarios', 'url' => site_url('obituarios.php')],
+]);
 $PAGE = [
     'title' => 'Obituarios y Homenajes en Maracaibo | Funeraria del Zulia',
     'description' => 'Obituarios recientes y homenajes a quienes nos han dejado en Maracaibo y el Estado Zulia. Deje sus condolencias en Funeraria del Zulia.',
     'canonical' => $canonical,
-    'head' => '<meta name="robots" content="index, follow">',
+    'head' => '<meta name="robots" content="' . ($isFiltered ? 'noindex, follow' : 'index, follow') . '">' . $breadcrumbLd,
 ];
 require __DIR__ . '/partials/site_header.php';
 ?>

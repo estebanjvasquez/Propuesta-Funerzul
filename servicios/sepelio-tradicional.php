@@ -4,8 +4,8 @@ require __DIR__ . '/../api/lib/public_init.php';
 
 $canonical = site_url('servicios/sepelio-tradicional.php');
 $img       = site_url('servicios/img/sepelio-tradicional.svg');
-$title     = 'Sepelio Tradicional en Maracaibo | Velación y Oficios — Funeraria del Zulia';
-$desc      = 'Servicio de sepelio tradicional en Maracaibo, Estado Zulia: velación en capilla, oficios religiosos, arreglos florales y gestión completa, con respeto a sus creencias y atención 24/7.';
+$title     = 'Sepelio Tradicional en Maracaibo | Funeraria del Zulia';
+$desc      = 'Sepelio tradicional en Maracaibo: velación en capilla, oficios religiosos, arreglos florales y gestión completa, con atención 24/7.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Sepelio Tradicional', $desc, $canonical, $img)

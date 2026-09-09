@@ -4,8 +4,8 @@ require __DIR__ . '/../api/lib/public_init.php';
 
 $canonical = site_url('planes/');
 $img       = site_url('planes/img/plan-vanguardia.svg');
-$title     = 'Planes de Previsión Funeraria en Maracaibo — Funeraria del Zulia';
-$desc      = 'Planes de previsión funeraria familiar en Maracaibo y el Estado Zulia: Esencial, Tradición, Vanguardia y Vanguardia Plus. Cuotas accesibles, cobertura familiar y atención 24 horas.';
+$title     = 'Planes de Previsión Funeraria en Maracaibo';
+$desc      = 'Planes de previsión funeraria en Maracaibo: Esencial, Tradición, Vanguardia y Vanguardia Plus. Cuotas accesibles y cobertura familiar.';
 
 $planes = [
     ['slug' => 'plan-esencial.php', 'img' => 'img/plan-esencial.svg', 'name' => 'Plan Esencial', 'featured' => false,
