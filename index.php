@@ -61,7 +61,7 @@ function fz_site_url(string $path = ''): string {
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="styles.css?v=20260909-1">
+    <link rel="stylesheet" href="styles.css?v=20260909-2">
 
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -519,7 +519,6 @@ function fz_site_url(string $path = ''): string {
                         <?php if ($secFaqs): ?>
                         <li><a href="#preguntas">Preguntas Frecuentes</a></li>
                         <?php endif; ?>
-                        <li><a href="admin.html">Panel de Administración</a></li>
                     </ul>
                 </div>
 

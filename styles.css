@@ -945,6 +945,8 @@ a {
     fill: var(--color-secondary-light);
 }
 
+.footer-bottom p { color: inherit; } /* mismo motivo que .map-container p arriba */
+
 .footer-bottom {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding: 30px 0;
@@ -1661,6 +1663,10 @@ textarea.form-control {
 .footer-tel:hover { text-decoration: underline; }
 .footer-contact-item span strong { color: var(--color-surface); font-weight: 600; }
 .map-iframe { border: 0; border-radius: var(--radius-md); }
+/* Sin esto, el <p> global (color: var(--color-text-muted), pensado para fondo
+   claro) le gana por especificidad al color heredado de .footer -- texto gris
+   oscuro casi invisible sobre el azul marino del footer. */
+.map-container p { color: rgba(255, 255, 255, 0.7); }
 .map-address { margin-top: 8px; font-weight: 600; }
 .footer-address { font-size: 13px; }
 .header-logo-img {
