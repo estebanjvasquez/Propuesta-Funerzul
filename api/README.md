@@ -117,6 +117,15 @@ este documento hasta ahora.
   repo. El catálogo también trae 5 entradas de import (`emp-esencial-30`,
   `esencial-new`, etc.) que este sitio ignora a propósito por no coincidir
   con los 4 slugs conocidos.
+- **Mostrar el precio es un interruptor aparte de `enabled`** (nuevo,
+  2026-09-13): `prevision_funeraria.show_prices` en `config.php`, en `false`
+  por defecto. El sitio real en producción (WordPress) nunca publica montos
+  — la API pública de Prevision-Funeraria tampoco trae un campo por
+  plan/servicio para decidirlo, es todo o nada. Este interruptor deja
+  ocultar el precio en todo el sitio sin tocar código mientras eso no exista
+  del lado de PF, o mientras haya inconsistencias de catálogo sin corregir
+  (como la de arriba). `partials/pf_precio_plan.php` no imprime nada si está
+  en `false`, aunque `enabled` sea `true` y el plan exista.
 - **Catálogo de servicios — sigue vacío para `fdz`** (`GET
   /api/public/t/fdz/servicios` → `{items: []}`, confirmado igual el
   2026-08-28 y el 2026-09-13). Comparado en vivo contra el tenant `lh`

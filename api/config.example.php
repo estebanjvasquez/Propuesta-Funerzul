@@ -89,6 +89,16 @@ return [
     'prevision_funeraria' => [
         'enabled'   => false,
         'base_url'  => 'https://prevision-funeraria.sisteg.workers.dev/api/public/t/fdz',
+        // El sitio hoy en producción (WordPress) NUNCA publica el monto de un
+        // plan/servicio -- lo confirma un asesor. La API pública de PF no trae
+        // ningún campo de "mostrar precio sí/no" por plan (ver
+        // docs/specs/2026-08-28-migracion-a-prevision-funeraria.md, revisión
+        // 2026-09-13): es todo o nada, sin control por ítem. Mientras eso no
+        // exista del lado de PF (o mientras haya inconsistencias de precio sin
+        // corregir en su catálogo, como Tradición más barato que Esencial),
+        // este interruptor deja mostrar/ocultar el precio en TODO el sitio sin
+        // tocar código -- por defecto en false, igual que el sitio real hoy.
+        'show_prices' => false,
         // Ninguno de los endpoints usados hoy (planes, servicios, solicitudes) pide
         // token -- déjalo vacío salvo que se empiece a usar /compras o /parentescos.
         'api_token' => '',

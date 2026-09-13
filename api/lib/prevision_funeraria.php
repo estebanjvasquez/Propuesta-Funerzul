@@ -28,6 +28,10 @@ function pf_config(): array
         // Apagado por defecto a propósito: hasta que alguien ponga 'enabled' => true
         // en config.php (con el token real, si hiciera falta), nada de esto se llama.
         'enabled'   => (bool)($c['enabled'] ?? false),
+        // Apagado por defecto a propósito: el sitio real (WordPress) nunca
+        // publica montos, y la API pública de PF no trae un flag por ítem
+        // para decidirlo -- ver la nota larga en config.example.php.
+        'show_prices' => (bool)($c['show_prices'] ?? false),
         'base_url'  => rtrim((string)($c['base_url'] ?? 'https://prevision-funeraria.sisteg.workers.dev/api/public/t/fdz'), '/'),
         // Ninguno de los 3 endpoints que usamos hoy (planes, servicios, solicitudes)
         // requiere token -- se deja el campo listo para /compras o /parentescos a futuro.
@@ -39,6 +43,18 @@ function pf_config(): array
 function pf_habilitado(): bool
 {
     return pf_config()['enabled'];
+}
+
+/**
+ * Interruptor separado de 'enabled': permite conectar el catálogo (para leads,
+ * triage de emergencias, etc.) sin necesariamente mostrarle el precio al
+ * público -- ver la nota en config.example.php sobre por qué esto no vive
+ * hoy del lado de Prevision-Funeraria (su API pública no trae un flag por
+ * plan/servicio).
+ */
+function pf_mostrar_precios(): bool
+{
+    return pf_config()['show_prices'];
 }
 
 /**

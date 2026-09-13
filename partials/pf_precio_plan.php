@@ -6,16 +6,20 @@ if (!defined('OBIT_APP')) { exit('Forbidden'); }
  * cuota mensual real del plan, leída del catálogo público de Prevision-Funeraria
  * (tenant fdz), si la integración está habilitada y el plan existe con ese slug.
  *
- * Si 'prevision_funeraria.enabled' es false en config.php, o la API no responde,
- * o el slug no existe todavía en PF, este partial no imprime nada — la página
- * sigue exactamente igual que antes de esta integración.
+ * Si 'prevision_funeraria.enabled' o 'show_prices' son false en config.php
+ * (2026-09-13: el sitio real en producción -- WordPress -- nunca publica
+ * montos, los confirma un asesor; este segundo interruptor deja imitar ese
+ * mismo criterio sin depender de que Prevision-Funeraria lo soporte por
+ * plan), o la API no responde, o el slug no existe todavía en PF, este
+ * partial no imprime nada — la página sigue exactamente igual que antes de
+ * esta integración.
  *
  * Variable requerida antes del include:
  *   $pePlanSlug  slug del plan en Prevision-Funeraria (ej. 'esencial')
  */
 require_once __DIR__ . '/../api/lib/prevision_funeraria.php';
 
-$pfPlan = (!empty($pePlanSlug) && pf_habilitado()) ? pf_find_plan_by_slug($pePlanSlug) : null;
+$pfPlan = (!empty($pePlanSlug) && pf_habilitado() && pf_mostrar_precios()) ? pf_find_plan_by_slug($pePlanSlug) : null;
 if ($pfPlan):
     $pfMoneda = $pfPlan['moneda'] ?? 'USD';
 ?>

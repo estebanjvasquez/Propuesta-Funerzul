@@ -470,6 +470,38 @@ PF — el único dato concreto sigue siendo el ya reportado: Tradición
 de Prevision-Funeraria, algo que solo se puede corregir con acceso al panel
 de PF (no es un precio que este repo guarde ni pueda ajustar).
 
+## Revisión 2026-09-13 (mismo día, continuación): interruptor de precio público
+
+El usuario preguntó, con razón: si el sitio real en producción
+(`funerariadelzulia.com`, WordPress) no publica precios, ¿por qué este sitio
+sí los muestra? Y planteó que hacía falta poder decidir, desde
+Prevision-Funeraria, si el precio de un plan/servicio se publica o no.
+
+Se revisaron de nuevo los campos reales que devuelve la API pública de PF
+(`GET /planes`, `GET /servicios`, ver revisiones anteriores de este mismo
+documento) — **no existe ningún campo de "mostrar precio sí/no" por ítem**.
+Es todo o nada: si el catálogo trae el plan, trae el precio. No se puede
+confirmar desde este repo si el panel *administrativo* de PF tiene ese
+control internamente (no hay acceso a ese sistema desde aquí) — solo se
+puede verificar el contrato público, y ese no lo trae.
+
+Mientras eso se resuelve o se confirma con el equipo de Prevision-Funeraria,
+se agregó un interruptor de este lado: `prevision_funeraria.show_prices` en
+`config.php`, **en `false` por defecto** — mismo criterio que el sitio real
+hoy. `partials/pf_precio_plan.php` ahora exige `enabled` **y** `show_prices`
+para imprimir el precio; con `show_prices` en `false`, el catálogo sigue
+conectado (útil para leads/triage) pero ningún plan muestra su monto en
+ninguna página, sin tocar código. Aplica sitewide (los 4 planes a la vez),
+no por plan — no había forma de aplicarlo por ítem sin ese campo del lado de
+PF.
+
+**Pendiente, no aplicable desde este repo:** confirmar con quien administra
+Prevision-Funeraria si conviene pedirles un flag de visibilidad por
+plan/servicio en su propio esquema (para no depender de un interruptor
+todo-o-nada), y decidir cuándo pasar `show_prices` a `true` en el servidor
+(recomendable no antes de corregir la inconsistencia Tradición/Esencial
+señalada arriba).
+
 ## Documentación a actualizar al ejecutar
 
 - `docs/SPEC.md` (estado del módulo de previsión, roadmap).
