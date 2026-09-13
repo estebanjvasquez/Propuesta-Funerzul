@@ -92,40 +92,67 @@ mergea a `main`).
 
 | Endpoint | Método | Acceso | Descripción |
 |---|---|---|---|
-| `pf_solicitud.php` | POST | público | Lead de plan/servicio (reemplaza a `prevision_solicitudes.php?action=crear`) — reenvía directo a Prevision-Funeraria (tenant `fdz`), sin guardado local. Ver abajo. |
+| `pf_solicitud.php` | POST | público | Lead de plan/servicio (reemplaza a `prevision_solicitudes.php?action=crear`) — reenvía directo a Prevision-Funeraria (tenant `fdz`), sin guardado local, y avisa por correo al staff. Ver abajo. |
 
-## Integración con Prevision-Funeraria (2026-08-28, activa)
+## Integración con Prevision-Funeraria (2026-08-28, activa — verificada en vivo 2026-09-13)
 
 Ver `docs/specs/2026-08-28-migracion-a-prevision-funeraria.md` y
 `docs/specs/2026-08-28-fase-e-corte-admin-prevision.md` para el plan
 completo. Cliente HTTP en `api/lib/prevision_funeraria.php`, configurado en
 `config.php` bajo la clave `prevision_funeraria` (ver `config.example.php`).
-Con `enabled => false` (default) ninguna página ni endpoint la llama.
+**`enabled => true` ya está activo en el servidor de producción** (confirmado
+en vivo el 2026-09-13: las 4 páginas de plan muestran su cuota real leída de
+Prevision-Funeraria) — no es el estado "apagado por defecto" que describía
+este documento hasta ahora.
 
-- **Catálogo** — `planes/plan-*.php` muestran la cuota mensual real leída de
-  `GET /api/public/t/fdz/planes` (partial `partials/pf_precio_plan.php`),
-  con cache de `cache_ttl` segundos en `cache/prevision_funeraria/*.json`
-  (no en `app_settings` — es cache HTTP interno, no configuración
-  administrable). `servicios/` todavía no muestra precio: el catálogo de
-  servicios de Prevision-Funeraria para el tenant `fdz` está vacío al
-  2026-08-28.
+- **Catálogo de planes** — `planes/plan-*.php` muestran la cuota mensual real
+  leída de `GET /api/public/t/fdz/planes` (partial
+  `partials/pf_precio_plan.php`), con cache de `cache_ttl` segundos en
+  `cache/prevision_funeraria/*.json`. Verificado en vivo 2026-09-13: Esencial
+  US$13,70, Tradición US$12,00, Vanguardia US$17,00, Vanguardia Plus
+  US$24,00. **Inconsistencia de datos pendiente, ya visible al público**:
+  Tradición (US$12,00) cuesta menos que Esencial (US$13,70), aunque este
+  sitio presenta Tradición como el plan superior — corregirlo requiere acceso
+  al panel de Prevision-Funeraria (`fdz`), no es algo editable desde este
+  repo. El catálogo también trae 5 entradas de import (`emp-esencial-30`,
+  `esencial-new`, etc.) que este sitio ignora a propósito por no coincidir
+  con los 4 slugs conocidos.
+- **Catálogo de servicios — sigue vacío para `fdz`** (`GET
+  /api/public/t/fdz/servicios` → `{items: []}`, confirmado igual el
+  2026-08-28 y el 2026-09-13). Comparado en vivo contra el tenant `lh`
+  (Legado Holding, `GET /api/public/t/lh/servicios`): **sí** tiene su
+  catálogo de servicios cargado (3 ítems, con precio y `es_emergencia`) — la
+  mecánica funciona, es una carga de datos pendiente específica del tenant
+  `fdz` que solo se puede hacer desde el panel de Prevision-Funeraria, no
+  desde este repo (sin credenciales/acceso a ese sistema desde aquí).
+  Mientras el catálogo de servicios de `fdz` siga vacío, `servicios/*.php` no
+  muestra precio y el triage de emergencias (abajo) queda inerte.
 - **Leads** — `pf_solicitud.php` reenvía cada lead directo a
-  `POST /api/public/t/fdz/solicitudes`. El frontend manda
-  `plan_slug`/`servicio_slug`; el backend resuelve el `plan_id`/`servicio_id`
-  real de Prevision-Funeraria antes de reenviar. Si Prevision-Funeraria no
-  responde, se lo decimos al visitante (no hay respaldo local desde el
-  corte del módulo de Previsión).
+  `POST /api/public/t/fdz/solicitudes` (verificado en vivo 2026-09-13:
+  responde `400` con errores de validación ante un payload vacío — endpoint
+  alcanzable extremo a extremo, sin crear ninguna solicitud de prueba real).
+  El frontend manda `plan_slug`/`servicio_slug`; el backend resuelve el
+  `plan_id`/`servicio_id` real de Prevision-Funeraria antes de reenviar. Si
+  Prevision-Funeraria no responde, se lo decimos al visitante (no hay
+  respaldo local desde el corte del módulo de Previsión). **Aviso por
+  correo** (nuevo, 2026-09-13): cada solicitud creada con éxito dispara
+  `notify_email()` (`api/lib/mail.php`, PHP `mail()` nativo, sin
+  dependencias nuevas) hacia `app.notify_email` de `config.php` — de pruebas,
+  `contacto@funerariadelzulia.com`. Best-effort: si el correo falla, se
+  registra en el log de PHP y el lead sigue intacto en Prevision-Funeraria
+  (la fuente de verdad nunca depende de que el correo salga).
 - **Triage de emergencias** — `partials/cta_pago_electronico.php` reemplaza
   el formulario de lead por un botón directo a WhatsApp cuando el servicio
-  está marcado `es_emergencia` en el catálogo de Prevision-Funeraria. Inerte
-  hoy: el catálogo de servicios de Prevision-Funeraria para `fdz` está vacío.
+  está marcado `es_emergencia` en el catálogo de Prevision-Funeraria. Sigue
+  inerte hoy: el catálogo de servicios de `fdz` está vacío (ver arriba).
 
-**Para activar en el servidor:** copiar el bloque `prevision_funeraria` de
-`config.example.php` a `config.php` con `enabled => true`, y confirmar que
-`cache/prevision_funeraria/` es escribible por PHP (mismo criterio que
-`uploads/`, normalmente 755) — si no lo es, la integración sigue funcionando
-pero sin cache (pide el catálogo a Prevision-Funeraria en cada carga de
-página).
+**Confirmar en el servidor:** que `cache/prevision_funeraria/` sea escribible
+por PHP (mismo criterio que `uploads/`, normalmente 755) — si no lo es, la
+integración sigue funcionando pero sin cache (pide el catálogo a
+Prevision-Funeraria en cada carga de página). Y agregar
+`'notify_email' => 'contacto@funerariadelzulia.com'` (o el correo real que
+se quiera usar) dentro de `'app' => [...]` en `config.php` para que salgan
+los avisos de leads nuevos.
 
 **Panel admin del staff de Funerzul:** ya no está en este repo — es
 `https://prevision-funeraria.sisteg.workers.dev/login.html` (tenant `fdz`),

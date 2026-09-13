@@ -350,6 +350,74 @@ leyendo código, hacía falta llamar la API real):
 - [ ] Decisión tomada sobre el punto 5 de riesgos (reemplazar vs. ejecutar
       en paralelo la propuesta de seis mejoras).
 
+## Revisión 2026-09-13: estado real verificado en vivo + aviso por correo
+
+El usuario reportó que el wizard de planes/servicios "parece simular una
+compra electrónica, la cual no está aún implementada" y pidió (a) que
+registre la intención de compra "en el sistema" y (b) que avise por correo a
+Funeraria del Zulia (de pruebas, `contacto@funerariadelzulia.com`). Antes de
+tocar código se confirmó con el usuario si debía seguir apuntando a
+Prevision-Funeraria (decisión de este mismo documento) o pasar a un guardado
+local — **respuesta: mantenerlo apuntando a Prevision-Funeraria y agregar el
+correo**, verificando primero la conexión real y si hace falta llevar allá el
+catálogo de planes/servicios, "tal como hace Legado" (Legado Holding, tenant
+`lh`).
+
+**Verificado en vivo (curl directo, no supuesto) — corrige varios puntos de
+este documento que quedaron desactualizados desde el 2026-08-28:**
+
+1. **`prevision_funeraria.enabled` ya está en `true` en el servidor de
+   producción.** La sección 7bis de este documento ("Qué falta para que esto
+   quede visible en producción") decía que aún faltaba activarlo — ya no:
+   `legadoholding.com/funerzul/planes/plan-esencial.php` (y los otros 3)
+   muestran su cuota real. Alguien lo activó entre el 28-ago y hoy sin
+   actualizar este documento.
+2. **La inconsistencia de precio de Tradición/Esencial sigue sin resolver, y
+   ahora es pública**: Tradición US$12,00/mes, Esencial US$13,70/mes — el
+   sitio presenta Tradición como el plan superior. Ya estaba señalada en la
+   sección 7bis como algo a resolver *antes* de activar `enabled`; se activó
+   sin resolverla. Requiere a alguien con acceso al panel de
+   Prevision-Funeraria (`fdz`) — no es editable desde este repo.
+3. **El catálogo de servicios de `fdz` sigue vacío** (`GET
+   /api/public/t/fdz/servicios` → `{items: []}`), igual que el 28-ago.
+   **Comparado en vivo contra el tenant `lh` (Legado Holding)**: su catálogo
+   de servicios **sí** está cargado (3 ítems reales, con precio y
+   `es_emergencia`) — confirma que el mecanismo funciona de punta a punta
+   cuando el tenant tiene datos. La diferencia es 100% de datos cargados en
+   el panel de Prevision-Funeraria, no de código: Legado Holding ya cargó su
+   catálogo ahí, Funeraria del Zulia (`fdz`) todavía no. Esto **no se puede
+   hacer desde este repo** — no hay credenciales ni acceso de administrador
+   al sistema de Prevision-Funeraria desde aquí; requiere que alguien con
+   acceso al panel de `fdz` cargue los servicios (mismo formato que `lh`:
+   nombre, descripción, precio, si es emergencia).
+4. **`POST /api/public/t/fdz/solicitudes` verificado alcanzable extremo a
+   extremo**: un payload vacío devuelve `400` con errores de validación de
+   Prevision-Funeraria (`nombres`/`apellidos`/`telefono` requeridos) — la
+   conexión funciona; no se creó ninguna solicitud de prueba real (mismo
+   criterio que la verificación del 28-ago).
+
+**Cambio de código (este mismo día):** `api/lib/mail.php` (nuevo) agrega
+`notify_email()` — PHP `mail()` nativo, sin dependencias nuevas, best-effort
+(nunca rompe la respuesta pública si el correo falla). `api/pf_solicitud.php`
+lo llama después de que `pf_crear_solicitud()` responde con éxito, con
+`Reply-To` al correo del cliente si lo dejó. Destinatario configurable en
+`config.php` → `app.notify_email` (de pruebas:
+`contacto@funerariadelzulia.com`, ver `api/config.example.php`). Registrado
+también en `bootstrap.php` para que quede disponible en cualquier endpoint
+que lo necesite más adelante, no solo en `pf_solicitud.php`.
+
+**Qué falta, y de quién depende (actualizado):**
+
+- Corregir el precio de Tradición/Esencial y cargar el catálogo de servicios
+  de `fdz` → panel de Prevision-Funeraria, no este repo.
+- Agregar `'notify_email' => 'contacto@funerariadelzulia.com'` a
+  `api/config.php` del servidor (no está en git) → el usuario, directo en el
+  servidor.
+- Confirmar en producción que el correo realmente llega (PHP `mail()` nativo
+  depende del sendmail/MTA local de cPanel — no se pudo probar la entrega
+  real desde este entorno de desarrollo, que no tiene servidor de correo
+  configurado; sí se confirmó que la función corre sin errores).
+
 ## Documentación a actualizar al ejecutar
 
 - `docs/SPEC.md` (estado del módulo de previsión, roadmap).

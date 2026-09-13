@@ -44,6 +44,12 @@ return [
     'app' => [
         'env'       => 'production',  // 'development' muestra errores
         'site_url'  => 'https://www.funerariadelzulia.com',
+        // A dónde avisar por correo cuando entra un lead de plan/servicio
+        // (api/pf_solicitud.php, api/lib/mail.php). '' = no se envía nada.
+        // De pruebas: contacto@funerariadelzulia.com (pedido del usuario,
+        // 2026-09-13) -- cambiar cuando el cliente confirme el correo real
+        // de atención comercial.
+        'notify_email' => 'contacto@funerariadelzulia.com',
     ],
 
     // Pagos electrónicos. Ver docs/mercantil.md y

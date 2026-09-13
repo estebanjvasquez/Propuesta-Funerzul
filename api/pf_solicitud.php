@@ -74,6 +74,23 @@ if (!$resultado['ok']) {
 
 audit('pf_solicitud.crear', 'pf_solicitud', $resultado['solicitud_id'] ?? null, ['tipo' => $tipo, 'interes' => $interes]);
 
+// Aviso al staff. Best-effort: si el correo no sale, el lead ya quedó a salvo
+// en Prevision-Funeraria de todas formas -- nunca se le devuelve un error al
+// visitante por esto.
+notify_email(
+    'Nueva solicitud de ' . ($tipo === 'servicio' ? 'servicio' : 'plan') . ': ' . $interes,
+    "Se registró una nueva solicitud en Prevision-Funeraria (tenant fdz).\n\n"
+    . 'Tipo: ' . $tipo . "\n"
+    . 'Interés: ' . $interes . "\n"
+    . 'Nombre: ' . $nombres . ' ' . $apellidos . "\n"
+    . 'Teléfono: ' . $telefono . "\n"
+    . ($cedula ? "Cédula: $cedula\n" : '')
+    . ($email ? "Correo: $email\n" : '')
+    . 'ID solicitud (Prevision-Funeraria): ' . ($resultado['solicitud_id'] ?? '(no informado)') . "\n\n"
+    . "Un asesor debe contactar a este cliente para completar el proceso.",
+    $email
+);
+
 json_out([
     'ok' => true,
     'message' => 'Hemos recibido tu solicitud. Un asesor te contactará en breve para completar el pago de forma segura.',

@@ -28,6 +28,7 @@ ini_set('log_errors', '1');
 require __DIR__ . '/db.php';
 require __DIR__ . '/helpers.php';
 require __DIR__ . '/auth.php';
+require __DIR__ . '/mail.php';
 
 set_exception_handler(function (\Throwable $e) {
     error_log('[obit] ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
