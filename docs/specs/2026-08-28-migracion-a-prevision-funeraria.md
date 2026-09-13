@@ -418,6 +418,58 @@ que lo necesite más adelante, no solo en `pf_solicitud.php`.
   real desde este entorno de desarrollo, que no tiene servidor de correo
   configurado; sí se confirmó que la función corre sin errores).
 
+## Revisión 2026-09-13 (mismo día): favicon real + catálogo leído del sitio en vivo
+
+El usuario pidió (a) copiar el favicon real de `funerariadelzulia.com` a este
+sitio, (b) listar desde ahí los servicios que faltan por cargar en
+Prevision-Funeraria (tenant `fdz`) y (c) comparar los precios de los planes
+para ajustarlos "en el sistema administrativo".
+
+**(a) Favicon** — aplicado. `favicon.png` era un placeholder genérico de
+500×500; se reemplazó por el sello dorado real (`cropped-FunerariadelZulia-
+Favicon-192x192.jpg` de la instalación WordPress actual), mismo trazo que
+`logo-seal-footer.png`/`angel-original-vector.svg` que ya usa este sitio.
+Bump de cache en las 3 referencias (`index.php`, `site_header.php`,
+`admin.html`) — de paso se corrigió `admin.html`, que llevaba desde agosto
+sirviendo `styles.css?v=20260811` (varios commits de CSS atrás).
+
+**(b) Servicios a cargar en `fdz`** — leídos de la portada de
+`funerariadelzulia.com` (sección "Necesidad Inmediata"). Coinciden **texto
+por texto** con los 3 servicios que ya están cargados hoy en el tenant `lh`
+(Legado Holding) de Prevision-Funeraria (ver revisión anterior de este mismo
+documento) — es decir, esta información ya fue digitada en Prevision-
+Funeraria, solo que bajo el tenant equivocado para este sitio:
+
+| Servicio (PF, tenant `lh`) | Precio | Emergencia |
+|---|---|---|
+| Funeral tradicional | US$200,00 (único) | Sí |
+| Servicio Esencial | US$100,00 (único) | Sí |
+| Servicios adicionales | US$50,00 (único) | Sí |
+
+Acción sugerida para quien administra el panel de Prevision-Funeraria: mover
+o duplicar estas 3 entradas hacia el tenant `fdz`. **Importante antes de
+hacerlo** — los slugs que usaría Prevision-Funeraria para estos 3 servicios
+no coinciden con los 4 que ya usa `servicios/*.php` de este repo
+(`sepelio-tradicional`, `cremacion`, `traslados`, `capillas-velatorias`):
+cargarlos tal cual no conectaría automáticamente ningún precio a las páginas
+actuales de servicios. Haría falta decidir, al cargarlos, si se
+adaptan/renombran los slugs a los 4 que ya existen aquí, o si quedan como un
+catálogo de "servicios inmediatos" distinto al de las 4 páginas SEO — no es
+una decisión que se pueda tomar sin el usuario.
+
+**(c) Comparación de precios de planes** — **no fue posible**: la portada de
+`funerariadelzulia.com` (sección "Familias Protegidas"/FAMPRO) describe los
+4 planes (Esencial, Tradición, Vanguardia, Vanguardia Plus) con el mismo
+nivel de detalle que este sitio, pero **no publica ningún monto en dólares**
+— mismo criterio de "precio informativo, lo confirma un asesor" que ya usa
+este proyecto. Tampoco hay tienda WooCommerce activa con productos
+(`/tienda/` no devuelve productos, ni vía HTML ni vía API REST). No hay
+entonces una fuente pública con la que contrastar los 4 precios reales de
+PF — el único dato concreto sigue siendo el ya reportado: Tradición
+(US$12,00/mes) cuesta menos que Esencial (US$13,70/mes) en el catálogo real
+de Prevision-Funeraria, algo que solo se puede corregir con acceso al panel
+de PF (no es un precio que este repo guarde ni pueda ajustar).
+
 ## Documentación a actualizar al ejecutar
 
 - `docs/SPEC.md` (estado del módulo de previsión, roadmap).
