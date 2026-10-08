@@ -19,6 +19,7 @@ para minimizar cuánto hay que leer al retomar el proyecto:
 | `ONBOARDING-AGENTES.md` (este archivo) | Orientación estable: qué es esto, límites, reglas, mapa de documentos | Solo cuando cambia algo estructural |
 | [`docs/SPEC.md`](docs/SPEC.md) | Especificación funcional/técnica vigente: módulos, su estado, roadmap priorizado | Cuando cambia el estado de un módulo o el roadmap |
 | [`task.md`](task.md) | Bitácora cronológica: qué se hizo cada día, bloqueos, siguiente acción | En cada cierre de sesión (ver sección 9) |
+| [`docs/BACKLOG.md`](docs/BACKLOG.md) | Tareas abiertas/cerradas con su estado (reemplaza al Backlog de Notion desde 2026-10-08) | En cada cierre de sesión |
 
 Para una primera lectura de "¿dónde estamos?", basta este archivo + la
 entrada más reciente de `task.md`. `docs/SPEC.md` se lee cuando hace falta
@@ -72,26 +73,29 @@ quedar sin commitear**:
   se creó en una sesión y **desapareció antes de commitearse** — probablemente
   el entorno de la sesión se reinició antes de guardar el trabajo en git. Si
   necesitas ese paquete, **hay que rehacerlo**; no existe en ningún commit.
+- **Octubre de 2026: se dañó el equipo de trabajo.** Todo lo que estaba sin
+  commitear se perdió (lista abajo), además de los archivos locales que
+  nunca van a git (`api/config.php`, `database/SIEMPRE.sql`,
+  `graphify-out/`). Las sesiones del 28-ago al 13-sep tampoco habían dejado
+  entrada en `task.md`; se reconstruyeron desde los commits.
 
 **Regla que se desprende de esto, para cualquier agente:** si produces un
 documento o código que vale la pena conservar, coméntaselo al usuario y
-**commitea pronto** (aunque sea en la rama de trabajo, sin mergear a `main`
-todavía). No confíes en que el entorno de la sesión persista entre
-conversaciones si el archivo no llegó a `git commit`.
+**commitea y pushea pronto** (aunque sea en la rama de trabajo, sin mergear a
+`main` todavía). No confíes en que el entorno de la sesión — ni el equipo —
+persista si el archivo no llegó a `git push`.
 
-### Qué hay sin commitear en `feature/prevision-funeraria` ahora mismo
+### Documentos perdidos en octubre de 2026 (no existen en ninguna rama)
 
-A la fecha de escribir esto, el árbol de trabajo de esa rama tiene sin
-commitear (entre otros): `AGENTS.md`, `docs/agent-standards.md`,
-`docs/backend-standards.md`, `docs/frontend-standards.md`,
-`docs/data-model.md`, `docs/spec-template.md`, `docs/specs/README.md`,
-`docs/propuesta-mejoras-prevision.md`,
-`docs/specs/2026-08-11-mejoras-prevision-plan-tecnico.md`,
-`docs/MercantilAPI.md`, `docs/payments/mercantil/*` (PDFs/docx),
-`database/SIEMPRE.zip`, `codex.md` y `.claude/`. Es decir: **buena parte del
-sistema de especificación del proyecto (specboot) todavía no está en git.**
-Ejecuta `git status` para ver el estado real antes de asumir que algo de esto
-sigue existiendo.
+`AGENTS.md`, `docs/agent-standards.md`, `docs/frontend-standards.md`,
+`docs/spec-template.md`, `docs/specs/README.md`, `docs/MercantilAPI.md`,
+`codex.md`, los PDF/docx de `docs/payments/mercantil/` y
+`database/SIEMPRE.zip`. Varias secciones de este archivo todavía los
+mencionan: trátalos como **pendientes de recrear** (tarea en
+`docs/BACKLOG.md`), no como documentos que vas a encontrar. Sí están en git:
+`docs/backend-standards.md`, `docs/data-model.md`,
+`docs/payments/mercantil/*.md`, `docs/propuesta-mejoras-prevision.md` y
+`.claude/skills/cerrar-proyecto/`.
 
 ## 3. Los tres repositorios del negocio (no confundirlos)
 
@@ -211,12 +215,14 @@ procedimiento de `.claude/skills/cerrar-proyecto/SKILL.md`. Resumen:
    validado, los bloqueos y la siguiente acción.
 2. Actualizar `docs/SPEC.md` si el estado de algún módulo o el roadmap
    cambió de forma material (no por cada detalle menor).
-3. Commitear esos cambios de documentación (y el código del día, si aplica)
-   en la rama actual.
-4. Sincronizar con Notion: crear la página "Registro de Proyecto — DD de
-   mes, YYYY" del día bajo el hub **"Propuesta Funerzul — Proyecto y
-   documentación"**, y actualizar el estado de las tarjetas correspondientes
-   en la base de datos **Backlog** de ese mismo hub.
+3. Actualizar el estado de las tareas en `docs/BACKLOG.md`.
+4. Commitear esos cambios de documentación (y el código del día, si aplica)
+   en la rama actual, y hacer push de esa rama.
+
+Ya no se sincroniza con Notion: el usuario perdió el acceso en octubre de
+2026. Las páginas viejas del hub "Propuesta Funerzul — Proyecto y
+documentación" (hasta el 2026-08-27) ya no son accesibles; su contenido
+relevante está en `task.md` y `docs/BACKLOG.md`.
 
 No hace falta pedir este cierre al final de cada sesión — solo cuando el
 usuario lo pida explícitamente.

@@ -22,7 +22,9 @@ Detalle de arquitectura y estructura de carpetas: `README.md`.
 
 | Módulo | Estado | Documento de referencia |
 |---|---|---|
-| Sitio público (obituarios, directorio médico, recursos, FAQs) | Producción, estable | `README.md` (manual de usuario, secciones 3-13) |
+| Sitio público (obituarios, directorio médico, recursos, FAQs) | En prueba en `legadoholding.com/funerzul/` (dominio final: `funerariadelzulia.com`, hoy aún con WordPress). **2026-10-08: MySQL del servidor de prueba caído** (`SQLSTATE[HY000] [2002]`) — ver `docs/BACKLOG.md`. | `README.md` (manual de usuario, secciones 3-13) |
+| Auditoría SEO + correcciones | Hecho (2026-09-09). Pendiente fuera del repo: `site_url` del `config.php` del servidor. | `docs/specs/2026-09-09-auditoria-seo-funerzul.md` |
+| Integración con Prevision-Funeraria (precios de planes, leads, WhatsApp de emergencia, aviso por correo al staff) | Activa en el servidor (verificado 2026-09-13 y 2026-10-08). Precios ocultos por defecto (`show_prices = false`). | `api/README.md`, `docs/specs/2026-08-28-migracion-a-prevision-funeraria.md` |
 | Panel admin base (usuarios, plantillas, configuración) | Producción, estable | `README.md`, `api/README.md` |
 | Secciones del sitio activables/desactivables (Obituarios, Directorio Médico, Recursos, FAQs) + marca de agua del ángel en el hero | Hecho (2026-09-08) | `docs/specs/2026-09-08-secciones-activables-y-marca-agua-hero.md` |
 | Tarjetas de obituario para compartir (2 plantillas web + imagen PNG descargable, foto opcional) | Hecho (2026-09-08), pendiente de probar en el servidor real | `docs/specs/2026-09-08-tarjetas-obituario.md` |
@@ -90,6 +92,9 @@ de límites entre repos. Resumen de una línea cada uno:
 
 ## 4. Roadmap / próximos pasos priorizados
 
+0. **Restablecer MySQL del sitio de prueba** y corregir el `api/config.php`
+   del servidor (`site_url`, `env` en `production`) — 2026-10-08. Luego
+   aplicar/probar las migraciones 11-13 y las tarjetas de obituario.
 1. Decidir si `feature/prevision-funeraria` se mergea a `main` (o PR).
 2. SSO del panel admin de este sitio con las cuentas de staff de
    Prevision-Funeraria (tenant `fdz`) — **bloqueado**: ese módulo de
@@ -103,23 +108,24 @@ de límites entre repos. Resumen de una línea cada uno:
    del banco) — relevante para `Prevision-Funeraria`, no para este repo
    (que ya no tiene endpoints de cobro activos).
 
-El backlog operativo día a día (con estado Not started/In progress/Done) vive
-en Notion — ver sección 6.
+El backlog operativo día a día (con estado por tarea) vive en
+[`docs/BACKLOG.md`](BACKLOG.md) — ver sección 6.
 
 ## 5. Reglas y superficies sensibles
 
-No se repiten aquí — ver `ONBOARDING-AGENTES.md`, secciones 5 y 6
-(`docs/agent-standards.md`, `docs/backend-standards.md`,
-`docs/frontend-standards.md` para el detalle completo).
+No se repiten aquí — ver `ONBOARDING-AGENTES.md`, secciones 5 y 6, y
+`docs/backend-standards.md` para el detalle. `docs/agent-standards.md` y
+`docs/frontend-standards.md` se perdieron sin commitear (ver
+`ONBOARDING-AGENTES.md`, sección 2) y están pendientes de recrearse.
 
-## 6. Notion
+## 6. Backlog y bitácora (sin Notion desde 2026-10-08)
 
-- Hub del proyecto: [**"Propuesta Funerzul — Proyecto y documentación"**](https://app.notion.com/p/3c96989da22e81bcbfd9e7b80e017054)
-- Backlog: [**"Propuesta Funerzul — Backlog"**](https://app.notion.com/p/b16fb5ea38b4461c99156a5f6e777d97) (base de datos, enlazada desde el hub)
-- Bitácora diaria: páginas **"Registro de Proyecto — DD de mes, YYYY"** bajo
-  el hub, una por cierre de sesión relevante. El detalle completo de cada
-  cierre vive en `task.md`; Notion tiene el resumen curado. Primera entrada:
-  [27 de agosto, 2026](https://app.notion.com/p/3c96989da22e818a9606cde42e22ffdf).
+Hasta el 2026-08-27 el backlog y un resumen diario se llevaban en Notion
+(hub "Propuesta Funerzul — Proyecto y documentación"). El usuario perdió el
+acceso a Notion en octubre de 2026, así que todo vive ahora en el repo:
 
-Procedimiento de cierre (qué se actualiza y cómo se sincroniza con Notion):
-`.claude/skills/cerrar-proyecto/SKILL.md`.
+- Backlog: [`docs/BACKLOG.md`](BACKLOG.md) (incluye las 8 tarjetas migradas
+  de Notion).
+- Bitácora diaria: [`task.md`](../task.md).
+
+Procedimiento de cierre: `.claude/skills/cerrar-proyecto/SKILL.md`.
