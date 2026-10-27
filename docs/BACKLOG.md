@@ -38,7 +38,8 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 | Tarea | Estado | Notas |
 |---|---|---|
-| Aplicar migraciones 15 y 16 en el servidor y desplegar | Pendiente | `15_obituarios_ajustes_cliente.sql` (Acto Velatorio, fotos falsas, "En memoria de", sin logo cuando no hay foto) y `16_faq_aseguradoras.sql`. Importar la 15 **antes** de usar el panel con el código nuevo. |
+| Desplegar el código del 2026-10-27 (`9ef7d8d`) y revisar en el servidor | Pendiente | Migraciones 14, 15 y 16 ya aplicadas (verificado en vivo 2026-10-27). Revisar tras el deploy: Inicio y Preguntas Frecuentes no lleven a Legado, planes, un obituario sin foto, interruptor del Portal de Clientes en Configuración. |
+| Respuestas del cliente a las preguntas del 2026-10-27 | Esperando al cliente | Cobertura regional, edades, Grupo Selecto (una o dos tarjetas, quién lo contrata, destino del botón, precios, contenido), color de "Paz a su alma", qué logo sobraba, "En memoria de", texto de gestión documental, Tradición < Esencial y planes extra en PF, correo de avisos. Grupo Selecto existe en Legado Holding (tenant `lh`: esencial-selecto, vanguardia-selecto, toda Venezuela). |
 | Grupo Selecto como 4to plan | Pendiente (falta contenido) | Va en el lugar del Vanguardia Plus (portada y `planes/`). No existe en el repo, en el catálogo de Prevision-Funeraria ni en funerariadelzulia.com: falta nombre exacto, a quién va dirigido, qué incluye, edad y si tiene página propia. |
 | ¿Los planes son "a nivel regional"? | Pendiente (respuesta del cliente) | El cliente lo pregunta por cada plan. Falta definir la cobertura geográfica para publicarla. |
 | Confirmar color de "Paz a su alma" | Pendiente (confirmar) | Se agrandó y pasó de dorado a blanco en la Cinta Conmemorativa (web y PNG). El cliente pidió "otro color" sin decir cuál. |
@@ -51,7 +52,7 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 | Tarea | Estado | Notas |
 |---|---|---|
 | Fase 1 de seguridad del login: límite de intentos, MFA TOTP, vencimientos, revocación, recuperación por correo, cabeceras, 4 perfiles | Pendiente (aprobada) | Opción C aprobada el 2026-10-27. Detalle: `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md`, secciones 4-5. Migración nueva `database/15_...sql`. |
-| Aplicar `database/14_portal_clientes.sql` en el servidor y probar el interruptor del Portal de Clientes | Pendiente | Código listo (2026-10-27), sin probar contra PHP/MySQL real. Activar el enlace solo cuando el portal de PF esté listo para `fdz`. |
+| Probar el interruptor del Portal de Clientes tras el deploy | Pendiente | Migración 14 aplicada (2026-10-27); código sin probar contra PHP/MySQL real. Activar el enlace solo cuando el portal de PF esté listo para `fdz`. |
 | PF: entregabilidad del correo del OTP y marca FDZ | Pendiente (en Prevision-Funeraria) | El OTP queda **solo por correo** (decisión 2026-10-27); clientes sin correo registrado no pueden entrar — limitación conocida. |
 | PF: proveedor de identidad para "Entrar con Previsión Funeraria" (Fase 2, SSO del panel con el staff de `fdz`) | Bloqueado | Reemplaza la tarea de SSO anterior. No existe en Prevision-Funeraria; contrato mínimo en la spec del 2026-10-27, sección 4. |
 
@@ -70,6 +71,7 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 | Tarea | Estado | Motivo |
 |---|---|---|
+| Aplicar migraciones 14, 15 y 16 | Hecho | Aplicadas por el usuario el 2026-10-27. Verificado en vivo: FAQ nueva en la portada, obituarios con "Acto Velatorio", "En memoria de" en la plantilla predeterminada y ninguna plantilla con `{{photo}}`. |
 | Decidir esquema de login del personal y perfiles | Hecho | 2026-10-27: Opción C (híbrida) + 4 perfiles; portal de clientes en PF con OTP solo por correo. Ver sección 8 de la spec. |
 | Enlace "Portal de Clientes" con interruptor y URL en Configuración | Hecho | 2026-10-27, arranca apagado. Falta aplicarlo en el servidor (tarea abierta arriba). |
 | Restablecer la conexión a MySQL del sitio de prueba | Hecho | Caída verificada el 2026-10-08 (`SQLSTATE[HY000] [2002]`); el 2026-10-27 `api/templates.php?action=list` ya devuelve datos. No se registró qué la resolvió. |
