@@ -168,6 +168,7 @@ function switchTab(tab, btn) {
     if (tab === 'plantillas') loadTemplates(true);
     if (tab === 'config') loadSettings();
     if (tab === 'usuarios') loadUsers();
+    if (tab === 'manual' && typeof renderManual === 'function') renderManual();
 }
 
 // ==========================================================================

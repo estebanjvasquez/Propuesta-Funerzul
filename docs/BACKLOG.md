@@ -47,6 +47,14 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 | Vanguardia Plus en Prevision-Funeraria | Pendiente (en PF) | Se retiró del sitio; sigue en el catálogo de `fdz` en PF (y las variantes "NEW" y de empleados). Decidir si se desactiva allí. |
 | Textos de "velación" que vienen de Prevision-Funeraria | Pendiente (en PF) | La descripción detallada del plan Tradición en PF dice "sala de velación por 24 horas". Hoy el sitio no la muestra, pero el portal de clientes sí podría. |
 
+### Manual de usuario del panel (2026-10-27)
+
+| Tarea | Estado | Notas |
+|---|---|---|
+| **Eliminar el usuario temporal `manual@funerariadelzulia.com`** | Pendiente — **urgente** | Admin con contraseña débil, creado solo para las capturas. Borrarlo en Sistema → Usuarios (o cambiarle la clave si se reusará para regenerar capturas). |
+| Desplegar el manual y regenerar las capturas | Pendiente | Las capturas se tomaron antes de desplegar el botón "Manual": la 02 no lo muestra. Tras desplegar, correr `docs/manual/capturar-manual.mjs` de nuevo (y otra vez al mudarse al dominio final, para que los enlaces de "Redes" muestren funerariadelzulia.com). |
+| Botón "Restaurar" para obituarios dados de baja | Pendiente (decidir) | La API tiene `action=restore` pero el panel no ofrece cómo ver ni restaurar los dados de baja; el README decía que se podía. El manual indica pedir ayuda al soporte. |
+
 ### Enlaces para redes y analítica (2026-10-27)
 
 | Tarea | Estado | Notas |

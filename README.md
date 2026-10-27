@@ -95,6 +95,11 @@ Propuesta Funerzul/
 
 Guía para el personal de Funeraria del Zulia que gestiona los obituarios del sitio.
 
+> **Dentro del panel** hay una versión interactiva de este manual, con capturas de
+> pantalla de cada paso: botón **"Manual"** arriba a la derecha (contenido en
+> `admin-manual.js`, imágenes en `manual/img/`). Los usuarios Editor no ven los
+> capítulos de administración.
+
 ### 1. Acceso al panel
 
 1. Abre en el navegador: **`https://www.funerariadelzulia.com/admin.html`**
@@ -426,6 +431,10 @@ Debe responder `db_connected: true`, las 7 tablas, `gd_webp: true` y
 - **Auditoría**: cada acción (crear/editar/baja, moderación, login, purga) queda
   registrada en la tabla `audit_log`.
 - **Cambiar contraseñas** del personal periódicamente desde la pestaña *Usuarios*.
+- **Manual del panel al día**: cuando cambie el panel, regenere las capturas con
+  `docs/manual/capturar-manual.mjs` (Playwright; instrucciones en el propio
+  archivo, usuario Admin por variables de entorno), ajuste los textos en
+  `admin-manual.js` si cambió algún proceso y suba `MANUAL_IMG_VERSION`.
 
 ---
 

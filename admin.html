@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Administración | Funeraria del Zulia</title>
     <link rel="icon" href="favicon.png?v=20260913-1" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20261027-5">
+    <link rel="stylesheet" href="styles.css?v=20261027-6">
 </head>
 <body class="admin-body">
 
@@ -67,6 +67,7 @@
                 </nav>
                 <div class="admin-user">
                     <span id="currentUserName" class="admin-user-name"></span>
+                    <button class="btn btn-outline btn-sm admin-tab-btn admin-manual-btn" data-tab="manual" type="button" title="Manual de Usuario">Manual</button>
                     <button class="btn btn-outline btn-sm" id="logoutBtn" type="button">Salir</button>
                 </div>
             </div>
@@ -186,7 +187,7 @@
                     <div class="setting-row">
                         <div>
                             <strong>Purga automática de fotos</strong>
-                            <p class="setting-help">Borra del disco las fotos vencidas y las reemplaza por el placeholder del logo. El obituario permanece publicado.</p>
+                            <p class="setting-help">Borra del disco las fotos vencidas. El obituario permanece publicado, ahora sin foto.</p>
                         </div>
                         <label class="switch"><input type="checkbox" id="set_photo_purge_enabled"><span class="slider"></span></label>
                     </div>
@@ -284,6 +285,11 @@
                 </div>
             </section>
 
+            <!-- ---------- MANUAL DE USUARIO (contenido en admin-manual.js) ---------- -->
+            <section id="tab-manual" class="admin-tab-panel" hidden>
+                <div id="manualRoot"></div>
+            </section>
+
         </main>
     </div>
 
@@ -302,6 +308,7 @@
 
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="admin.js?v=20261027-3"></script>
+    <script src="admin-manual.js?v=20261027-1"></script>
+    <script src="admin.js?v=20261027-4"></script>
 </body>
 </html>
