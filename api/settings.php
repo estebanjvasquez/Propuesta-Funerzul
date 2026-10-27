@@ -21,6 +21,9 @@ const EDITABLE_SETTINGS = [
     'section_directorio_medico_enabled' => 'bool',
     'section_recursos_enabled'          => 'bool',
     'section_faqs_enabled'              => 'bool',
+    // Portal de Clientes en Prevision-Funeraria (ver client_portal_url() en lib/helpers.php)
+    'client_portal_enabled'             => 'bool',
+    'client_portal_url'                 => 'url',
 ];
 
 switch ($action) {
@@ -43,6 +46,8 @@ switch ($action) {
         $incoming = body_json()['settings'] ?? [];
         if (!is_array($incoming) || !$incoming) json_out(['ok' => false, 'error' => 'Nada que actualizar.'], 422);
 
+        // Se valida todo antes de guardar nada: un valor inválido no deja la
+        // configuración a medio aplicar.
         $applied = [];
         foreach ($incoming as $key => $val) {
             if (!isset(EDITABLE_SETTINGS[$key])) continue;
@@ -51,12 +56,17 @@ switch ($action) {
                 $v = (string)max(0, (int)$val);
             } elseif ($type === 'bool') {
                 $v = ($val === true || $val === '1' || $val === 1 || $val === 'true') ? '1' : '0';
+            } elseif ($type === 'url') {
+                $v = clean_str($val, 255);
+                if ($v !== '' && !is_https_url($v)) {
+                    json_out(['ok' => false, 'error' => 'La URL debe ser una dirección completa que empiece con https://'], 422);
+                }
             } else {
                 $v = clean_str($val, 255);
             }
-            set_setting($key, $v);
             $applied[$key] = $v;
         }
+        foreach ($applied as $key => $v) set_setting($key, $v);
         audit('settings.update', 'app_settings', null, $applied);
         json_out(['ok' => true, 'applied' => $applied]);
     }

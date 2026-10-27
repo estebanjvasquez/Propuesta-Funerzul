@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Administración | Funeraria del Zulia</title>
     <link rel="icon" href="favicon.png?v=20260913-1" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20260909-2">
+    <link rel="stylesheet" href="styles.css?v=20261027">
 </head>
 <body class="admin-body">
 
@@ -231,6 +231,20 @@
                         <label class="switch"><input type="checkbox" id="set_section_faqs_enabled"><span class="slider"></span></label>
                     </div>
 
+                    <h3 class="settings-subheading">Portal de Clientes</h3>
+                    <p class="setting-help">Enlace “Portal de Clientes” en el menú y el pie de página, hacia el portal de Previsión Funeraria donde los titulares consultan sus contratos y pagos (acceso con su cédula y un código enviado por correo). Manténgalo apagado hasta que el portal esté listo.</p>
+                    <div class="setting-row">
+                        <div><strong>Mostrar el Portal de Clientes</strong></div>
+                        <label class="switch"><input type="checkbox" id="set_client_portal_enabled"><span class="slider"></span></label>
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <strong>URL del portal</strong>
+                            <p class="setting-help">Dirección completa, debe empezar con https://</p>
+                        </div>
+                        <input type="url" id="set_client_portal_url" class="form-control setting-input-url" maxlength="255" placeholder="https://app.previsionfuneraria.com/portal/login?empresa=fdz">
+                    </div>
+
                     <div class="setting-actions">
                         <button type="submit" class="btn btn-primary">Guardar configuración</button>
                     </div>
@@ -271,6 +285,6 @@
 
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="admin.js?v=20260908-2"></script>
+    <script src="admin.js?v=20261027"></script>
 </body>
 </html>

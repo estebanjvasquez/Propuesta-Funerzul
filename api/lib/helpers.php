@@ -116,6 +116,36 @@ function site_section_enabled(string $section): bool
     return setting_bool($key, true);
 }
 
+/** true si $u es una URL absoluta válida con esquema https. */
+function is_https_url(string $u): bool
+{
+    return $u !== ''
+        && filter_var($u, FILTER_VALIDATE_URL) !== false
+        && strncasecmp($u, 'https://', 8) === 0;
+}
+
+/**
+ * URL del Portal de Clientes (portal del titular de Prevision-Funeraria) si el
+ * admin lo activó en Configuración, o null para no mostrar el enlace.
+ * A diferencia de site_section_enabled(), falla CERRADA: arranca apagado
+ * hasta que el portal esté listo del lado de Prevision-Funeraria, y si la BD
+ * no responde o la URL guardada no es https válida, el enlace no se muestra.
+ * Ver docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md.
+ */
+function client_portal_url(): ?string
+{
+    static $cached = false, $url = null;
+    if ($cached) return $url;
+    $cached = true;
+    try {
+        if (!setting_bool('client_portal_enabled', false)) return $url = null;
+        $u = (string)get_setting('client_portal_url', '');
+    } catch (\Throwable $e) {
+        return $url = null;
+    }
+    return $url = (is_https_url($u) ? $u : null);
+}
+
 function set_setting(string $key, string $value): void
 {
     $u = auth_user();

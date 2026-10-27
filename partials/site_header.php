@@ -56,6 +56,9 @@ $base      = $P['base'] ?? '';   // '' en la raíz, '../' en subcarpetas (servic
                     <?php if (site_section_enabled('faqs')): ?>
                     <li><a href="<?= $base ?>index.php#preguntas">Preguntas Frecuentes</a></li>
                     <?php endif; ?>
+                    <?php if ($portalUrl = client_portal_url()): ?>
+                    <li><a href="<?= esc($portalUrl) ?>" rel="noopener">Portal de Clientes</a></li>
+                    <?php endif; ?>
                     <li><a href="<?= $base ?>index.php#contacto">Contacto</a></li>
                 </ul>
             </nav>

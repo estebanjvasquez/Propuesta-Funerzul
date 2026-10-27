@@ -13,6 +13,8 @@ $secObituarios       = true;
 $secDirectorioMedico = true;
 $secRecursos         = true;
 $secFaqs             = true;
+// El Portal de Clientes, en cambio, falla CERRADO (ver client_portal_url()).
+$portalUrl           = null;
 $cfgFile = __DIR__ . '/api/config.php';
 if (is_file($cfgFile)) {
     try {
@@ -24,6 +26,7 @@ if (is_file($cfgFile)) {
         $secDirectorioMedico = site_section_enabled('directorio_medico');
         $secRecursos         = site_section_enabled('recursos');
         $secFaqs             = site_section_enabled('faqs');
+        $portalUrl           = client_portal_url();
         $faqs = $secFaqs ? db()->query(
             "SELECT question, answer FROM faqs WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
         )->fetchAll(PDO::FETCH_ASSOC) : [];
@@ -183,6 +186,9 @@ function fz_site_url(string $path = ''): string {
                     <?php endif; ?>
                     <?php if ($secFaqs): ?>
                     <li><a href="#preguntas">Preguntas Frecuentes</a></li>
+                    <?php endif; ?>
+                    <?php if ($portalUrl): ?>
+                    <li><a href="<?= fz_e($portalUrl) ?>" rel="noopener">Portal de Clientes</a></li>
                     <?php endif; ?>
                     <li><a href="#contacto">Contacto</a></li>
                 </ul>
@@ -518,6 +524,9 @@ function fz_site_url(string $path = ''): string {
                         <?php endif; ?>
                         <?php if ($secFaqs): ?>
                         <li><a href="#preguntas">Preguntas Frecuentes</a></li>
+                        <?php endif; ?>
+                        <?php if ($portalUrl): ?>
+                        <li><a href="<?= fz_e($portalUrl) ?>" rel="noopener">Portal de Clientes</a></li>
                         <?php endif; ?>
                     </ul>
                 </div>

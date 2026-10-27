@@ -20,7 +20,7 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 | Tarea | Estado | Notas |
 |---|---|---|
-| Restablecer la conexión a MySQL del sitio de prueba | Pendiente | Desde el 2026-10-08 (al menos) todo endpoint con BD responde `SQLSTATE[HY000] [2002] Resource temporarily unavailable` de forma sostenida (6/6 intentos en 30 s). Caídos: `obituarios.php`, `api/obituaries.php`, `api/templates.php`. Revisar en cPanel → phpMyAdmin; si no entra, ticket al hosting; si entra, probar `host` = `127.0.0.1` o `160.153.190.119` en `api/config.php`. |
+| **Cambiar la contraseña del admin inicial** (y su correo genérico) | Pendiente | La contraseña sembrada en `database/01_schema.sql` está a la vista y el repo es **público**. Si nunca se cambió, cualquiera entra al panel. Ver `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md`, paso 0. |
 | Poner `app.env` en `'production'` en el `api/config.php` del servidor | Pendiente | Hoy está en `development`: la API publica el mensaje crudo de la excepción de PDO (ver `api/lib/bootstrap.php`). |
 | Corregir `app.site_url` en el `api/config.php` del servidor | Pendiente | Verificado otra vez el 2026-10-08: canonical/og:url salen como `https://www.https://legadoholding.com/funerzul/...`. Rompe canonical/OG/JSON-LD/sitemap en ~30 páginas. Lo corrige quien tenga acceso al servidor (archivo fuera de git). Ver `docs/specs/2026-09-09-auditoria-seo-funerzul.md`. |
 | Recuperar una copia de `api/config.php` del servidor | Pendiente | La copia local se perdió con el equipo anterior. Guardarla fuera del repo (nunca se commitea). |
@@ -32,8 +32,16 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 |---|---|---|
 | Cargar el catálogo de servicios del tenant `fdz` | Pendiente | `GET /api/public/t/fdz/servicios` sigue devolviendo `items: []` (2026-10-08). El tenant `lh` sí tiene 3 servicios. Ojo: los slugs no coinciden con los 4 de `servicios/*.php`. |
 | Corregir precio de Tradición por debajo de Esencial | Pendiente | 2026-10-08: TRADICION US$12,00/mes vs. ESENCIAL US$13,70/mes. El catálogo de `fdz` tiene ahora 9 planes (incluye variantes "NEW" y planes de empleados al 30%/50%) — confirmar cuáles deben mostrarse en el sitio público. |
-| SSO del panel admin de este sitio con el staff del tenant `fdz` | Bloqueado | El módulo de autenticación compartida no existe en Prevision-Funeraria. Ver `docs/specs/2026-08-28-fase-e-corte-admin-prevision.md`. |
 | Mercantil: spec completa (`POST /api` + MasterKey del webhook) | Bloqueado | Depende del banco. Relevante para Prevision-Funeraria; este repo ya no tiene endpoints de cobro. *(Migrada de Notion.)* |
+
+### Seguridad del login y portal de clientes
+
+| Tarea | Estado | Notas |
+|---|---|---|
+| Fase 1 de seguridad del login: límite de intentos, MFA TOTP, vencimientos, revocación, recuperación por correo, cabeceras, 4 perfiles | Pendiente (aprobada) | Opción C aprobada el 2026-10-27. Detalle: `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md`, secciones 4-5. Migración nueva `database/15_...sql`. |
+| Aplicar `database/14_portal_clientes.sql` en el servidor y probar el interruptor del Portal de Clientes | Pendiente | Código listo (2026-10-27), sin probar contra PHP/MySQL real. Activar el enlace solo cuando el portal de PF esté listo para `fdz`. |
+| PF: entregabilidad del correo del OTP y marca FDZ | Pendiente (en Prevision-Funeraria) | El OTP queda **solo por correo** (decisión 2026-10-27); clientes sin correo registrado no pueden entrar — limitación conocida. |
+| PF: proveedor de identidad para "Entrar con Previsión Funeraria" (Fase 2, SSO del panel con el staff de `fdz`) | Bloqueado | Reemplaza la tarea de SSO anterior. No existe en Prevision-Funeraria; contrato mínimo en la spec del 2026-10-27, sección 4. |
 
 ### Repositorio / documentación
 
@@ -50,6 +58,9 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 | Tarea | Estado | Motivo |
 |---|---|---|
+| Decidir esquema de login del personal y perfiles | Hecho | 2026-10-27: Opción C (híbrida) + 4 perfiles; portal de clientes en PF con OTP solo por correo. Ver sección 8 de la spec. |
+| Enlace "Portal de Clientes" con interruptor y URL en Configuración | Hecho | 2026-10-27, arranca apagado. Falta aplicarlo en el servidor (tarea abierta arriba). |
+| Restablecer la conexión a MySQL del sitio de prueba | Hecho | Caída verificada el 2026-10-08 (`SQLSTATE[HY000] [2002]`); el 2026-10-27 `api/templates.php?action=list` ya devuelve datos. No se registró qué la resolvió. |
 | Confirmar si sigue el módulo PHP de previsión o se migra a Prevision-Funeraria | Hecho | Decidido el 2026-08-28: corte inmediato, módulo retirado (respaldo en `archive/modulo-prevision-php`). *(Migrada de Notion.)* |
 | Ronda 3 del módulo de previsión (domiciliación, planes colectivos, imprimibles, envejecimiento de dependientes) | Obsoleto | El módulo PHP se retiró el 2026-08-28; si hace falta, es trabajo de Prevision-Funeraria. *(Migrada de Notion.)* |
 | Numeración de contratos configurable (`docs/prevision/plan-2026-08-07.md`) | Obsoleto | Mismo motivo: los contratos viven ahora en Prevision-Funeraria. *(Migrada de Notion.)* |

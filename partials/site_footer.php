@@ -29,6 +29,9 @@ $base = ($PAGE['base'] ?? ''); ?>
                         <?php if (site_section_enabled('faqs')): ?>
                         <li><a href="<?= $base ?>index.php#preguntas">Preguntas Frecuentes</a></li>
                         <?php endif; ?>
+                        <?php if ($portalUrl = client_portal_url()): ?>
+                        <li><a href="<?= esc($portalUrl) ?>" rel="noopener">Portal de Clientes</a></li>
+                        <?php endif; ?>
                     </ul>
                 </div>
                 <div>

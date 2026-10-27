@@ -249,6 +249,12 @@ Pestaña **Configuración**:
   del menú, del pie de página y de la portada, y su página directa deja de
   mostrarse (muestra "Sección no disponible" en su lugar). El contenido no
   se borra — vuelve a aparecer tal cual estaba al reactivarla.
+- **Portal de Clientes** (interruptor + URL): muestra el enlace "Portal de
+  Clientes" en el menú y el pie de página, hacia el portal de Previsión
+  Funeraria donde los titulares consultan contratos y pagos (entran con su
+  cédula y un código que reciben por correo). Viene **apagado**: actívelo
+  cuando el portal esté listo. La URL debe empezar con `https://`; por defecto
+  es `https://app.previsionfuneraria.com/portal/login?empresa=fdz`.
 
 **¿Qué es la purga?** Para ahorrar espacio en el disco, una rutina automática
 **borra la foto** de los obituarios con más de N días y la reemplaza por una imagen

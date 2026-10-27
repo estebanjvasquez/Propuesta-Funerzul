@@ -990,10 +990,16 @@ async function loadSettings() {
         $('#set_section_directorio_medico_enabled').checked = (s.section_directorio_medico_enabled?.value ?? '1') === '1';
         $('#set_section_recursos_enabled').checked = (s.section_recursos_enabled?.value ?? '1') === '1';
         $('#set_section_faqs_enabled').checked = (s.section_faqs_enabled?.value ?? '1') === '1';
+        $('#set_client_portal_enabled').checked = (s.client_portal_enabled?.value ?? '0') === '1';
+        $('#set_client_portal_url').value = s.client_portal_url?.value ?? '';
     } catch (e) { toast(e.message); }
 }
 async function saveSettings(e) {
     e.preventDefault();
+    if ($('#set_client_portal_enabled').checked && !$('#set_client_portal_url').value.trim()) {
+        toast('Indique la URL del portal de clientes antes de activarlo.');
+        return;
+    }
     try {
         await API.req('settings.php?action=update', {
             method: 'POST',
@@ -1006,7 +1012,9 @@ async function saveSettings(e) {
                     section_obituarios_enabled: $('#set_section_obituarios_enabled').checked,
                     section_directorio_medico_enabled: $('#set_section_directorio_medico_enabled').checked,
                     section_recursos_enabled: $('#set_section_recursos_enabled').checked,
-                    section_faqs_enabled: $('#set_section_faqs_enabled').checked
+                    section_faqs_enabled: $('#set_section_faqs_enabled').checked,
+                    client_portal_enabled: $('#set_client_portal_enabled').checked,
+                    client_portal_url: $('#set_client_portal_url').value.trim()
                 }
             }
         });

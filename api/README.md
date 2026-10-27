@@ -73,7 +73,7 @@ requieren sesión y la cabecera `X-CSRF-Token` (se obtiene al hacer login).
 | `templates.php?action=list\|get` | GET | público | plantillas activas |
 | `templates.php?action=create\|update\|set_default\|delete` | POST | admin | gestión |
 | `settings.php?action=get` | GET | staff | leer configuración |
-| `settings.php?action=update` | POST | admin | cambiar purga/portada/**secciones del sitio** (`section_obituarios_enabled`, `section_directorio_medico_enabled`, `section_recursos_enabled`, `section_faqs_enabled` — ver `site_section_enabled()` en `lib/helpers.php`) |
+| `settings.php?action=update` | POST | admin | cambiar purga/portada/**secciones del sitio** (`section_obituarios_enabled`, `section_directorio_medico_enabled`, `section_recursos_enabled`, `section_faqs_enabled` — ver `site_section_enabled()` en `lib/helpers.php`) y **portal de clientes** (`client_portal_enabled`, `client_portal_url` — https obligatorio, 422 si no; ver `client_portal_url()`). Valida todo antes de guardar: un valor inválido no aplica ningún cambio. |
 | `users.php?action=...` | GET/POST | admin | gestión de usuarios |
 | `upload.php` | POST | editor/admin | subir foto (multipart, campo `photo`) |
 | `obituary_card.php?id=&style=cinta\|esquela` | GET | editor/admin | Descarga PNG (1080×1920) de la tarjeta de obituario para compartir — ver `docs/specs/2026-09-08-tarjetas-obituario.md`. Puro GD (sin Imagick), fuentes en `assets/fonts/`. |

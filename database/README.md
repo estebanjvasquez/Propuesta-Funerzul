@@ -37,6 +37,12 @@ disco y backend PHP, todo junto).
   "Cinta Conmemorativa" (id 4): pasa a usar `img/obit-cinta-header.png`
   (recorte de la imagen real de la funeraria) en vez de una cinta dibujada
   con CSS/GD. Segura de correr aunque la 12 todavía no se haya aplicado.
+- **`14_portal_clientes.sql`** — No agrega tablas: siembra en `app_settings`
+  `client_portal_enabled` en `0` (apagado) y `client_portal_url` con el portal
+  del titular de Prevision-Funeraria para `fdz`. Controla el enlace "Portal de
+  Clientes" del sitio público desde Configuración — ver `client_portal_url()`
+  en `api/lib/helpers.php` y
+  `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -79,8 +85,9 @@ disco y backend PHP, todo junto).
 2. Pestaña **Importar** → **Seleccionar archivo** → `database/01_schema.sql` → **Continuar**.
 3. Verifica que aparezcan las **7 tablas**.
 4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
-   `11_secciones_toggle.sql`, `12_plantillas_esquela.sql` y
-   `13_plantilla_cinta_imagen_real.sql` (en ese orden).
+   `11_secciones_toggle.sql`, `12_plantillas_esquela.sql`,
+   `13_plantilla_cinta_imagen_real.sql` y `14_portal_clientes.sql` (en ese
+   orden).
 
 ### 3. Iniciar sesión y asegurar el admin
 

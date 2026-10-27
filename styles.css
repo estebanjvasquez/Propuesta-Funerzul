@@ -1883,6 +1883,7 @@ textarea.form-control {
 .setting-row:last-of-type { border-bottom: none; }
 .setting-help { font-size: 12px; color: var(--color-text-muted); margin-top: 4px; max-width: 420px; }
 .setting-input { width: 110px; }
+.setting-input-url { width: 100%; max-width: 420px; }
 .setting-actions { padding: 20px 0; }
 .settings-subheading {
     font-size: 15px; font-weight: 700; color: var(--color-primary);
