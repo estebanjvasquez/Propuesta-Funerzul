@@ -64,7 +64,7 @@ function fz_site_url(string $path = ''): string {
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="styles.css?v=20261027-3">
+    <link rel="stylesheet" href="styles.css?v=20261027-4">
 
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -492,8 +492,60 @@ function fz_site_url(string $path = ''): string {
     </section>
     <?php endif; ?>
 
-    <!-- 8. CONTACTO / FOOTER -->
-    <footer id="contacto" class="footer">
+    <!-- 8. CONTACTO — destino del enlace "Contacto" del menú (pedido 2026-10-27:
+         sin formulario, solo llamada directa o WhatsApp). Mismos números que el
+         pie de página; WhatsApp solo en los celulares (los 0261 son fijos). -->
+    <section id="contacto" class="section contact-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Contáctenos</h2>
+                <p>Le atendemos las 24 horas, los 7 días de la semana, en Maracaibo y todo el Estado Zulia. Llámenos o escríbanos por WhatsApp.</p>
+            </div>
+
+            <div class="contact-grid">
+                <article class="contact-card contact-card-urgent">
+                    <h3>Emergencias 24/7</h3>
+                    <p>Para un fallecimiento o un servicio inmediato.</p>
+                    <div class="contact-actions">
+                        <a href="tel:+584246950136" class="btn btn-primary btn-lg">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.01-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            Llamar +58 424 695-0136
+                        </a>
+                        <a href="https://api.whatsapp.com/send?phone=584246950136&amp;text=<?= rawurlencode('Hola, necesito atención de Funeraria del Zulia.') ?>" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005 0-3.973-.5-5.743-1.455L0 24zm6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24z"/></svg>
+                            WhatsApp
+                        </a>
+                    </div>
+                    <p class="contact-alt">También: <a href="tel:+582614176653">+58 261 417-6653</a></p>
+                </article>
+
+                <article class="contact-card">
+                    <h3>Planes de Previsión</h3>
+                    <p>Asesoría para elegir o contratar un plan, sin compromiso.</p>
+                    <div class="contact-actions">
+                        <a href="tel:+584146523319" class="btn btn-primary btn-lg">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.01-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                            Llamar +58 414 652-3319
+                        </a>
+                        <a href="https://api.whatsapp.com/send?phone=584146523319&amp;text=<?= rawurlencode('Hola, deseo asesoría sobre los planes de previsión funeraria.') ?>" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005 0-3.973-.5-5.743-1.455L0 24zm6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24z"/></svg>
+                            WhatsApp
+                        </a>
+                    </div>
+                    <p class="contact-alt">También: <a href="tel:+582616177805">+58 261 617-7805</a></p>
+                </article>
+            </div>
+
+            <ul class="contact-info">
+                <li><strong>Dirección:</strong> Calle 84 No. 3F-70, Edificio Funeraria del Zulia, Sector Valle Frío, Maracaibo 4001, Estado Zulia. <a href="https://www.google.com/maps/search/?api=1&amp;query=M95W%2B839%20Maracaibo" target="_blank" rel="noopener">Cómo llegar</a></li>
+                <li><strong>Horario:</strong> Lunes a domingo, 24 horas.</li>
+                <li><strong>Correo:</strong> <a href="mailto:contacto@funerariadelzulia.com">contacto@funerariadelzulia.com</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 9. FOOTER -->
+    <footer class="footer">
         <div class="container">
             <div class="footer-grid">
                 <!-- Brand Info -->
