@@ -28,6 +28,26 @@ $planes = [
      'age' => 'Edad máxima de ingreso: 65 años'],
 ];
 
+// Tabla comparativa (pedido 2026-10-27). Columnas en el mismo orden que $planes:
+// Tradición, Esencial, Vanguardia. Fuente: textos de este sitio + descripción
+// detallada de cada plan en el catálogo de Prevision-Funeraria (Esencial: "velatorio,
+// embalsamamiento, transporte, asistencia administrativa y cremación" -- sin oficios
+// ni arreglo floral; Vanguardia: "todo lo del Plan Tradición más cremación o gastos
+// de inhumación"). true = incluido, false = no incluido, string = texto propio.
+// Confirmar con el cliente antes de anunciar (ver docs/BACKLOG.md).
+$comparativa = [
+    ['Traslado y preparación del cuerpo',          [true, true, true]],
+    ['Acto velatorio en capilla',                  [true, true, true]],
+    ['Servicio a domicilio',                       [true, false, true]],
+    ['Oficios religiosos católicos',               [true, false, true]],
+    ['Arreglo floral',                             [true, false, true]],
+    ['Cafetería',                                  [true, false, true]],
+    ['Gestión documental (actas y permisos)',      [true, true, true]],
+    ['Cremación',                                  [false, true, 'Incluida (o gastos de inhumación, a elección)']],
+    ['Gastos de inhumación en cementerio',         ['Requiere bóveda o espacio propio', false, 'Incluidos (o cremación, a elección)']],
+    ['Edad máxima de ingreso',                     ['65 años', '65 años', '65 años']],
+];
+
 $itemList = ['@context' => 'https://schema.org', '@type' => 'ItemList',
     'itemListElement' => array_map(fn($i, $p) => [
         '@type' => 'ListItem', 'position' => $i + 1, 'name' => $p['name'],
@@ -72,6 +92,48 @@ require __DIR__ . '/../partials/site_header.php';
     </div>
 
     <p class="prevision-note">Todos los planes incluyen cobertura familiar, financiamiento adaptable, atención 24 horas y planificación anticipada.</p>
+
+    <section id="comparar" class="plans-compare" aria-labelledby="comparar-titulo">
+        <h2 id="comparar-titulo">Compare nuestros planes</h2>
+        <div class="plans-compare-scroll">
+            <table class="plans-compare-table">
+                <thead>
+                    <tr>
+                        <th scope="col"><span class="sr-only">Qué incluye</span></th>
+                        <?php foreach ($planes as $p): ?>
+                        <th scope="col"<?= $p['featured'] ? ' class="is-featured"' : '' ?>>
+                            <?= esc($p['name']) ?>
+                            <span class="plans-compare-sub"><?= esc($p['subtitle']) ?></span>
+                        </th>
+                        <?php endforeach; ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($comparativa as [$fila, $celdas]): ?>
+                    <tr>
+                        <th scope="row"><?= esc($fila) ?></th>
+                        <?php foreach ($celdas as $i => $c): ?>
+                        <td<?= !empty($planes[$i]['featured']) ? ' class="is-featured"' : '' ?>>
+                            <?php if ($c === true): ?><span class="cmp-yes" aria-hidden="true">✓</span><span class="sr-only">Incluido</span>
+                            <?php elseif ($c === false): ?><span class="cmp-no" aria-hidden="true">—</span><span class="sr-only">No incluido</span>
+                            <?php else: ?><span class="cmp-text"><?= esc($c) ?></span><?php endif; ?>
+                        </td>
+                        <?php endforeach; ?>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td></td>
+                        <?php foreach ($planes as $p): ?>
+                        <td<?= $p['featured'] ? ' class="is-featured"' : '' ?>><a class="btn btn-outline btn-sm" href="<?= esc($p['slug']) ?>">Ver detalle</a></td>
+                        <?php endforeach; ?>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <p class="plans-compare-note">Comparativa referencial. Un asesor le confirma coberturas y condiciones antes de contratar.</p>
+    </section>
 
     <?php
     $ctaHeading    = 'Asesoría de planes de previsión';

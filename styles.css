@@ -2384,3 +2384,37 @@ textarea.form-control {
 .prev-radio-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--color-border, #e3e3e3); border-radius: 8px; margin-bottom: 6px; cursor: pointer; }
 .prev-radio-row:hover { background: var(--color-surface-high, #f5f5f5); }
 .prev-radio-row span { flex: 1; font-size: 14px; }
+
+/* ==========================================================================
+   TABLA COMPARATIVA DE PLANES (planes/index.php#comparar, 2026-10-27)
+   ========================================================================== */
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.plans-compare { margin: 56px 0 8px; scroll-margin-top: 96px; }
+.plans-compare h2 { text-align: center; margin-bottom: 24px; }
+/* En móvil la tabla se desplaza dentro de su caja, nunca la página entera. */
+.plans-compare-scroll {
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--color-surface-high); border-radius: var(--radius-lg);
+    background: var(--color-surface); box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06));
+}
+.plans-compare-table { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 14px; }
+.plans-compare-table th,
+.plans-compare-table td { padding: 14px 16px; border-bottom: 1px solid var(--color-surface-high); text-align: center; vertical-align: middle; }
+.plans-compare-table thead th {
+    font-family: var(--font-display); font-size: 17px; color: var(--color-primary);
+    background: var(--color-surface-low); vertical-align: bottom;
+}
+.plans-compare-sub { display: block; font-family: var(--font-sans); font-size: 12px; font-weight: 600; color: var(--color-text-muted); margin-top: 4px; }
+.plans-compare-table tbody th { text-align: left; font-weight: 600; color: var(--color-text); width: 32%; }
+.plans-compare-table tbody tr:nth-child(even) th,
+.plans-compare-table tbody tr:nth-child(even) td { background: rgba(238, 244, 251, 0.45); }
+.plans-compare-table .is-featured { background: rgba(184, 134, 11, 0.07) !important; }
+.plans-compare-table thead th.is-featured { box-shadow: inset 0 3px 0 var(--color-secondary); }
+.plans-compare-table tfoot td { border-bottom: none; padding-top: 18px; padding-bottom: 18px; }
+.cmp-yes { color: var(--color-primary); font-size: 18px; font-weight: 700; }
+.cmp-no { color: var(--color-outline); font-size: 18px; }
+.cmp-text { font-size: 13px; color: var(--color-text-muted); }
+.plans-compare-note { text-align: center; font-size: 13px; color: var(--color-text-muted); margin-top: 12px; }
