@@ -192,7 +192,8 @@ function oc_circle_photo($img, string $photoAbsPath, int $cx, int $cy, int $diam
 /** true solo si hay una foto real subida (no el placeholder ni una purgada). */
 function oc_has_real_photo(array $o): bool
 {
-    return !empty($o['photo_path']) && empty($o['photo_purged']);
+    return !empty($o['photo_path']) && empty($o['photo_purged'])
+        && $o['photo_path'] !== get_setting('photo_placeholder_path', 'uploads/obituarios/_placeholder.webp');
 }
 
 /**
@@ -243,8 +244,8 @@ function obit_card_cinta(array $o)
         }
     }
 
-    oc_text_center($img, 'Paz a su alma', $fPlayfairItalic, 40, $gold, $y);
-    $y += 90;
+    oc_text_center($img, 'Paz a su alma', $fPlayfairItalic, 58, $white, $y);
+    $y += 110;
 
     $dates = trim(($o['birth_year'] ? $o['birth_year'] . ' — ' : '') . ($o['death_date'] ?? ''));
     if ($dates !== '') oc_text_center($img, $dates, $fInter, 34, $mist, $y);

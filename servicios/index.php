@@ -9,9 +9,9 @@ $desc      = 'Servicios funerarios integrales en Maracaibo y el Estado Zulia: se
 
 $servicios = [
     ['slug' => 'sepelio-tradicional.php', 'img' => 'img/sepelio-tradicional.svg', 'name' => 'Sepelio Tradicional',
-     'desc' => 'Velación, oficios religiosos y gestión completa, fiel a sus creencias y tradiciones.'],
+     'desc' => 'Acto velatorio, oficios religiosos y gestión completa, fiel a sus creencias y tradiciones.'],
     ['slug' => 'cremacion.php', 'img' => 'img/cremacion.svg', 'name' => 'Cremación en Maracaibo',
-     'desc' => 'Cremación directa o con velación previa, en crematorio propio y con todos los permisos.'],
+     'desc' => 'Cremación directa o con acto velatorio previo, en crematorio propio y con todos los permisos.'],
     ['slug' => 'traslados.php', 'img' => 'img/traslados.svg', 'name' => 'Traslados Nacionales',
      'desc' => 'Traslados seguros desde y hacia el Estado Zulia, con permisos y documentación incluidos.'],
     ['slug' => 'capillas-velatorias.php', 'img' => 'img/capillas-velatorias.svg', 'name' => 'Capillas Velatorias',

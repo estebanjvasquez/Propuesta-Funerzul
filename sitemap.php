@@ -35,7 +35,7 @@ foreach (['sepelio-tradicional', 'cremacion', 'traslados', 'capillas-velatorias'
 
 // Planes de previsión
 sm_url(site_url('planes/'), SITEMAP_STATIC_LASTMOD, 'monthly', '0.9');
-foreach (['plan-esencial', 'plan-tradicion', 'plan-vanguardia', 'plan-vanguardia-plus'] as $p) {
+foreach (['plan-tradicion', 'plan-esencial', 'plan-vanguardia'] as $p) {
     sm_url(site_url('planes/' . $p . '.php'), SITEMAP_STATIC_LASTMOD, 'monthly', '0.8');
 }
 

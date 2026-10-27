@@ -49,7 +49,7 @@ Propuesta Funerzul/
 │  obituarios.php          Listado público de obituarios (estilo periódico)
 │  obituario.php           Página individual de un obituario (SEO + JSON-LD)
 │  servicios/              Páginas de servicios (hub + cremación, sepelio, traslados, capillas)
-│  planes/                 Páginas de planes de previsión (hub + 4 planes)
+│  planes/                 Páginas de planes de previsión (hub + 3 planes: Tradición, Esencial, Vanguardia)
 │  directorio-medico.php   Directorio médico (lista) · medico.php (ficha)
 │  recursos.php            Recursos de lectura (lista) · recurso.php (artículo)
 │  sitemap.php             Sitemap XML dinámico
@@ -138,7 +138,7 @@ pestaña *Condolencias* cuando hay mensajes pendientes).
 2. Completa el formulario:
    - **Nombre completo del fallecido** *(obligatorio)*.
    - **Año de nacimiento** y **Fecha de fallecimiento** *(obligatoria)*.
-   - **Tipo de servicio**: Velación, Cremación, Homenaje Póstumo, Traslado u Otro.
+   - **Tipo de servicio**: Acto Velatorio, Cremación, Homenaje Póstumo, Traslado u Otro.
    - **Estado**:
      - *Activo* → visible en el sitio.
      - *Borrador* → guardado pero **no** visible (para preparar con calma).
@@ -147,7 +147,9 @@ pestaña *Condolencias* cuando hay mensajes pendientes).
    - **Biografía / nota recordatoria**.
    - **Plantilla**: el diseño con que se mostrará su página (ver punto 8).
    - **Fotografía**: elige un archivo **JPG, PNG o WebP**. Se sube al servidor y se
-     optimiza automáticamente. Si no pones foto, se usa una imagen con el logo.
+     optimiza automáticamente. La foto es opcional: si no pones una, la página del
+     obituario simplemente no muestra foto (las plantillas incluidas usan
+     `{{photo_optional}}`; ver punto 8).
 3. **Guardar obituario**. Aparecerá en la tabla y, si está *Activo*, en el sitio.
 
 > La **URL pública** (slug) se genera sola a partir del nombre y la fecha,
@@ -257,8 +259,8 @@ Pestaña **Configuración**:
   es `https://app.previsionfuneraria.com/portal/login?empresa=fdz`.
 
 **¿Qué es la purga?** Para ahorrar espacio en el disco, una rutina automática
-**borra la foto** de los obituarios con más de N días y la reemplaza por una imagen
-con el logo. **El obituario y todo su texto permanecen publicados e indexables** por
+**borra la foto** de los obituarios con más de N días; desde entonces la página deja de
+mostrar foto. **El obituario y todo su texto permanecen publicados e indexables** por
 buscadores e IA — solo se libera el peso de la foto.
 
 ---

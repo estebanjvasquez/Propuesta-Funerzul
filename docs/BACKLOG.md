@@ -34,6 +34,18 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 | Corregir precio de Tradición por debajo de Esencial | Pendiente | 2026-10-08: TRADICION US$12,00/mes vs. ESENCIAL US$13,70/mes. El catálogo de `fdz` tiene ahora 9 planes (incluye variantes "NEW" y planes de empleados al 30%/50%) — confirmar cuáles deben mostrarse en el sitio público. |
 | Mercantil: spec completa (`POST /api` + MasterKey del webhook) | Bloqueado | Depende del banco. Relevante para Prevision-Funeraria; este repo ya no tiene endpoints de cobro. *(Migrada de Notion.)* |
 
+### Comentarios del cliente (2026-10-27) — pendientes
+
+| Tarea | Estado | Notas |
+|---|---|---|
+| Aplicar migraciones 15 y 16 en el servidor y desplegar | Pendiente | `15_obituarios_ajustes_cliente.sql` (Acto Velatorio, fotos falsas, "En memoria de", sin logo cuando no hay foto) y `16_faq_aseguradoras.sql`. Importar la 15 **antes** de usar el panel con el código nuevo. |
+| Grupo Selecto como 4to plan | Pendiente (falta contenido) | Va en el lugar del Vanguardia Plus (portada y `planes/`). No existe en el repo, en el catálogo de Prevision-Funeraria ni en funerariadelzulia.com: falta nombre exacto, a quién va dirigido, qué incluye, edad y si tiene página propia. |
+| ¿Los planes son "a nivel regional"? | Pendiente (respuesta del cliente) | El cliente lo pregunta por cada plan. Falta definir la cobertura geográfica para publicarla. |
+| Confirmar color de "Paz a su alma" | Pendiente (confirmar) | Se agrandó y pasó de dorado a blanco en la Cinta Conmemorativa (web y PNG). El cliente pidió "otro color" sin decir cuál. |
+| Confirmar que "el logo que no va" era la imagen genérica sin foto | Pendiente (confirmar) | Corregido: ya no se muestra el logo cuando no hay foto. Si se refería al logo que viene dentro de la imagen de cabecera de la Cinta (`img/obit-cinta-header.png`), hay que recortar esa imagen. |
+| Vanguardia Plus en Prevision-Funeraria | Pendiente (en PF) | Se retiró del sitio; sigue en el catálogo de `fdz` en PF (y las variantes "NEW" y de empleados). Decidir si se desactiva allí. |
+| Textos de "velación" que vienen de Prevision-Funeraria | Pendiente (en PF) | La descripción detallada del plan Tradición en PF dice "sala de velación por 24 horas". Hoy el sitio no la muestra, pero el portal de clientes sí podría. |
+
 ### Seguridad del login y portal de clientes
 
 | Tarea | Estado | Notas |

@@ -1611,6 +1611,11 @@ textarea.form-control {
     font-size: 22px;
     margin-bottom: 8px;
 }
+/* Qué cubre el plan, entre paréntesis bajo el nombre -- p. ej. "(Funeral +
+   cremación)" -- y la edad máxima de ingreso (pedidos del cliente 2026-10-27). */
+.plan-subtitle { font-size: 14px; font-weight: 600; color: var(--color-primary); margin: -4px 0 10px; }
+.plan-subtitle-inline { display: block; font-size: 0.55em; font-weight: 600; color: var(--color-primary-light); margin-top: 6px; }
+.plan-age { font-size: 13px; font-weight: 600; color: var(--color-text-muted); margin: 0 0 16px; }
 .plan-target {
     font-size: 13px;
     color: var(--color-text-muted);
@@ -1669,13 +1674,14 @@ textarea.form-control {
 .map-container p { color: rgba(255, 255, 255, 0.7); }
 .map-address { margin-top: 8px; font-weight: 600; }
 .footer-address { font-size: 13px; }
+/* 60px (antes 44px): el cliente reportó el logo pequeño (2026-10-27). */
 .header-logo-img {
-    height: 44px;
+    height: 60px;
     width: auto;
     display: block;
 }
 @media (max-width: 480px) {
-    .header-logo-img { height: 38px; }
+    .header-logo-img { height: 46px; }
 }
 .footer-logo {
     margin-bottom: 20px;
@@ -1946,7 +1952,9 @@ textarea.form-control {
 }
 .obit-detail h1 { font-size: 34px; margin-bottom: 8px; }
 .obit-detail-dates, .obit-dates { color: var(--color-text-muted); font-size: 15px; margin-bottom: 6px; }
-.obit-qepd { font-family: var(--font-display); font-style: italic; color: var(--color-secondary-hover); margin-bottom: 20px; letter-spacing: 0.1em; }
+/* "En memoria de" sobre el nombre en la plantilla predeterminada (migración 15). */
+.obit-kicker { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--color-primary-light); margin-bottom: 4px; }
+.obit-qepd { font-family: var(--font-display); font-style: italic; font-size: 24px; color: var(--color-secondary-hover); margin-bottom: 20px; letter-spacing: 0.1em; }
 .obit-detail-photo, .obit-photo img {
     width: 220px; height: 220px; object-fit: cover; border-radius: var(--radius-md);
     margin: 0 auto 24px; display: block; border: 3px solid var(--color-surface-low);
@@ -2006,12 +2014,17 @@ textarea.form-control {
 .obit-cinta-header {
     width: 100%;
     aspect-ratio: 900 / 745;
-    background: url('img/obit-cinta-header.png') center top / cover no-repeat;
+    /* Degradado al navy del cuerpo en el borde inferior: sin él se notaba el
+       corte entre la imagen y el fondo, y la tarjeta parecía hecha de dos
+       imágenes (reportado por el cliente 2026-10-27). */
+    background:
+        linear-gradient(to bottom, rgba(4, 29, 49, 0) 72%, #041D31 100%),
+        url('img/obit-cinta-header.png') center top / cover no-repeat;
 }
 .obit-cinta-body { position: relative; padding: 20px 40px 44px; }
-.obit-cinta-kicker { font-family: var(--font-display); font-style: italic; font-size: 19px; color: var(--color-celeste-light); margin-bottom: 2px; position: relative; z-index: 1; }
+.obit-cinta-kicker { font-family: var(--font-display); font-style: italic; font-size: 24px; color: var(--color-celeste-light); margin-bottom: 2px; position: relative; z-index: 1; }
 .obit-cinta h1 { color: #fff; font-size: 30px; margin-bottom: 8px; position: relative; z-index: 1; }
-.obit-cinta .obit-qepd { color: var(--color-secondary-light); position: relative; z-index: 1; }
+.obit-cinta .obit-qepd { color: #fff; font-size: 28px; position: relative; z-index: 1; }
 .obit-cinta .obit-dates { color: rgba(255,255,255,0.78); position: relative; z-index: 1; }
 .obit-cinta .obit-photo { position: relative; z-index: 1; }
 .obit-cinta .obit-photo img { border-color: rgba(255,255,255,0.35); }

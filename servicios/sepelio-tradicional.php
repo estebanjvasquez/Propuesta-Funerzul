@@ -5,7 +5,7 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('servicios/sepelio-tradicional.php');
 $img       = site_url('servicios/img/sepelio-tradicional.svg');
 $title     = 'Sepelio Tradicional en Maracaibo | Funeraria del Zulia';
-$desc      = 'Sepelio tradicional en Maracaibo: velación en capilla, oficios religiosos, arreglos florales y gestión completa, con atención 24/7.';
+$desc      = 'Sepelio tradicional en Maracaibo: acto velatorio en capilla, oficios religiosos, arreglos florales y gestión completa, con atención 24/7.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Sepelio Tradicional', $desc, $canonical, $img)
@@ -22,14 +22,14 @@ require __DIR__ . '/../partials/site_header.php';
     <nav class="breadcrumb"><a href="../index.php">Inicio</a> › <a href="./">Servicios</a> › <span>Sepelio Tradicional</span></nav>
 
     <article class="service-detail-body">
-        <img src="img/sepelio-tradicional.svg" alt="Sepelio tradicional y velación en Maracaibo — Funeraria del Zulia" class="service-hero-img" width="1200" height="600">
+        <img src="img/sepelio-tradicional.svg" alt="Sepelio tradicional y acto velatorio en Maracaibo — Funeraria del Zulia" class="service-hero-img" width="1200" height="600">
 
         <h1>Sepelio Tradicional en Maracaibo</h1>
         <p class="service-lead">El <strong>sepelio tradicional</strong> de Funeraria del Zulia ofrece una despedida solemne y respetuosa, fiel a sus creencias y tradiciones familiares. Acompañamos a las familias de Maracaibo y todo el Estado Zulia con cercanía humana y atención las 24 horas.</p>
 
         <h2>¿Qué incluye el sepelio tradicional?</h2>
         <ul class="service-list">
-            <li><strong>Velación</strong> en nuestras capillas climatizadas y serenas.</li>
+            <li><strong>Acto velatorio</strong> en nuestras capillas climatizadas y serenas.</li>
             <li>Cofre (ataúd) y preparación del fallecido con respeto.</li>
             <li><strong>Oficios religiosos</strong> según sus creencias.</li>
             <li>Arreglos florales, cafetería y atención a los acompañantes.</li>

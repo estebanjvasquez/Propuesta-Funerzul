@@ -27,11 +27,11 @@ require __DIR__ . '/../partials/site_header.php';
         <h1>Capillas Velatorias en Maracaibo</h1>
         <p class="service-lead">Nuestras <strong>capillas velatorias en Maracaibo</strong> son espacios amplios, climatizados y serenos, diseñados para garantizar el confort y la privacidad de la familia durante la vigilia. Un lugar digno para reunirse, acompañarse y despedir con paz.</p>
 
-        <h2>Comodidades de nuestras salas de velación</h2>
+        <h2>Comodidades de nuestras salas para el acto velatorio</h2>
         <ul class="service-list">
             <li>Salas <strong>climatizadas</strong> y ambientadas con sobriedad.</li>
             <li>Espacios cómodos y privados para familiares y acompañantes.</li>
-            <li>Área de cafetería y atención durante toda la velación.</li>
+            <li>Área de cafetería y atención durante todo el acto velatorio.</li>
             <li>Accesibilidad y estacionamiento.</li>
             <li>Atención y coordinación las 24 horas.</li>
         </ul>
@@ -39,8 +39,8 @@ require __DIR__ . '/../partials/site_header.php';
         <h2>Un espacio de paz para el último adiós en el Zulia</h2>
         <p>Sabemos lo importante que es contar con un lugar adecuado para reunir a quienes acompañan a la familia. Nuestras capillas, ubicadas en Maracaibo, ofrecen el entorno sereno que ese momento merece, con personal atento a cada necesidad durante la vigilia.</p>
 
-        <h2>Combine la velación con el servicio que prefiera</h2>
-        <p>La velación puede formar parte de un <a href="sepelio-tradicional.php">sepelio tradicional</a> o realizarse como paso previo a la <a href="cremacion.php">cremación</a>. Si el fallecimiento ocurrió en otra ciudad, coordinamos el <a href="traslados.php">traslado</a>. Considere también nuestros <a href="../planes/">planes de previsión</a> para dejarlo todo organizado con anticipación.</p>
+        <h2>Combine el acto velatorio con el servicio que prefiera</h2>
+        <p>El acto velatorio puede formar parte de un <a href="sepelio-tradicional.php">sepelio tradicional</a> o realizarse como paso previo a la <a href="cremacion.php">cremación</a>. Si el fallecimiento ocurrió en otra ciudad, coordinamos el <a href="traslados.php">traslado</a>. Considere también nuestros <a href="../planes/">planes de previsión</a> para dejarlo todo organizado con anticipación.</p>
 
         <?php
         $ctaHeading = 'Reserve una capilla velatoria';

@@ -8,7 +8,7 @@ $base = ($PAGE['base'] ?? ''); ?>
                         <img src="<?= $base ?>logo-seal-footer.png" alt="Sello Funeraria del Zulia - Desde 1942" class="footer-logo-icon">
                         <span class="logo-text">Funeraria del Zulia</span>
                     </a>
-                    <p>Dignidad, respeto y acompañamiento incondicional para las familias zulianas desde 1942.</p>
+                    <p>Una empresa de <strong>Legado Holding</strong>.<br>Uniendo familias, honrando vidas, preservando memorias.</p>
                     <p class="footer-address"><strong>Sede Principal:</strong> Calle 84 No. 3F-70, Edificio Funeraria del Zulia, Sector Valle Frío, Maracaibo 4001, Estado Zulia.</p>
                 </div>
                 <div>

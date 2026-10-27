@@ -14,12 +14,26 @@ require __DIR__ . '/lib/bootstrap.php';
 
 $action = $_GET['action'] ?? 'list';
 
+/**
+ * Normaliza la foto recibida del panel: la imagen genérica (placeholder con el
+ * logo) nunca se guarda como foto del obituario. Antes el formulario de edición
+ * la reenviaba al guardar un obituario sin foto, y la plantilla con foto
+ * opcional terminaba mostrando el logo (reportado por el cliente 2026-10-27).
+ */
+function obit_clean_photo_path($v): string
+{
+    $p = clean_str($v ?? '', 255);
+    return $p === get_setting('photo_placeholder_path', 'uploads/obituarios/_placeholder.webp') ? '' : $p;
+}
+
 /** Da formato de salida a una fila de obituario, resolviendo la foto. */
 function obit_out(array $r): array
 {
     $placeholder = get_setting('photo_placeholder_path', 'uploads/obituarios/_placeholder.webp');
-    $photo = ($r['photo_purged'] || empty($r['photo_path'])) ? $placeholder : $r['photo_path'];
+    $hasPhoto = !$r['photo_purged'] && !empty($r['photo_path']) && $r['photo_path'] !== $placeholder;
+    $photo = $hasPhoto ? $r['photo_path'] : $placeholder;
     return [
+        'has_photo'        => $hasPhoto,
         'id'               => (int)$r['id'],
         'slug'             => $r['slug'],
         'full_name'        => $r['full_name'],
@@ -45,8 +59,11 @@ function obit_out(array $r): array
 /** Recoge y valida los campos del cuerpo para crear/editar. */
 function obit_input(array $b): array
 {
-    $allowedTypes = ['Velación', 'Cremación', 'Homenaje Póstumo', 'Traslado', 'Otro'];
-    $type = $b['service_type'] ?? 'Velación';
+    $allowedTypes = ['Acto Velatorio', 'Cremación', 'Homenaje Póstumo', 'Traslado', 'Otro'];
+    $type = $b['service_type'] ?? 'Acto Velatorio';
+    // "Velación" se renombró a "Acto Velatorio" (pedido del cliente 2026-10-27,
+    // migración 15). Un panel con admin.js viejo en caché todavía puede enviarlo.
+    if ($type === 'Velación') $type = 'Acto Velatorio';
     if (!in_array($type, $allowedTypes, true)) $type = 'Otro';
 
     $full = clean_str($b['full_name'] ?? '', 200);
@@ -65,7 +82,7 @@ function obit_input(array $b): array
         'location_address' => clean_str($b['location_address'] ?? '', 255),
         'event_schedule'   => clean_str($b['event_schedule'] ?? '', 2000),
         'biography'        => clean_str($b['biography'] ?? '', 8000),
-        'photo_path'       => clean_str($b['photo_path'] ?? '', 255),
+        'photo_path'       => obit_clean_photo_path($b['photo_path'] ?? ''),
         'meta_description' => clean_str($b['meta_description'] ?? '', 320),
         'template_id'      => isset($b['template_id']) && $b['template_id'] !== '' ? (int)$b['template_id'] : null,
         'status'           => $status,

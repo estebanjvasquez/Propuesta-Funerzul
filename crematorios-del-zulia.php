@@ -16,7 +16,7 @@ $faqs = [
     ['q' => '¿Qué requisitos se necesitan para cremar en el Estado Zulia?',
      'a' => 'Se requieren el Certificado Médico de Defunción (Forma EV-14), el acta de defunción del Registro Civil, el permiso sanitario de cremación y la autorización escrita del familiar responsable. Nuestro equipo gestiona todos estos trámites por usted.'],
     ['q' => '¿Se puede velar antes de la cremación?',
-     'a' => 'Sí. Puede optar por una velación previa en nuestras capillas velatorias y, posteriormente, realizar la cremación. También ofrecemos cremación directa, sin velación.'],
+     'a' => 'Sí. Puede optar por un acto velatorio previo en nuestras capillas velatorias y, posteriormente, realizar la cremación. También ofrecemos cremación directa, sin acto velatorio.'],
     ['q' => '¿Qué se hace con las cenizas?',
      'a' => 'Las cenizas se entregan a la familia en una urna. Puede conservarlas, depositarlas en un cementerio o columbario, o disponer de ellas según sus creencias y la normativa vigente.'],
 ];
@@ -55,7 +55,7 @@ require __DIR__ . '/partials/site_header.php';
 
         <h2>¿Qué incluye el servicio de cremación?</h2>
         <ul class="service-list">
-            <li><strong>Cremación directa</strong> o con <strong>velación previa</strong> en nuestras capillas velatorias.</li>
+            <li><strong>Cremación directa</strong> o con <strong>acto velatorio previo</strong> en nuestras capillas velatorias.</li>
             <li>Gestión completa del <strong>permiso sanitario de cremación</strong> y toda la documentación legal.</li>
             <li>Cofre para cremación y <strong>urna</strong> para la entrega de las cenizas.</li>
             <li>Traslado del fallecido hacia nuestras instalaciones en Maracaibo.</li>
@@ -65,7 +65,7 @@ require __DIR__ . '/partials/site_header.php';
         <h2>El proceso de cremación, paso a paso</h2>
         <ol class="service-list">
             <li><strong>Atención inicial y trámites:</strong> coordinamos el retiro del fallecido y reunimos la documentación necesaria.</li>
-            <li><strong>Velación (opcional):</strong> si la familia lo desea, se realiza una vigilia en nuestras capillas antes de la cremación.</li>
+            <li><strong>Acto velatorio (opcional):</strong> si la familia lo desea, se realiza una vigilia en nuestras capillas antes de la cremación.</li>
             <li><strong>Permiso de cremación:</strong> tramitamos el permiso sanitario ante la autoridad competente.</li>
             <li><strong>Cremación:</strong> el proceso se realiza en nuestro crematorio bajo estricto control y respeto.</li>
             <li><strong>Entrega de cenizas:</strong> las cenizas se entregan a la familia en una urna, listas para su conservación o destino final.</li>

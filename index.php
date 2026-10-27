@@ -64,7 +64,7 @@ function fz_site_url(string $path = ''): string {
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="styles.css?v=20260909-2">
+    <link rel="stylesheet" href="styles.css?v=20261027-2">
 
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -274,7 +274,7 @@ function fz_site_url(string $path = ''): string {
                         </svg>
                     </div>
                     <h3 class="service-title">Cremación en Maracaibo</h3>
-                    <p class="service-desc">Servicio de cremación directo o con velación previa en capillas propias, gestionado con absoluta transparencia, rapidez y respeto normativo.</p>
+                    <p class="service-desc">Servicio de cremación directo o con acto velatorio previo en capillas propias, gestionado con absoluta transparencia, rapidez y respeto normativo.</p>
                     <span class="service-card-more">Ver detalle →</span>
                 </a>
                 
@@ -330,58 +330,57 @@ function fz_site_url(string $path = ''): string {
             </div>
 
             <div class="plans-grid">
-                <!-- Plan Esencial -->
-                <article class="plan-card">
-                    <h3 class="plan-name">Plan Esencial</h3>
-                    <p class="plan-target">Protección básica para familias que buscan una alternativa económica.</p>
-                    <ul class="plan-features">
-                        <li>Velación y cremación</li>
-                        <li>Traslados locales</li>
-                        <li>Gestión documental</li>
-                        <li>Coordinación funeraria</li>
-                    </ul>
-                    <a href="planes/plan-esencial.php" class="btn btn-outline plan-cta">Ver plan en detalle</a>
-                </article>
+                <!-- Orden pedido por el cliente (2026-10-27): Tradición, Esencial,
+                     Vanguardia y, en 4to lugar, Grupo Selecto. Edades: catálogo de
+                     Prevision-Funeraria ("Edad máxima de ingreso: 65 años"). -->
 
                 <!-- Plan Tradición -->
                 <article class="plan-card">
                     <h3 class="plan-name">Plan Tradición</h3>
-                    <p class="plan-target">Para familias que ya poseen bóveda o espacio para inhumación.</p>
+                    <p class="plan-subtitle">(Servicio funerario)</p>
+                    <p class="plan-target">Para familias que poseen bóveda o espacio para inhumación.</p>
                     <ul class="plan-features">
-                        <li>Servicio funerario completo</li>
-                        <li>Sala velatoria y oficios religiosos</li>
+                        <li>Servicio funerario</li>
+                        <li>Sala velatoria o servicio a domicilio</li>
+                        <li>Oficios religiosos católicos</li>
                         <li>Arreglos florales y cafetería</li>
                         <li>Traslados y gestión administrativa</li>
                     </ul>
+                    <p class="plan-age">Edad máxima de ingreso: 65 años</p>
                     <a href="planes/plan-tradicion.php" class="btn btn-outline plan-cta">Ver plan en detalle</a>
+                </article>
+
+                <!-- Plan Esencial -->
+                <article class="plan-card">
+                    <h3 class="plan-name">Plan Esencial</h3>
+                    <p class="plan-subtitle">(Funeral + cremación)</p>
+                    <p class="plan-target">Protección básica para familias que buscan una alternativa económica.</p>
+                    <ul class="plan-features">
+                        <li>Acto velatorio y cremación</li>
+                        <li>Traslados locales</li>
+                        <li>Gestión documental (actas y permisos)</li>
+                        <li>Coordinación funeraria</li>
+                    </ul>
+                    <p class="plan-age">Edad máxima de ingreso: 65 años</p>
+                    <a href="planes/plan-esencial.php" class="btn btn-outline plan-cta">Ver plan en detalle</a>
                 </article>
 
                 <!-- Plan Vanguardia (destacado) -->
                 <article class="plan-card plan-featured">
                     <span class="plan-badge">Más elegido</span>
                     <h3 class="plan-name">Plan Vanguardia</h3>
-                    <p class="plan-target">Cobertura integral para disposición final, con cremación o inhumación.</p>
+                    <p class="plan-subtitle">(Funeral + cremación / gastos de inhumación)</p>
+                    <p class="plan-target">Servicio funerario completo, con cremación o gastos de inhumación incluidos.</p>
                     <ul class="plan-features">
                         <li>Servicio funerario completo</li>
-                        <li>Cremación o inhumación</li>
-                        <li>Cobertura ampliada</li>
+                        <li>Cremación o gastos de inhumación</li>
                         <li>Acompañamiento integral</li>
                     </ul>
+                    <p class="plan-age">Edad máxima de ingreso: 65 años</p>
                     <a href="planes/plan-vanguardia.php" class="btn btn-secondary plan-cta">Ver plan en detalle</a>
                 </article>
 
-                <!-- Plan Vanguardia Plus -->
-                <article class="plan-card">
-                    <h3 class="plan-name">Plan Vanguardia Plus</h3>
-                    <p class="plan-target">Cobertura ampliada con modalidad de pago anual y beneficios especiales.</p>
-                    <ul class="plan-features">
-                        <li>Cobertura ampliada y servicio integral</li>
-                        <li>Cremación o inhumación</li>
-                        <li>Beneficios especiales</li>
-                        <li>Renovación anual</li>
-                    </ul>
-                    <a href="planes/plan-vanguardia-plus.php" class="btn btn-outline plan-cta">Ver plan en detalle</a>
-                </article>
+                <!-- 4to lugar: Grupo Selecto (pendiente: falta el contenido del cliente) -->
             </div>
 
             <p class="prevision-note">Todos los planes incluyen cobertura familiar, financiamiento adaptable, atención 24 horas y planificación anticipada. Asesoría de planes: <a href="tel:+584146523319">+58 414 652-3319</a>.</p>
@@ -503,7 +502,7 @@ function fz_site_url(string $path = ''): string {
                         <img src="logo-seal-footer.png?v=20260610-4" alt="Sello Funeraria del Zulia - Desde 1942" class="footer-logo-icon">
                         <span class="logo-text">Funeraria del Zulia</span>
                     </a>
-                    <p>Dignidad, respeto y acompañamiento incondicional para las familias zulianas en sus momentos de transición.</p>
+                    <p>Una empresa de <strong>Legado Holding</strong>.<br>Uniendo familias, honrando vidas, preservando memorias.</p>
                     <p class="footer-address"><strong>Sede Principal:</strong> Calle 84 No. 3F-70, Edificio Funeraria del Zulia, Oficina 3F-70, Sector Valle Frío, Maracaibo 4001, Estado Zulia.</p>
                 </div>
 

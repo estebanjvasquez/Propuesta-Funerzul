@@ -5,7 +5,7 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('servicios/cremacion.php');
 $img       = site_url('servicios/img/cremacion.svg');
 $title     = 'Cremación en Maracaibo | Funeraria del Zulia';
-$desc      = 'Servicio de cremación en Maracaibo con crematorio propio. Cremación directa o con velación previa, permisos y acompañamiento 24 horas.';
+$desc      = 'Servicio de cremación en Maracaibo con crematorio propio. Cremación directa o con acto velatorio previo, permisos y acompañamiento 24 horas.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Cremación en Maracaibo', $desc, $canonical, $img)
@@ -29,7 +29,7 @@ require __DIR__ . '/../partials/site_header.php';
 
         <h2>¿Qué incluye nuestro servicio de cremación?</h2>
         <ul class="service-list">
-            <li><strong>Cremación directa</strong> o con <strong>velación previa</strong> en nuestras capillas.</li>
+            <li><strong>Cremación directa</strong> o con <strong>acto velatorio previo</strong> en nuestras capillas.</li>
             <li>Gestión completa del <strong>permiso sanitario de cremación</strong> y la documentación legal.</li>
             <li>Cofre para cremación y <strong>urna</strong> para la entrega de las cenizas.</li>
             <li>Traslado del fallecido hacia nuestras instalaciones en Maracaibo.</li>
@@ -40,7 +40,7 @@ require __DIR__ . '/../partials/site_header.php';
         <p>Para realizar una cremación se requieren el <strong>Certificado Médico de Defunción (Forma EV-14)</strong>, el <strong>acta de defunción</strong> emitida por el Registro Civil, el <strong>permiso sanitario de cremación</strong> de la autoridad competente y la <strong>autorización escrita</strong> del familiar responsable. Nuestro equipo coordina la totalidad de estos trámites por usted, para que solo se ocupe de despedir a su ser querido.</p>
 
         <h2>Cremación con respeto y cercanía en Maracaibo y todo el Zulia</h2>
-        <p>Atendemos a familias de Maracaibo, San Francisco, Cabimas, Ciudad Ojeda y todo el Estado Zulia. Si el fallecimiento ocurrió fuera de la ciudad, gestionamos el <a href="traslados.php">traslado</a> cumpliendo las normativas sanitarias vigentes. También puede optar por una <a href="sepelio-tradicional.php">velación previa</a> en nuestras <a href="capillas-velatorias.php">capillas velatorias</a> antes de la cremación.</p>
+        <p>Atendemos a familias de Maracaibo, San Francisco, Cabimas, Ciudad Ojeda y todo el Estado Zulia. Si el fallecimiento ocurrió fuera de la ciudad, gestionamos el <a href="traslados.php">traslado</a> cumpliendo las normativas sanitarias vigentes. También puede optar por un <a href="sepelio-tradicional.php">acto velatorio previo</a> en nuestras <a href="capillas-velatorias.php">capillas velatorias</a> antes de la cremación.</p>
 
         <?php
         $ctaHeading = 'Solicite información sobre la cremación';

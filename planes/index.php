@@ -5,21 +5,27 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('planes/');
 $img       = site_url('planes/img/plan-vanguardia.svg');
 $title     = 'Planes de Previsión Funeraria en Maracaibo';
-$desc      = 'Planes de previsión funeraria en Maracaibo: Esencial, Tradición, Vanguardia y Vanguardia Plus. Cuotas accesibles y cobertura familiar.';
+$desc      = 'Planes de previsión funeraria en Maracaibo: Tradición, Esencial y Vanguardia. Cuotas accesibles y cobertura familiar.';
 
+// Orden y textos pedidos por el cliente (2026-10-27): Tradición, Esencial,
+// Vanguardia; el Vanguardia Plus se retiró y su lugar lo ocupará Grupo Selecto
+// (pendiente de contenido). Edad máxima: catálogo de Prevision-Funeraria.
 $planes = [
-    ['slug' => 'plan-esencial.php', 'img' => 'img/plan-esencial.svg', 'name' => 'Plan Esencial', 'featured' => false,
-     'target' => 'Protección básica para familias que buscan una alternativa económica.',
-     'features' => ['Velación y cremación', 'Traslados locales', 'Gestión documental', 'Coordinación funeraria']],
     ['slug' => 'plan-tradicion.php', 'img' => 'img/plan-tradicion.svg', 'name' => 'Plan Tradición', 'featured' => false,
-     'target' => 'Para familias que ya poseen bóveda o espacio para inhumación.',
-     'features' => ['Servicio funerario completo', 'Sala velatoria y oficios', 'Arreglos florales y cafetería', 'Traslados y gestión']],
+     'subtitle' => '(Servicio funerario)',
+     'target' => 'Para familias que poseen bóveda o espacio para inhumación.',
+     'features' => ['Servicio funerario', 'Sala velatoria o servicio a domicilio', 'Oficios religiosos católicos', 'Arreglos florales y cafetería', 'Traslados y gestión'],
+     'age' => 'Edad máxima de ingreso: 65 años'],
+    ['slug' => 'plan-esencial.php', 'img' => 'img/plan-esencial.svg', 'name' => 'Plan Esencial', 'featured' => false,
+     'subtitle' => '(Funeral + cremación)',
+     'target' => 'Protección básica para familias que buscan una alternativa económica.',
+     'features' => ['Acto velatorio y cremación', 'Traslados locales', 'Gestión documental (actas y permisos)', 'Coordinación funeraria'],
+     'age' => 'Edad máxima de ingreso: 65 años'],
     ['slug' => 'plan-vanguardia.php', 'img' => 'img/plan-vanguardia.svg', 'name' => 'Plan Vanguardia', 'featured' => true,
-     'target' => 'Cobertura integral para disposición final, con cremación o inhumación.',
-     'features' => ['Servicio funerario completo', 'Cremación o inhumación', 'Cobertura ampliada', 'Acompañamiento integral']],
-    ['slug' => 'plan-vanguardia-plus.php', 'img' => 'img/plan-vanguardia-plus.svg', 'name' => 'Plan Vanguardia Plus', 'featured' => false,
-     'target' => 'Cobertura ampliada con modalidad de pago anual y beneficios especiales.',
-     'features' => ['Cobertura ampliada e integral', 'Cremación o inhumación', 'Beneficios especiales', 'Renovación anual']],
+     'subtitle' => '(Funeral + cremación / gastos de inhumación)',
+     'target' => 'Servicio funerario completo, con cremación o gastos de inhumación incluidos.',
+     'features' => ['Servicio funerario completo', 'Cremación o gastos de inhumación', 'Acompañamiento integral'],
+     'age' => 'Edad máxima de ingreso: 65 años'],
 ];
 
 $itemList = ['@context' => 'https://schema.org', '@type' => 'ItemList',
@@ -53,10 +59,12 @@ require __DIR__ . '/../partials/site_header.php';
             <img src="<?= esc($p['img']) ?>" alt="<?= esc($p['name']) ?> — Funeraria del Zulia" loading="lazy" width="1200" height="600">
             <div class="plan-detail-card-body">
                 <h2 class="plan-name"><?= esc($p['name']) ?></h2>
+                <p class="plan-subtitle"><?= esc($p['subtitle']) ?></p>
                 <p class="plan-target"><?= esc($p['target']) ?></p>
                 <ul class="plan-features">
                     <?php foreach ($p['features'] as $f): ?><li><?= esc($f) ?></li><?php endforeach; ?>
                 </ul>
+                <p class="plan-age"><?= esc($p['age']) ?></p>
                 <a class="btn btn-primary plan-cta" href="<?= esc($p['slug']) ?>">Ver detalle del plan</a>
             </div>
         </article>

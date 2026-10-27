@@ -5,7 +5,7 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('planes/plan-esencial.php');
 $img       = site_url('planes/img/plan-esencial.svg');
 $title     = 'Plan Esencial de Previsión Funeraria | Funeraria del Zulia';
-$desc      = 'Plan Esencial: previsión funeraria económica en Maracaibo. Incluye velación, cremación, traslados locales y gestión documental.';
+$desc      = 'Plan Esencial: previsión funeraria económica en Maracaibo. Incluye acto velatorio, cremación, traslados locales y gestión documental.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Plan Esencial de Previsión Funeraria', $desc, $canonical, $img, 'Plan de previsión funeraria')
@@ -24,24 +24,25 @@ require __DIR__ . '/../partials/site_header.php';
     <article class="service-detail-body">
         <img src="img/plan-esencial.svg" alt="Plan Esencial de previsión funeraria en Maracaibo — Funeraria del Zulia" class="service-hero-img" width="1200" height="600">
 
-        <h1>Plan Esencial de Previsión Funeraria</h1>
+        <h1>Plan Esencial de Previsión Funeraria <span class="plan-subtitle-inline">(Funeral + cremación)</span></h1>
         <p class="service-lead">El <strong>Plan Esencial</strong> es la protección básica para las familias que buscan una alternativa económica y tranquila. Planifique hoy, con cuotas accesibles, y evite cargas inesperadas a sus seres queridos en el Estado Zulia.</p>
 
         <?php $pePlanSlug = 'esencial'; require __DIR__ . '/../partials/pf_precio_plan.php'; ?>
 
         <h2>¿Qué incluye el Plan Esencial?</h2>
         <ul class="service-list">
-            <li><strong>Velación y cremación</strong></li>
+            <li><strong>Acto velatorio y cremación</strong></li>
             <li><strong>Traslados locales</strong> en el Zulia</li>
-            <li><strong>Gestión documental</strong> completa</li>
+            <li><strong>Gestión documental:</strong> trámite del acta de defunción y de los permisos necesarios</li>
             <li><strong>Coordinación funeraria</strong> integral</li>
         </ul>
+        <p class="plan-age">Edad máxima de ingreso: 65 años.</p>
 
         <h2>¿Por qué contratar previsión funeraria?</h2>
         <p>La previsión funeraria le permite organizar con anticipación todos los servicios, fijando condiciones favorables y protegiendo a su familia de decisiones difíciles en un momento de dolor. Todos nuestros planes incluyen <strong>cobertura familiar</strong>, <strong>financiamiento adaptable</strong>, atención 24 horas y planificación anticipada.</p>
 
         <h2>Compare con otros planes</h2>
-        <p>Si su familia ya cuenta con bóveda o desea un servicio más completo, considere el <a href="plan-tradicion.php">Plan Tradición</a>, el <a href="plan-vanguardia.php">Plan Vanguardia</a> (el más elegido) o el <a href="plan-vanguardia-plus.php">Plan Vanguardia Plus</a>.</p>
+        <p>Si su familia posee bóveda o espacio para inhumación, considere el <a href="plan-tradicion.php">Plan Tradición</a>; si desea cremación o gastos de inhumación con el servicio funerario completo, el <a href="plan-vanguardia.php">Plan Vanguardia</a> (el más elegido).</p>
 
         <?php
         $ctaHeading   = 'Solicite asesoría sobre el Plan Esencial';
@@ -60,7 +61,6 @@ require __DIR__ . '/../partials/site_header.php';
             <ul>
                 <li><a href="plan-tradicion.php">Plan Tradición</a></li>
                 <li><a href="plan-vanguardia.php">Plan Vanguardia</a></li>
-                <li><a href="plan-vanguardia-plus.php">Plan Vanguardia Plus</a></li>
                 <li><a href="../servicios/">Ver todos los servicios</a></li>
             </ul>
         </div>

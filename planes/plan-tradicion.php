@@ -5,7 +5,7 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('planes/plan-tradicion.php');
 $img       = site_url('planes/img/plan-tradicion.svg');
 $title     = 'Plan Tradición de Previsión Funeraria | Funeraria del Zulia';
-$desc      = 'Plan Tradición: servicio funerario completo en Maracaibo para familias con bóveda o espacio de inhumación propio.';
+$desc      = 'Plan Tradición: servicio funerario en Maracaibo para familias que poseen bóveda o espacio para inhumación.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Plan Tradición de Previsión Funeraria', $desc, $canonical, $img, 'Plan de previsión funeraria')
@@ -24,24 +24,26 @@ require __DIR__ . '/../partials/site_header.php';
     <article class="service-detail-body">
         <img src="img/plan-tradicion.svg" alt="Plan Tradición de previsión funeraria en Maracaibo — Funeraria del Zulia" class="service-hero-img" width="1200" height="600">
 
-        <h1>Plan Tradición de Previsión Funeraria</h1>
-        <p class="service-lead">El <strong>Plan Tradición</strong> está pensado para las familias que ya poseen bóveda o espacio para inhumación y desean un <strong>servicio funerario completo</strong>, con todos los detalles cubiertos y la tranquilidad de tenerlo planificado.</p>
+        <h1>Plan Tradición de Previsión Funeraria <span class="plan-subtitle-inline">(Servicio funerario)</span></h1>
+        <p class="service-lead">El <strong>Plan Tradición</strong> está pensado para las familias que poseen bóveda o espacio para inhumación y desean el <strong>servicio funerario</strong> con todos los detalles cubiertos y la tranquilidad de tenerlo planificado.</p>
 
         <?php $pePlanSlug = 'tradicion'; require __DIR__ . '/../partials/pf_precio_plan.php'; ?>
 
         <h2>¿Qué incluye el Plan Tradición?</h2>
         <ul class="service-list">
-            <li><strong>Servicio funerario completo</strong></li>
-            <li><strong>Sala velatoria y oficios religiosos</strong></li>
+            <li><strong>Servicio funerario</strong></li>
+            <li><strong>Sala velatoria</strong> en nuestras capillas o <strong>servicio a domicilio</strong></li>
+            <li><strong>Oficios religiosos católicos</strong></li>
             <li><strong>Arreglos florales y cafetería</strong></li>
             <li><strong>Traslados y gestión administrativa</strong></li>
         </ul>
+        <p class="plan-age">Edad máxima de ingreso: 65 años.</p>
 
         <h2>Previsión con dignidad en el Estado Zulia</h2>
-        <p>Con el Plan Tradición, su familia contará con una <a href="../servicios/capillas-velatorias.php">capilla velatoria</a> digna, oficios conforme a sus creencias y todo el acompañamiento del equipo de Funeraria del Zulia. Incluye <strong>cobertura familiar</strong>, financiamiento adaptable y atención 24 horas.</p>
+        <p>Con el Plan Tradición, su familia contará con una <a href="../servicios/capillas-velatorias.php">capilla velatoria</a> digna, oficios religiosos católicos y todo el acompañamiento del equipo de Funeraria del Zulia. Incluye <strong>cobertura familiar</strong>, financiamiento adaptable y atención 24 horas.</p>
 
         <h2>Compare con otros planes</h2>
-        <p>Si busca cobertura para la disposición final (cremación o inhumación), el <a href="plan-vanguardia.php">Plan Vanguardia</a> es el más elegido. Para una opción económica, vea el <a href="plan-esencial.php">Plan Esencial</a>; para beneficios ampliados, el <a href="plan-vanguardia-plus.php">Plan Vanguardia Plus</a>.</p>
+        <p>Si busca incluir la cremación o los gastos de inhumación, el <a href="plan-vanguardia.php">Plan Vanguardia</a> es el más elegido. Para una opción económica con cremación, vea el <a href="plan-esencial.php">Plan Esencial</a>.</p>
 
         <?php
         $ctaHeading    = 'Solicite asesoría sobre el Plan Tradición';
@@ -60,7 +62,6 @@ require __DIR__ . '/../partials/site_header.php';
             <ul>
                 <li><a href="plan-esencial.php">Plan Esencial</a></li>
                 <li><a href="plan-vanguardia.php">Plan Vanguardia</a></li>
-                <li><a href="plan-vanguardia-plus.php">Plan Vanguardia Plus</a></li>
                 <li><a href="../servicios/">Ver todos los servicios</a></li>
             </ul>
         </div>

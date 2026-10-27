@@ -58,7 +58,9 @@ function render_obituary_html(array $o): string
     // foto -- para plantillas donde la foto es opcional (pedido del usuario,
     // 2026-09-08): si la familia no la pidió, la plantilla simplemente no la
     // muestra en vez de rellenar con el placeholder genérico del logo.
-    $photoOptional = (!empty($o['photo_path']) && empty($o['photo_purged'])) ? $photoImg : '';
+    $photoOptional = (!empty($o['photo_path']) && empty($o['photo_purged'])
+        && $o['photo_path'] !== get_setting('photo_placeholder_path', 'uploads/obituarios/_placeholder.webp'))
+        ? $photoImg : '';
     $tpl = get_template_for($o);
 
     if (!$tpl) {

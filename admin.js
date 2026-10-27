@@ -252,7 +252,7 @@ function obituaryFormHtml(o = {}) {
     return `
     <form id="obitForm">
         <input type="hidden" id="of_id" value="${o.id || ''}">
-        <input type="hidden" id="of_photo_path" value="${escapeHtml(o.photo_url && !o.photo_purged ? o.photo_url : '')}">
+        <input type="hidden" id="of_photo_path" value="${escapeHtml(o.has_photo ? o.photo_url : '')}">
         <div class="form-group">
             <label class="form-label">Nombre completo del fallecido *</label>
             <input type="text" id="of_full_name" class="form-control" value="${escapeHtml(o.full_name || '')}" required>
@@ -266,7 +266,7 @@ function obituaryFormHtml(o = {}) {
         <div class="form-grid-2">
             <div class="form-group"><label class="form-label">Tipo de servicio</label>
                 <select id="of_service_type" class="form-control">
-                    ${['Velación', 'Cremación', 'Homenaje Póstumo', 'Traslado', 'Otro'].map(t => `<option ${o.service_type === t ? 'selected' : ''}>${t}</option>`).join('')}
+                    ${['Acto Velatorio', 'Cremación', 'Homenaje Póstumo', 'Traslado', 'Otro'].map(t => `<option ${o.service_type === t ? 'selected' : ''}>${t}</option>`).join('')}
                 </select></div>
             <div class="form-group"><label class="form-label">Estado</label>
                 <select id="of_status" class="form-control">
@@ -275,7 +275,7 @@ function obituaryFormHtml(o = {}) {
                     <option value="inactive" ${o.status === 'inactive' ? 'selected' : ''}>Inactivo</option>
                 </select></div>
         </div>
-        <div class="form-group"><label class="form-label">Lugar de velación / cremación</label>
+        <div class="form-group"><label class="form-label">Lugar del acto velatorio / cremación</label>
             <input type="text" id="of_location_name" class="form-control" value="${escapeHtml(o.location_name || '')}"></div>
         <div class="form-group"><label class="form-label">Dirección del lugar</label>
             <input type="text" id="of_location_address" class="form-control" value="${escapeHtml(o.location_address || '')}"></div>

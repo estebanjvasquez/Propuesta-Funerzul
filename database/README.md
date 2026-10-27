@@ -43,6 +43,15 @@ disco y backend PHP, todo junto).
   Clientes" del sitio público desde Configuración — ver `client_portal_url()`
   en `api/lib/helpers.php` y
   `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md`.
+- **`15_obituarios_ajustes_cliente.sql`** — Pedidos del cliente (2026-10-27):
+  tipo de servicio "Velación" → "Acto Velatorio" (ENUM ampliado + datos;
+  "Velación" queda en el ENUM solo por compatibilidad), limpia obituarios que
+  tenían la imagen genérica guardada como foto, agrega "En memoria de" a la
+  plantilla predeterminada y cambia `{{photo}}` por `{{photo_optional}}` en
+  todas las plantillas (sin foto ya no se muestra el logo). Idempotente.
+- **`16_faq_aseguradoras.sql`** — Agrega la pregunta frecuente sobre pólizas de
+  seguro, contratos colectivos y otras previsiones, al final de la lista. No la
+  duplica si ya existe.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -86,7 +95,8 @@ disco y backend PHP, todo junto).
 3. Verifica que aparezcan las **7 tablas**.
 4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
    `11_secciones_toggle.sql`, `12_plantillas_esquela.sql`,
-   `13_plantilla_cinta_imagen_real.sql` y `14_portal_clientes.sql` (en ese
+   `13_plantilla_cinta_imagen_real.sql`, `14_portal_clientes.sql`,
+   `15_obituarios_ajustes_cliente.sql` y `16_faq_aseguradoras.sql` (en ese
    orden).
 
 ### 3. Iniciar sesión y asegurar el admin
