@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Administración | Funeraria del Zulia</title>
     <link rel="icon" href="favicon.png?v=20260913-1" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20261027-4">
+    <link rel="stylesheet" href="styles.css?v=20261027-5">
 </head>
 <body class="admin-body">
 
@@ -245,6 +245,23 @@
                         <input type="url" id="set_client_portal_url" class="form-control setting-input-url" maxlength="255" placeholder="https://app.previsionfuneraria.com/portal/login?empresa=fdz">
                     </div>
 
+                    <h3 class="settings-subheading">Analítica (Google)</h3>
+                    <p class="setting-help">Déjelos vacíos para no usar Google. Se aplican a las páginas públicas del sitio, nunca a este panel.</p>
+                    <div class="setting-row">
+                        <div>
+                            <strong>ID de Google Analytics 4</strong>
+                            <p class="setting-help">En analytics.google.com → Administrar → Flujos de datos → Web. Formato G-XXXXXXXXXX.</p>
+                        </div>
+                        <input type="text" id="set_ga4_measurement_id" class="form-control setting-input-url" maxlength="30" placeholder="G-XXXXXXXXXX" autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="setting-row">
+                        <div>
+                            <strong>Verificación de Search Console</strong>
+                            <p class="setting-help">En Search Console elija "Etiqueta HTML" y pegue solo el valor de content="…".</p>
+                        </div>
+                        <input type="text" id="set_google_site_verification" class="form-control setting-input-url" maxlength="100" autocomplete="off" spellcheck="false">
+                    </div>
+
                     <div class="setting-actions">
                         <button type="submit" class="btn btn-primary">Guardar configuración</button>
                     </div>
@@ -285,6 +302,6 @@
 
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="admin.js?v=20261027-2"></script>
+    <script src="admin.js?v=20261027-3"></script>
 </body>
 </html>

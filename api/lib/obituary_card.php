@@ -325,3 +325,77 @@ function obit_card_generate(array $o, string $style)
         default   => obit_card_cinta($o),
     };
 }
+
+/* ============================================================================
+ * Imagen de vista previa para redes (Open Graph), 1200x630 horizontal --
+ * la que muestran Facebook/WhatsApp/X al pegar el enlace del obituario.
+ * Mismo estilo que la "Cinta": azul marino, sello como marca de agua, foto
+ * en círculo solo si hay una foto real. Ver
+ * docs/specs/2026-10-27-enlaces-redes-y-analitica.md.
+ * ========================================================================== */
+
+const OG_WIDTH  = 1200;
+const OG_HEIGHT = 630;
+
+/** Como oc_text_center(), pero centrado dentro de la franja [$x0, $x0 + $width]. */
+function oc_text_center_in($img, string $text, string $font, float $size, $color, float $y, int $x0, int $width): void
+{
+    $box = imagettfbbox($size, 0, $font, $text);
+    $x = $x0 + ($width - ($box[2] - $box[0])) / 2 - $box[0];
+    imagettftext($img, $size, 0, (int)$x, (int)$y, $color, $font, $text);
+}
+
+/** Versión de la imagen OG: cambia cuando cambia algo que se dibuja en ella. */
+function obit_og_version(array $o): string
+{
+    return substr(md5(implode('|', [
+        $o['full_name'] ?? '', $o['birth_year'] ?? '', $o['death_date'] ?? '',
+        oc_has_real_photo($o) ? ($o['photo_path'] ?? '') : '', 'og-v1',
+    ])), 0, 10);
+}
+
+/** $o['death_date'] debe venir ya formateado (fmt_date_es) por el llamador. */
+function obit_og_image(array $o)
+{
+    $img = imagecreatetruecolor(OG_WIDTH, OG_HEIGHT);
+    imagefilledrectangle($img, 0, 0, OG_WIDTH, OG_HEIGHT, oc_color($img, '#041D31'));
+    imagealphablending($img, true);
+    imagesavealpha($img, true);
+
+    $white = oc_color($img, '#FFFFFF');
+    $mist  = oc_color($img, '#C3DAEE');
+    $gold  = oc_color($img, '#F2C572');
+    $fPlayfair       = oc_font('PlayfairDisplay-Variable');
+    $fPlayfairItalic = oc_font('PlayfairDisplay-Italic-Variable');
+    $fInter          = oc_font('Inter-Variable');
+
+    // Franja de texto: a la derecha de la foto si la hay, si no, todo el ancho.
+    $x0 = 80; $w = OG_WIDTH - 160;
+    if (oc_has_real_photo($o)) {
+        $photoAbs = __DIR__ . '/../../' . ltrim($o['photo_path'], '/');
+        if (is_file($photoAbs)) {
+            oc_circle_photo($img, $photoAbs, 260, (int)(OG_HEIGHT / 2), 340, $white);
+            $x0 = 480; $w = OG_WIDTH - 480 - 60;
+        }
+    }
+    oc_watermark_seal($img, $x0 + (int)($w / 2), (int)(OG_HEIGHT / 2), 420, 93);
+
+    $y = 170;
+    oc_text_center_in($img, 'En memoria de', $fPlayfairItalic, 34, $mist, $y, $x0, $w);
+    $y += 82;
+
+    $name = mb_strtoupper($o['full_name'] ?? '');
+    $size = 56; $lh = 72;
+    $lines = oc_wrap_lines($name, $fPlayfair, $size, $w);
+    if (count($lines) > 2) { $size = 42; $lh = 56; $lines = array_slice(oc_wrap_lines($name, $fPlayfair, $size, $w), 0, 3); }
+    foreach ($lines as $line) { oc_text_center_in($img, $line, $fPlayfair, $size, $white, $y, $x0, $w); $y += $lh; }
+
+    $y += 6;
+    oc_text_center_in($img, 'Paz a su alma', $fPlayfairItalic, 34, $white, $y, $x0, $w);
+    $y += 58;
+    $dates = trim(($o['birth_year'] ? $o['birth_year'] . ' — ' : '') . ($o['death_date'] ?? ''));
+    if ($dates !== '') oc_text_center_in($img, $dates, $fInter, 24, $mist, $y, $x0, $w);
+
+    oc_text_center_in($img, 'FUNERARIA DEL ZULIA', $fInter, 20, $gold, OG_HEIGHT - 42, $x0, $w);
+    return $img;
+}

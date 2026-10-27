@@ -67,13 +67,16 @@ requieren sesión y la cabecera `X-CSRF-Token` (se obtiene al hacer login).
 | `obituaries.php?action=list` | GET | público* | listado (filtros q/type/time, paginado) |
 | `obituaries.php?action=get` | GET | público | por `id` o `slug` |
 | `obituaries.php?action=create\|update\|pin\|delete\|restore` | POST | editor/admin | gestión |
+| `obituaries.php?action=link_stats&id=` | GET | editor/admin | clics de los enlaces cortos por red: `{ available, by_source: { fb: { total, last30 }, … } }` (`available:false` si falta la migración 17) |
+| `../o/{id}[/{red}]` → `o.php` | GET | público | enlace corto para redes (`fb`, `wa`, `ig`, `otro`): cuenta el clic (sin robots ni datos personales) y redirige 302 al obituario con UTM |
+| `../obituario_og.php?id=&v=` | GET | público | imagen de vista previa para redes (PNG 1200×630), solo obituarios activos; caché en `cache/og/` |
 | `condolences.php?action=list` | GET | público | aprobadas (staff: todas) |
 | `condolences.php?action=create` | POST | público | enviar (entra pending) |
 | `condolences.php?action=moderate\|update\|delete` | POST | editor/admin | moderación |
 | `templates.php?action=list\|get` | GET | público | plantillas activas |
 | `templates.php?action=create\|update\|set_default\|delete` | POST | admin | gestión |
 | `settings.php?action=get` | GET | staff | leer configuración |
-| `settings.php?action=update` | POST | admin | cambiar purga/portada/**secciones del sitio** (`section_obituarios_enabled`, `section_directorio_medico_enabled`, `section_recursos_enabled`, `section_faqs_enabled` — ver `site_section_enabled()` en `lib/helpers.php`) y **portal de clientes** (`client_portal_enabled`, `client_portal_url` — https obligatorio, 422 si no; ver `client_portal_url()`). Valida todo antes de guardar: un valor inválido no aplica ningún cambio. |
+| `settings.php?action=update` | POST | admin | cambiar purga/portada/**secciones del sitio** (`section_obituarios_enabled`, `section_directorio_medico_enabled`, `section_recursos_enabled`, `section_faqs_enabled` — ver `site_section_enabled()` en `lib/helpers.php`) y **portal de clientes** (`client_portal_enabled`, `client_portal_url` — https obligatorio, 422 si no; ver `client_portal_url()`) y **Google** (`ga4_measurement_id` con formato `G-…`, `google_site_verification`; 422 si el formato no es válido — los imprime `partials/analytics.php`). Valida todo antes de guardar: un valor inválido no aplica ningún cambio. |
 | `users.php?action=...` | GET/POST | admin | gestión de usuarios |
 | `upload.php` | POST | editor/admin | subir foto (multipart, campo `photo`) |
 | `obituary_card.php?id=&style=cinta\|esquela` | GET | editor/admin | Descarga PNG (1080×1920) de la tarjeta de obituario para compartir — ver `docs/specs/2026-09-08-tarjetas-obituario.md`. Puro GD (sin Imagick), fuentes en `assets/fonts/`. |

@@ -52,6 +52,11 @@ disco y backend PHP, todo junto).
 - **`16_faq_aseguradoras.sql`** — Agrega la pregunta frecuente sobre pólizas de
   seguro, contratos colectivos y otras previsiones, al final de la lista. No la
   duplica si ya existe.
+- **`17_enlaces_redes_y_analitica.sql`** — Tabla `obituary_link_clicks` (clics de
+  los enlaces cortos `/o/{id}/{red}`, agregados por obituario, red y día, sin
+  datos personales) y las claves `ga4_measurement_id` y
+  `google_site_verification` en `app_settings` (vacías). Ver
+  `docs/specs/2026-10-27-enlaces-redes-y-analitica.md`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -96,7 +101,8 @@ disco y backend PHP, todo junto).
 4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
    `11_secciones_toggle.sql`, `12_plantillas_esquela.sql`,
    `13_plantilla_cinta_imagen_real.sql`, `14_portal_clientes.sql`,
-   `15_obituarios_ajustes_cliente.sql` y `16_faq_aseguradoras.sql` (en ese
+   `15_obituarios_ajustes_cliente.sql`, `16_faq_aseguradoras.sql` y
+   `17_enlaces_redes_y_analitica.sql` (en ese
    orden).
 
 ### 3. Iniciar sesión y asegurar el admin

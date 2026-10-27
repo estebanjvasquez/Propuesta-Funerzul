@@ -146,6 +146,29 @@ function client_portal_url(): ?string
     return $url = (is_https_url($u) ? $u : null);
 }
 
+/**
+ * IDs de Google configurados en el panel (ver partials/analytics.php):
+ * ['ga4' => 'G-…' | null, 'gsc' => '<código>' | null]. Falla cerrada: si la BD
+ * no responde o un valor no tiene el formato esperado, no se inyecta nada
+ * (se vuelve a validar aquí aunque api/settings.php ya lo valida al guardar,
+ * porque el valor termina dentro de <script>/<meta> en todas las páginas).
+ */
+function google_tracking_ids(): array
+{
+    static $ids = null;
+    if ($ids !== null) return $ids;
+    $ids = ['ga4' => null, 'gsc' => null];
+    try {
+        $ga4 = (string)get_setting('ga4_measurement_id', '');
+        $gsc = (string)get_setting('google_site_verification', '');
+    } catch (\Throwable $e) {
+        return $ids;
+    }
+    if (preg_match('/^G-[A-Z0-9]{4,20}$/', $ga4)) $ids['ga4'] = $ga4;
+    if (preg_match('/^[A-Za-z0-9_-]{10,100}$/', $gsc)) $ids['gsc'] = $gsc;
+    return $ids;
+}
+
 function set_setting(string $key, string $value): void
 {
     $u = auth_user();

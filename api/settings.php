@@ -24,6 +24,16 @@ const EDITABLE_SETTINGS = [
     // Portal de Clientes en Prevision-Funeraria (ver client_portal_url() en lib/helpers.php)
     'client_portal_enabled'             => 'bool',
     'client_portal_url'                 => 'url',
+    // Google Analytics 4 y Search Console (ver partials/analytics.php)
+    'ga4_measurement_id'                => 'ga4',
+    'google_site_verification'          => 'gsc',
+];
+
+// Formato de los valores de Google: se imprimen dentro de <script>/<meta> en
+// todas las páginas públicas, así que solo se aceptan caracteres seguros.
+const GOOGLE_FORMATS = [
+    'ga4' => ['/^G-[A-Z0-9]{4,20}$/', 'El ID de Google Analytics debe tener el formato G-XXXXXXXXXX.'],
+    'gsc' => ['/^[A-Za-z0-9_-]{10,100}$/', 'El código de Search Console debe ser solo el valor de "content" del meta tag (letras, números, guiones).'],
 ];
 
 switch ($action) {
@@ -56,6 +66,11 @@ switch ($action) {
                 $v = (string)max(0, (int)$val);
             } elseif ($type === 'bool') {
                 $v = ($val === true || $val === '1' || $val === 1 || $val === 'true') ? '1' : '0';
+            } elseif (isset(GOOGLE_FORMATS[$type])) {
+                $v = $type === 'ga4' ? strtoupper(clean_str($val, 100)) : clean_str($val, 100);
+                if ($v !== '' && !preg_match(GOOGLE_FORMATS[$type][0], $v)) {
+                    json_out(['ok' => false, 'error' => GOOGLE_FORMATS[$type][1]], 422);
+                }
             } elseif ($type === 'url') {
                 $v = clean_str($val, 255);
                 if ($v !== '' && !is_https_url($v)) {

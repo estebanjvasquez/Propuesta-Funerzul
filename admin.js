@@ -239,10 +239,91 @@ function renderObitTable(items) {
                     <button class="btn btn-outline btn-sm" onclick="editObituary(${o.id})">Editar</button>
                     <a class="btn btn-outline btn-sm" href="api/obituary_card.php?id=${o.id}&style=cinta" target="_blank" rel="noopener" title="Descargar tarjeta para compartir (fondo azul con cinta)">Tarjeta ✝</a>
                     <a class="btn btn-outline btn-sm" href="api/obituary_card.php?id=${o.id}&style=esquela" target="_blank" rel="noopener" title="Descargar tarjeta para compartir (esquela blanca)">Tarjeta 📰</a>
+                    <button class="btn btn-outline btn-sm" onclick="openSocialLinks(${o.id}, ${escapeAttr(o.full_name)}, ${escapeAttr(o.status)})" title="Enlaces cortos para publicar en redes y clics recibidos">Redes</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteObituary(${o.id}, ${escapeAttr(o.full_name)})">Baja</button>
                 </div>
             </td>
         </tr>`).join('');
+}
+
+// ==========================================================================
+//  ENLACES PARA REDES (enlace corto o/{id}/{red} -> o.php)
+//  Ver docs/specs/2026-10-27-enlaces-redes-y-analitica.md
+// ==========================================================================
+const SOCIAL_SOURCES = [
+    { key: 'fb',   label: 'Facebook',  help: 'Para publicaciones y comentarios.' },
+    { key: 'wa',   label: 'WhatsApp',  help: 'Para mensajes, grupos y estados.' },
+    { key: 'ig',   label: 'Instagram', help: 'Solo en la biografía o en el sticker de enlace de las historias: Instagram no permite enlaces en las publicaciones.' },
+    { key: 'otro', label: 'Otro',      help: 'Correo, Telegram u otras redes.' },
+];
+const SOCIAL_LABELS = { fb: 'Facebook', wa: 'WhatsApp', ig: 'Instagram', otro: 'Otro', directo: 'Enlace sin red' };
+
+/** Carpeta pública del sitio (admin.html vive en la raíz del sitio, igual que o.php). */
+function siteBaseUrl() { return location.origin + location.pathname.replace(/[^/]*$/, ''); }
+
+async function openSocialLinks(id, name, status) {
+    const base = siteBaseUrl();
+    const rows = SOCIAL_SOURCES.map(s => {
+        const url = `${base}o/${id}/${s.key}`;
+        return `
+        <div class="social-link-row">
+            <div><strong>${s.label}</strong> <span class="setting-help">${escapeHtml(s.help)}</span></div>
+            <div class="social-link-copy">
+                <input class="form-control" type="text" readonly value="${escapeHtml(url)}" onclick="this.select()" aria-label="Enlace para ${s.label}">
+                <button type="button" class="btn btn-primary btn-sm" onclick="copySocialLink(this)">Copiar</button>
+            </div>
+        </div>`;
+    }).join('');
+
+    openModalWide(`Enlaces para redes — ${name}`, `
+        ${status !== 'active' ? '<p class="social-warning">Este obituario no está activo: los enlaces llevarán a la lista de obituarios hasta que se publique.</p>' : ''}
+        ${rows}
+        <h3 class="settings-subheading">Vista previa al compartir</h3>
+        <p class="setting-help">Así se ve el enlace en Facebook y WhatsApp. Se actualiza sola al cambiar el nombre, las fechas o la foto.</p>
+        <img class="social-og-preview" src="obituario_og.php?id=${id}&amp;t=${Date.now()}" alt="Vista previa del obituario en redes"
+             onerror="this.outerHTML='<p class=&quot;setting-help&quot;>La vista previa estará disponible cuando el obituario esté activo.</p>'">
+        <h3 class="settings-subheading">Clics en los enlaces</h3>
+        <div id="socialStats"><p class="setting-help">Cargando…</p></div>
+        <div class="setting-actions"><button type="button" class="btn btn-outline" onclick="closeModal()">Cerrar</button></div>`);
+
+    try {
+        const r = await API.req(`obituaries.php?action=link_stats&id=${id}`);
+        const box = $('#socialStats');
+        if (!box) return;
+        if (!r.available) {
+            box.innerHTML = '<p class="setting-help">El contador todavía no está activo: falta aplicar la migración 17 en la base de datos.</p>';
+            return;
+        }
+        const keys = Object.keys(r.by_source);
+        if (!keys.length) {
+            box.innerHTML = '<p class="setting-help">Todavía no hay clics. No se cuentan los robots ni las vistas previas de Facebook o WhatsApp.</p>';
+            return;
+        }
+        const sum = k => keys.reduce((t, s) => t + r.by_source[s][k], 0);
+        box.innerHTML = `
+            <table class="admin-table social-stats-table">
+                <thead><tr><th>Red</th><th>Últimos 30 días</th><th>Total</th></tr></thead>
+                <tbody>
+                    ${keys.map(s => `<tr><td>${escapeHtml(SOCIAL_LABELS[s] || s)}</td><td>${r.by_source[s].last30}</td><td>${r.by_source[s].total}</td></tr>`).join('')}
+                    <tr class="social-stats-total"><td>Total</td><td>${sum('last30')}</td><td>${sum('total')}</td></tr>
+                </tbody>
+            </table>
+            <p class="setting-help">Solo cuenta personas: no incluye robots ni las vistas previas que generan Facebook o WhatsApp al pegar el enlace.</p>`;
+    } catch (e) {
+        const box = $('#socialStats');
+        if (box) box.innerHTML = `<p class="setting-help">${escapeHtml(e.message)}</p>`;
+    }
+}
+
+function copySocialLink(btn) {
+    const input = btn.previousElementSibling;
+    const done = () => { btn.textContent = 'Copiado ✓'; setTimeout(() => { btn.textContent = 'Copiar'; }, 1600); };
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(input.value).then(done).catch(() => { input.select(); toast('Seleccionado: presione Ctrl+C para copiar.'); });
+    } else {
+        input.select();
+        toast('Seleccionado: presione Ctrl+C para copiar.');
+    }
 }
 
 function obituaryFormHtml(o = {}) {
@@ -992,6 +1073,8 @@ async function loadSettings() {
         $('#set_section_faqs_enabled').checked = (s.section_faqs_enabled?.value ?? '1') === '1';
         $('#set_client_portal_enabled').checked = (s.client_portal_enabled?.value ?? '0') === '1';
         $('#set_client_portal_url').value = s.client_portal_url?.value ?? '';
+        $('#set_ga4_measurement_id').value = s.ga4_measurement_id?.value ?? '';
+        $('#set_google_site_verification').value = s.google_site_verification?.value ?? '';
     } catch (e) { toast(e.message); }
 }
 async function saveSettings(e) {
@@ -1014,7 +1097,9 @@ async function saveSettings(e) {
                     section_recursos_enabled: $('#set_section_recursos_enabled').checked,
                     section_faqs_enabled: $('#set_section_faqs_enabled').checked,
                     client_portal_enabled: $('#set_client_portal_enabled').checked,
-                    client_portal_url: $('#set_client_portal_url').value.trim()
+                    client_portal_url: $('#set_client_portal_url').value.trim(),
+                    ga4_measurement_id: $('#set_ga4_measurement_id').value.trim(),
+                    google_site_verification: $('#set_google_site_verification').value.trim()
                 }
             }
         });

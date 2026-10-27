@@ -5,7 +5,9 @@ DirectoryIndex index.php index.html
 
 # No listar el contenido de carpetas sin index (evita exponer los nombres de
 # archivo de api/ vía "Index of /api/" -- ver auditoría SEO 2026-09-09).
-Options -Indexes
+# -MultiViews: con MultiViews activo, Apache serviría o.php para /o/45/fb sin
+# pasar por la regla de abajo (y sin el id); ver enlaces cortos más abajo.
+Options -Indexes -MultiViews
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -26,4 +28,8 @@ Options -Indexes
     # Plan Vanguardia Plus retirado (2026-10-27) -> hub de planes.
     RewriteCond %{REQUEST_URI} ^(.*/)planes/plan-vanguardia-plus\.php$
     RewriteRule ^planes/plan-vanguardia-plus\.php$ %1planes/ [R=301,L]
+    # Enlace corto de obituario para redes: o/45 y o/45/fb -> o.php (reescritura
+    # interna; o.php cuenta el clic y redirige). Ver
+    # docs/specs/2026-10-27-enlaces-redes-y-analitica.md.
+    RewriteRule ^o/([0-9]+)(?:/([a-z]+))?/?$ o.php?id=$1&s=$2 [L,QSA]
 </IfModule>

@@ -316,6 +316,31 @@ switch ($action) {
         ]]);
     }
 
+    // ---- CLICS DE LOS ENLACES CORTOS PARA REDES (o.php) ---------------------
+    // Ver docs/specs/2026-10-27-enlaces-redes-y-analitica.md.
+    case 'link_stats': {
+        require_method('GET');
+        require_role('admin', 'editor');
+        $id = (int)($_GET['id'] ?? 0);
+        if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);
+        try {
+            $st = db()->prepare(
+                "SELECT source,
+                        SUM(clicks) AS total,
+                        SUM(CASE WHEN click_date >= CURDATE() - INTERVAL 29 DAY THEN clicks ELSE 0 END) AS last30
+                 FROM obituary_link_clicks WHERE obituary_id = ? GROUP BY source"
+            );
+            $st->execute([$id]);
+            $rows = $st->fetchAll();
+        } catch (\Throwable $e) {
+            // Tabla inexistente = migración 17 sin aplicar: el panel lo explica en vez de fallar.
+            json_out(['ok' => true, 'available' => false, 'by_source' => []]);
+        }
+        $out = [];
+        foreach ($rows as $r) $out[$r['source']] = ['total' => (int)$r['total'], 'last30' => (int)$r['last30']];
+        json_out(['ok' => true, 'available' => true, 'by_source' => $out]);
+    }
+
     default:
         json_out(['ok' => false, 'error' => 'Acción no encontrada.'], 404);
 }

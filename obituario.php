@@ -4,6 +4,7 @@
  * URL:  obituario.php?slug=...
  */
 require __DIR__ . '/api/lib/public_init.php';
+require __DIR__ . '/api/lib/obituary_card.php';   // obit_og_version() para og:image
 
 if (!site_section_enabled('obituarios')) {
     http_response_code(404);
@@ -51,6 +52,12 @@ $jsonld['subjectOf'] = [
     'publisher' => ['@type' => 'FuneralService', 'name' => 'Funeraria del Zulia', 'url' => site_url()],
 ];
 
+// Vista previa para redes: imagen 1200x630 propia del obituario (obituario_og.php),
+// no la foto/placeholder. "v" cambia si cambia lo que se dibuja (nombre, fechas,
+// foto), para que Facebook/WhatsApp no reutilicen una versión vieja.
+$ogImage = site_url('obituario_og.php?id=' . (int)$o['id'] . '&v='
+    . obit_og_version(['death_date' => fmt_date_es($o['death_date'])] + $o));
+
 $breadcrumbLd = breadcrumb_jsonld([
     ['name' => 'Inicio', 'url' => site_url('index.php')],
     ['name' => 'Obituarios', 'url' => site_url('obituarios.php')],
@@ -62,7 +69,10 @@ $head = '<meta name="robots" content="index, follow">'
     . '<meta property="og:site_name" content="Funeraria del Zulia">'
     . '<meta property="og:title" content="' . esc($title) . '">'
     . '<meta property="og:description" content="' . esc($desc) . '">'
-    . '<meta property="og:image" content="' . esc(site_url($photo)) . '">'
+    . '<meta property="og:image" content="' . esc($ogImage) . '">'
+    . '<meta property="og:image:width" content="1200">'
+    . '<meta property="og:image:height" content="630">'
+    . '<meta property="og:image:alt" content="' . esc('En memoria de ' . $o['full_name'] . ' — Funeraria del Zulia') . '">'
     . '<meta property="og:url" content="' . esc($canonical) . '">'
     . '<meta name="twitter:card" content="summary_large_image">'
     . '<script type="application/ld+json">' . json_encode($jsonld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . '</script>'

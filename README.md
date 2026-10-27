@@ -225,6 +225,25 @@ tiene una foto real subida. No requiere que el obituario esté publicado — sir
 preparar el anuncio antes de activarlo. Detalle técnico:
 [`docs/specs/2026-09-08-tarjetas-obituario.md`](docs/specs/2026-09-08-tarjetas-obituario.md).
 
+### 8ter. Enlaces para redes y clics recibidos
+
+Cada fila de **Obituarios** tiene el botón **"Redes"**. Abre una ventana con:
+
+- **Un enlace corto por red** (Facebook, WhatsApp, Instagram, Otro), p. ej.
+  `https://www.funerariadelzulia.com/o/45/fb`, con botón **Copiar**. Use el de cada
+  red en sus publicaciones: así se sabe de dónde llegó cada visita. En Instagram
+  solo sirve en la biografía o en el sticker de enlace de las historias.
+- **La vista previa** que mostrarán Facebook y WhatsApp al pegar el enlace (imagen
+  con el nombre, las fechas y la foto si la hay; se actualiza sola).
+- **Los clics recibidos** por red (últimos 30 días y total). Solo cuenta personas:
+  no incluye robots ni las vistas previas que generan las redes. No guarda datos
+  personales de quien hace clic.
+
+Los enlaces solo llevan al obituario mientras esté **Activo**. Publique enlaces
+cuando el sitio ya esté en su dominio definitivo: los de una dirección de prueba
+dejan de funcionar al mudarse. Detalle técnico:
+[`docs/specs/2026-10-27-enlaces-redes-y-analitica.md`](docs/specs/2026-10-27-enlaces-redes-y-analitica.md).
+
 ### 9. Usuarios *(solo admin)*
 
 Pestaña **Usuarios**:
@@ -257,6 +276,12 @@ Pestaña **Configuración**:
   cédula y un código que reciben por correo). Viene **apagado**: actívelo
   cuando el portal esté listo. La URL debe empezar con `https://`; por defecto
   es `https://app.previsionfuneraria.com/portal/login?empresa=fdz`.
+- **Analítica (Google)**: el **ID de Google Analytics 4** (formato `G-XXXXXXXXXX`,
+  en analytics.google.com → Administrar → Flujos de datos → Web) y el **código de
+  verificación de Search Console** (elija "Etiqueta HTML" y pegue solo el valor de
+  `content`). Vacíos = no se usa Google. Se aplican a las páginas públicas, nunca
+  al panel. Las visitas que llegan por los enlaces de "Redes" aparecen en Analytics
+  con su red de origen (Adquisición → campaña "obituarios").
 
 **¿Qué es la purga?** Para ahorrar espacio en el disco, una rutina automática
 **borra la foto** de los obituarios con más de N días; desde entonces la página deja de

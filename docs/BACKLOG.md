@@ -47,6 +47,16 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 | Vanguardia Plus en Prevision-Funeraria | Pendiente (en PF) | Se retiró del sitio; sigue en el catálogo de `fdz` en PF (y las variantes "NEW" y de empleados). Decidir si se desactiva allí. |
 | Textos de "velación" que vienen de Prevision-Funeraria | Pendiente (en PF) | La descripción detallada del plan Tradición en PF dice "sala de velación por 24 horas". Hoy el sitio no la muestra, pero el portal de clientes sí podría. |
 
+### Enlaces para redes y analítica (2026-10-27)
+
+| Tarea | Estado | Notas |
+|---|---|---|
+| Aplicar `database/17_enlaces_redes_y_analitica.sql` y desplegar | Pendiente | Código listo, sin probar contra PHP/MySQL real. Probar: botón "Redes" en Obituarios, abrir `/o/{id}/fb` (debe llevar al obituario y sumar 1 clic), `obituario_og.php?id=` (imagen 1200×630). |
+| **Corregir `site_url` en el `config.php` del servidor** | Pendiente — **bloquea la vista previa en redes** | Hoy og:image/og:url salen `https://www.https://…`. Sin esto Facebook/WhatsApp no muestran imagen. |
+| Crear la propiedad de Google Analytics 4 y cargar el ID en Configuración | Pendiente | analytics.google.com (gratis). Idealmente con el dominio final. |
+| Verificar el sitio en Google Search Console | Pendiente | Método "Etiqueta HTML" → pegar el valor de `content` en Configuración. Luego enviar `sitemap.php`. Hacerlo con el dominio final. |
+| Empezar a publicar enlaces en redes solo con el dominio final | Pendiente | Los enlaces de `legadoholding.com/funerzul/o/…` dejarían de funcionar al mudarse. |
+
 ### Seguridad del login y portal de clientes
 
 | Tarea | Estado | Notas |
