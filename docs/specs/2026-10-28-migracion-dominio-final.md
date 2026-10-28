@@ -74,7 +74,7 @@ WordPress sigue en línea sin ningún cambio mientras tanto.
 4. **PHP del dominio** (cPanel → Seleccionar versión de PHP / MultiPHP): 8.1 o
    superior con `pdo_mysql`, `gd` (con WebP), `curl`, `mbstring`, igual que la
    carpeta de prueba.
-5. **Cloudflare** (verificar quién administra la zona):
+5. **Cloudflare** (la zona la administra Esteban):
    - SSL/TLS en **Full (strict)**, con certificado válido en el origen (AutoSSL de cPanel).
    - Anotar las reglas de caché existentes, Rocket Loader y la minificación de JS.
 6. **IP real de los visitantes detrás de Cloudflare** (verificar). Si
@@ -97,7 +97,7 @@ WordPress sigue en línea sin ningún cambio mientras tanto.
 
 ### 1.1 Carpeta de ensayo
 
-En la cuenta de FDZ, crear `/home/<cuenta-fdz>/fdz-nuevo/` (fuera de
+En la cuenta de FDZ, crear `/home/funerariadelzuli/fdz-nuevo/` (fuera de
 `public_html`, para no mezclarla con WordPress). Sirve para el subdominio de
 ensayo (fase 2). En el corte, el sitio se despliega en `public_html/`.
 
@@ -109,8 +109,8 @@ ensayo (fase 2). En el corte, el sitio se despliega en `public_html/`.
    llave de acceso.
 2. `.cpanel.yml` tiene la ruta de la cuenta de Legado
    (`/home/legadoholding/public_html/funerzul`). Para el ensayo, cambiar
-   `DEPLOYPATH` a `/home/<cuenta-fdz>/fdz-nuevo` (cambio en el repo). En el
-   corte, a `/home/<cuenta-fdz>/public_html`. Desde ese momento la cuenta de
+   `DEPLOYPATH` a `/home/funerariadelzuli/fdz-nuevo` (cambio en el repo). En el
+   corte, a `/home/funerariadelzuli/public_html`. Desde ese momento la cuenta de
    Legado deja de recibir despliegues; su carpeta `funerzul/` pasa a ser solo
    redirección (fase 4).
 3. Desplegar con "Deploy HEAD Commit".
@@ -118,7 +118,7 @@ ensayo (fase 2). En el corte, el sitio se despliega en `public_html/`.
 ### 1.3 Base de datos (cuentas separadas: se mueve)
 
 1. Cuenta de FDZ → **Bases de datos MySQL**: crear la base (p. ej.
-   `<prefijo>_sitio`) y un usuario con contraseña fuerte, con **todos los
+   `funerariadelzuli_sitio`; cPanel antepone el usuario de la cuenta) y un usuario con contraseña fuerte, con **todos los
    privilegios** sobre esa base.
 2. **Ensayo (jueves):** en la cuenta de Legado, phpMyAdmin →
    `legadoholding_obituarios` → Exportar (rápido, SQL). En la cuenta de FDZ,
@@ -177,7 +177,8 @@ Ejecutar el `UPDATE` de la sección 2. Si se usa un subdominio de pruebas (fase
 ### 1.8 Cron de purga de fotos
 
 En cPanel → Cron, cambiar la ruta a
-`/usr/local/bin/php /home/<cuenta>/<raíz nueva>/api/cron/purge_photos.php`.
+`/usr/local/bin/php /home/funerariadelzuli/public_html/api/cron/purge_photos.php`
+(cuenta de FDZ).
 Hacerlo en el corte; nunca dejar los dos activos.
 
 ## 6. Fase 2 — Ensayo en un subdominio de pruebas (recomendado)
@@ -212,7 +213,7 @@ Hacerlo en el corte; nunca dejar los dos activos.
       `wp-includes/`, `wp-*.php`, `index.php`, `.htaccess`, `xmlrpc.php`,
       `license.txt`, etc.) a `_wp-anterior/`. **No mover** `.well-known/` (lo usa
       el certificado SSL) ni `cgi-bin/`.
-   3. Cambiar en el repo `DEPLOYPATH` a `/home/<cuenta-fdz>/public_html`, hacer
+   3. Cambiar en el repo `DEPLOYPATH` a `/home/funerariadelzuli/public_html`, hacer
       push y Deploy HEAD Commit en la cuenta de FDZ.
    4. Copiar a `public_html/` el `config.php` definitivo (en `api/`) y
       `uploads/` (1.4).
