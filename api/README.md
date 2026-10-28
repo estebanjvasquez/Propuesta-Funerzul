@@ -83,6 +83,8 @@ contra `/oauth/userinfo`.
 | `condolences.php?action=list` | GET | público | aprobadas (staff: todas) |
 | `condolences.php?action=create` | POST | público | enviar (entra pending) |
 | `condolences.php?action=moderate\|update\|delete` | POST | editor/admin | moderación |
+| `testimonials.php?action=list\|get` | GET | público | testimonios activos (`?scope=admin`: todos, perfil Contenido) |
+| `testimonials.php?action=create\|update\|toggle\|delete` | POST | editor/admin | gestión de testimonios (permiso `sitio.contenido.write`) |
 | `templates.php?action=list\|get` | GET | público | plantillas activas |
 | `templates.php?action=create\|update\|set_default\|delete` | POST | admin | gestión |
 | `settings.php?action=get` | GET | staff | leer configuración |

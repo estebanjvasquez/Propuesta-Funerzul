@@ -1,6 +1,8 @@
 ---
-Estado: **Propuesta (2026-10-28)** — plan, nada ejecutado. Las casillas marcadas
-"(verificar)" son datos que no se pueden ver desde fuera del servidor.
+Estado: **Aprobado (2026-10-28)**, en preparación. Decisiones en la sección 3.
+Objetivo: el sitio nuevo en línea **antes del 2 de noviembre de 2026** (fecha
+exacta del corte por confirmar). Calendario en la sección 3.1. Lo marcado
+"(verificar)" no se puede ver desde fuera del servidor.
 ---
 
 # Migración al dominio definitivo `www.funerariadelzulia.com`
@@ -39,15 +41,28 @@ quita en la fase 4. El enlace "Previsión (FDZ)" y el Portal de Clientes apuntan
 a `app.previsionfuneraria.com` y no cambian. **No** llenar `tenants.dominio` de
 `fdz` en PF: ese campo es para servir PF bajo otro dominio, no aplica aquí.
 
-## 3. Decisiones antes de empezar
+## 3. Decisiones (respondidas por el usuario el 2026-10-28)
 
-| # | Pregunta | Recomendación |
-|---|---|---|
-| D1 | ¿`funerariadelzulia.com` está en la **misma cuenta** de cPanel que `legadoholding.com` (dominio adicional) o en otra cuenta? | Define la base de datos (fase 1.3). Se ve en cPanel → Dominios. |
-| D2 | ¿Es el dominio **principal** de su cuenta (raíz fija `public_html`) o un dominio adicional (raíz configurable)? | Define cómo se hace el corte (fase 3). |
-| D3 | ¿WooCommerce tiene pedidos, clientes o pagos reales? | Si los tiene, exportarlos antes; hoy las ventas de planes van por Previsión Funeraria. |
-| D4 | Páginas de WordPress sin equivalente (`/nosotros/`, testimonios) | Redirigirlas a la portada (tabla de la fase 1.6) o pedirle al cliente el contenido para una página nueva. |
-| D5 | Fecha y hora del corte | De noche o fin de semana; avisar al personal que el panel queda congelado ~30 min. |
+| # | Pregunta | Respuesta | Consecuencia |
+|---|---|---|---|
+| D1 | ¿Misma cuenta de cPanel que `legadoholding.com`? | **No, cuentas separadas.** | La base de datos **sí se mueve**: exportar en la cuenta de Legado e importar en una base nueva de la cuenta de FDZ (1.3). Las fotos se pasan por descarga/subida, porque el Administrador de archivos no cruza cuentas (1.4). El repositorio se clona también en cPanel → Git de la cuenta de FDZ (1.2). |
+| D2 | ¿Dominio principal o adicional? | **Principal** (raíz fija `public_html`). | El corte mueve WordPress a `public_html/_wp-anterior/` y despliega el sitio nuevo en `public_html/` (fase 3). |
+| D3 | ¿WooCommerce tiene pedidos reales? | **No, la tienda no funcionaba.** | Nada que exportar; sus URLs redirigen a `/planes/`. |
+| D4 | Páginas sin equivalente | **Crear "Nosotros" y "Testimonios"**, encendibles y administrables desde el panel. | Hecho: `nosotros.php`, bloque de testimonios en portada y Nosotros, pestaña Testimonios del panel (`docs/specs/2026-10-28-nosotros-y-testimonios.md`, migración 19). |
+| D5 | Fecha del corte | Aún sin fecha; objetivo **antes del 2 de noviembre**. | Calendario 3.1. |
+
+### 3.1 Calendario propuesto (objetivo: en línea el 1 de noviembre)
+
+| Día | Qué |
+|---|---|
+| **Mié 29-oct** | Fase 0 completa: respaldos de WordPress y del sitio de prueba, versión de PHP de la cuenta de FDZ, acceso a Cloudflare, ID `G-…` de Analytics, Search Console a verificación DNS. En el sitio de prueba: desplegar e importar las migraciones 18 y 19, revisar Nosotros y Testimonios. |
+| **Jue 30-oct** | Fase 1 en la cuenta de FDZ: base de datos nueva + importación de ensayo, clonar el repo en cPanel → Git, `config.php`, fotos, subdominio `nuevo.funerariadelzulia.com` (fase 2) y pruebas completas. |
+| **Vie 31-oct** | Correcciones de lo que salga del ensayo. Validación del cliente sobre el subdominio. Avisar al personal la hora del corte. |
+| **Sáb 1-nov (noche)** | Fase 3, el corte. Ventana de 1 h. |
+| **Dom 2-nov** | Fase 4, primer día: revisar redirecciones, errores 404, Search Console y que el panel funcione con el personal. |
+
+Si algo del ensayo del jueves no queda resuelto el viernes, el corte se mueve:
+WordPress sigue en línea sin ningún cambio mientras tanto.
 
 ## 4. Fase 0 — Inventario y respaldos (sin tocar nada)
 
@@ -80,36 +95,50 @@ a `app.previsionfuneraria.com` y no cambian. **No** llenar `tenants.dominio` de
 
 ## 5. Fase 1 — Preparar el destino (en paralelo, el WordPress sigue en línea)
 
-### 1.1 Carpeta nueva
+### 1.1 Carpeta de ensayo
 
-Crear la raíz del sitio nuevo **fuera** de la de WordPress, por ejemplo
-`/home/<cuenta>/fdz-sitio/` (D2 decide si luego se apunta el dominio ahí o se
-mueve el contenido a `public_html`).
+En la cuenta de FDZ, crear `/home/<cuenta-fdz>/fdz-nuevo/` (fuera de
+`public_html`, para no mezclarla con WordPress). Sirve para el subdominio de
+ensayo (fase 2). En el corte, el sitio se despliega en `public_html/`.
 
-### 1.2 Código
+### 1.2 Código (cPanel → Git de la cuenta de FDZ)
 
-Cambio en el repo: `.cpanel.yml` con `DEPLOYPATH` a la carpeta nueva. Desplegar
-desde cPanel → Git. Hasta el corte, la carpeta de prueba deja de recibir
-despliegues; si hace falta mantenerla, se puede tener una tarea por cada destino.
+1. En la cuenta de FDZ: cPanel → **Git Version Control** → Crear → clonar
+   `https://github.com/estebanjvasquez/Propuesta-Funerzul.git`, rama
+   `feature/prevision-funeraria`. El repo es público, así que no hace falta
+   llave de acceso.
+2. `.cpanel.yml` tiene la ruta de la cuenta de Legado
+   (`/home/legadoholding/public_html/funerzul`). Para el ensayo, cambiar
+   `DEPLOYPATH` a `/home/<cuenta-fdz>/fdz-nuevo` (cambio en el repo). En el
+   corte, a `/home/<cuenta-fdz>/public_html`. Desde ese momento la cuenta de
+   Legado deja de recibir despliegues; su carpeta `funerzul/` pasa a ser solo
+   redirección (fase 4).
+3. Desplegar con "Deploy HEAD Commit".
 
-### 1.3 Base de datos
+### 1.3 Base de datos (cuentas separadas: se mueve)
 
-- **Misma cuenta de cPanel (D1 = sí): no se mueve nada.** El sitio nuevo usa la
-  misma base `legadoholding_obituarios` con el mismo usuario. Obituarios,
-  condolencias, usuarios y ajustes quedan tal cual. El prefijo `legadoholding_` es
-  solo un nombre.
-- **Otra cuenta (D1 = no):** las bases son por cuenta.
-  1. Crear base y usuario nuevos en la cuenta de FDZ.
-  2. En el corte, con el panel congelado, exportar e importar.
-  3. Actualizar `db` en `config.php`.
-  4. No volver a escribir en la base vieja.
+1. Cuenta de FDZ → **Bases de datos MySQL**: crear la base (p. ej.
+   `<prefijo>_sitio`) y un usuario con contraseña fuerte, con **todos los
+   privilegios** sobre esa base.
+2. **Ensayo (jueves):** en la cuenta de Legado, phpMyAdmin →
+   `legadoholding_obituarios` → Exportar (rápido, SQL). En la cuenta de FDZ,
+   phpMyAdmin → base nueva → Importar. Comprobar que estén todas las tablas
+   (`users`, `obituaries`, `condolences`, `faqs`, `testimonials`,
+   `app_settings`, `auth_throttle`…).
+3. **Corte:** con el panel de prueba congelado, repetir la exportación y la
+   importación. Antes de importar, vaciar la base nueva con phpMyAdmin →
+   seleccionar todas las tablas → Eliminar, para no mezclar datos.
+4. Desde el corte, la base de la cuenta de Legado no se vuelve a usar. Se
+   conserva un mes como respaldo y luego se borra.
 
 ### 1.4 Fotos y archivos fuera de git
 
-Copiar `public_html/funerzul/uploads/` a la carpeta nueva (Administrador de
-archivos → Comprimir → Mover → Extraer), conservando los permisos de escritura
-de `uploads/` y `cache/`. `cache/` no se copia: se regenera sola (miniaturas OG,
-catálogo de PF).
+En la cuenta de Legado, Administrador de archivos → `public_html/funerzul/uploads/`
+→ **Comprimir** (zip) → descargar. En la cuenta de FDZ, subir el zip a la raíz
+del sitio y **Extraer**. Debe quedar `uploads/obituarios/…`, y `uploads/` y
+`cache/` con permiso de escritura (755). `cache/` no se copia: se regenera sola
+(miniaturas OG, catálogo de PF). En el corte se repite con lo subido después del
+ensayo (o se vuelve a copiar todo; son pocos MB).
 
 ### 1.5 `api/config.php` de la carpeta nueva
 
@@ -121,21 +150,24 @@ Copiar el de prueba y cambiar solo esto:
 | `app.env` | `production` |
 | `security.allowed_origins` | `https://www.funerariadelzulia.com`, `https://funerariadelzulia.com` |
 | `pf_sso.redirect_uri` | `https://www.funerariadelzulia.com/api/sso.php?action=callback` |
-| `db` | Igual (D1 = sí) o la base nueva (D1 = no) |
+| `db` | Base, usuario y contraseña nuevos de la cuenta de FDZ (1.3) |
+| `paths` | Sin cambios: son relativos a la carpeta del sitio |
 
-### 1.6 Redirecciones de las URLs de WordPress (cambio en el repo, `.htaccess`)
+### 1.6 Redirecciones de las URLs de WordPress (**hecho** en `.htaccess`, 2026-10-28)
 
 Para no perder posicionamiento ni enlaces compartidos:
 
 | URL de WordPress | Destino (301) |
 |---|---|
+| `/nosotros/` | `/nosotros.php` |
 | `/preguntas-frecuentes/` | `/#preguntas` |
 | `/familias-protegidas/` | `/planes/` |
 | `/crematorios-del-zulia/` | `/crematorios-del-zulia.php` |
 | `/tienda/`, `/carrito/`, `/finalizar-compra/`, `/mi-cuenta/…`, `/producto/…` | `/planes/` |
-| `/nosotros/`, `/testimonial/…`, `/category/…`, `/sample-page/`, `/feed/` | `/` (o la página nueva, según D4) |
+| `/testimonial/…`, `/category/testimonial/` | `/#testimonios` |
+| `/category/…`, `/tag/…`, `/author/…`, `/sample-page/`, `/feed/`, `/?p=…`, `/?page_id=…` | `/` |
 | `/sitemap_index.xml`, `/wp-sitemap.xml`, `/*-sitemap.xml` | `/sitemap.php` |
-| `/wp-admin/…`, `/wp-login.php`, `/xmlrpc.php` | `410 Gone`. Corta los bots que buscan WordPress. |
+| `/wp-admin/…`, `/wp-content/…`, `/wp-includes/…`, `/wp-json/…`, `/wp-login.php`, `/xmlrpc.php` | `410 Gone`. Corta los bots que buscan WordPress. |
 
 ### 1.7 Previsión Funeraria
 
@@ -171,16 +203,19 @@ Hacerlo en el corte; nunca dejar los dos activos.
 ## 7. Fase 3 — Corte (ventana de ~30-60 min)
 
 1. Avisar al personal; **congelar el panel de prueba** (no crear ni editar).
-2. Sincronización final: base de datos (solo si D1 = no) y `uploads/` (copiar lo
-   nuevo desde la última copia).
-3. Poner los valores definitivos en `config.php` (sección 1.5) y desplegar la
-   última versión.
-4. **Cambiar lo que sirve el dominio** según D2:
-   - **Dominio adicional:** cPanel → Dominios → `funerariadelzulia.com` →
-     cambiar la raíz a la carpeta nueva. Es instantáneo y se revierte igual.
-   - **Dominio principal (`public_html` fija):** mover el contenido de WordPress
-     a `public_html/_wp-anterior/` (con un `.htaccess` `Require all denied`) y el
-     sitio nuevo a `public_html/`. Ajustar `DEPLOYPATH` a `public_html`.
+2. Respaldo de último momento de `public_html/` (WordPress) por si acaso.
+3. Sincronización final de la base de datos (1.3, paso 3) y de `uploads/` (1.4).
+4. **Cambiar lo que sirve el dominio** (dominio principal, `public_html` fija):
+   1. En `public_html/` crear la carpeta `_wp-anterior/` con un `.htaccess` que
+      diga `Require all denied`.
+   2. Mover **todo el contenido de WordPress** (`wp-admin/`, `wp-content/`,
+      `wp-includes/`, `wp-*.php`, `index.php`, `.htaccess`, `xmlrpc.php`,
+      `license.txt`, etc.) a `_wp-anterior/`. **No mover** `.well-known/` (lo usa
+      el certificado SSL) ni `cgi-bin/`.
+   3. Cambiar en el repo `DEPLOYPATH` a `/home/<cuenta-fdz>/public_html`, hacer
+      push y Deploy HEAD Commit en la cuenta de FDZ.
+   4. Copiar a `public_html/` el `config.php` definitivo (en `api/`) y
+      `uploads/` (1.4).
 5. Cloudflare → **Purgar todo el caché**.
 6. Cron de purga a la ruta nueva (1.8).
 7. **Pruebas de humo** en `https://www.funerariadelzulia.com`:
@@ -191,13 +226,15 @@ Hacerlo en el corte; nunca dejar los dos activos.
    - `https://funerariadelzulia.com` → `www`;
    - `robots.txt` y `sitemap.php`.
 
-### Vuelta atrás
+### Vuelta atrás (~10 min)
 
-- **Dominio adicional:** devolver la raíz a la carpeta de WordPress y purgar Cloudflare.
-- **Dominio principal:** devolver los archivos de `_wp-anterior/`.
+1. Mover a una carpeta aparte los archivos del sitio nuevo que quedaron en
+   `public_html/` (`index.php`, `.htaccess`, `api/`, …).
+2. Devolver a `public_html/` el contenido de `_wp-anterior/`.
+3. Purgar Cloudflare.
 
-WordPress y su base no se tocan en ningún paso, así que la vuelta atrás es completa.
-Lo que se haya cargado en el panel nuevo sigue en su base.
+WordPress y su base no se modifican en ningún paso, así que la vuelta atrás es
+completa. Lo que se haya cargado en el panel nuevo sigue en su base.
 
 ## 8. Fase 4 — Después del corte
 

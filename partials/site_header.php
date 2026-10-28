@@ -17,7 +17,7 @@ $base      = $P['base'] ?? '';   // '' en la raíz, '../' en subcarpetas (servic
     <link rel="icon" href="<?= $base ?>favicon.png?v=20260913-1" type="image/png">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="<?= $base ?>styles.css?v=20261027-6">
+    <link rel="stylesheet" href="<?= $base ?>styles.css?v=20261028-2">
     <?= $headExtra ?>
     <?php require __DIR__ . '/analytics.php'; ?>
 </head>
@@ -41,9 +41,12 @@ $base      = $P['base'] ?? '';   // '' en la raíz, '../' en subcarpetas (servic
                 <img src="<?= $base ?>logo-horizontal-white.png" alt="Funeraria del Zulia" class="header-logo-img">
             </a>
             <nav>
-                <ul class="nav-links">
+                <ul class="nav-links" id="siteNav">
                     <li><a href="<?= $base ?>servicios/">Servicios</a></li>
                     <li><a href="<?= $base ?>crematorios-del-zulia.php">Crematorio</a></li>
+                    <?php if (site_section_enabled('nosotros')): ?>
+                    <li><a href="<?= $base ?>nosotros.php">Nosotros</a></li>
+                    <?php endif; ?>
                     <li><a href="<?= $base ?>planes/">Previsión</a></li>
                     <?php if (site_section_enabled('obituarios')): ?>
                     <li><a href="<?= $base ?>obituarios.php">Obituarios</a></li>
@@ -65,6 +68,11 @@ $base      = $P['base'] ?? '';   // '' en la raíz, '../' en subcarpetas (servic
             </nav>
             <div class="header-actions">
                 <a href="tel:+584246950136" class="btn btn-secondary btn-sm">Emergencias 24/7</a>
+                <button class="mobile-menu-btn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="siteNav">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </header>

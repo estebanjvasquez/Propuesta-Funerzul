@@ -26,6 +26,7 @@ if (site_section_enabled('obituarios')) sm_url(site_url('obituarios.php'), SITEM
 if (site_section_enabled('directorio_medico')) sm_url(site_url('directorio-medico.php'), SITEMAP_STATIC_LASTMOD, 'weekly', '0.8');
 if (site_section_enabled('recursos')) sm_url(site_url('recursos.php'), SITEMAP_STATIC_LASTMOD, 'weekly', '0.8');
 sm_url(site_url('crematorios-del-zulia.php'), SITEMAP_STATIC_LASTMOD, 'monthly', '0.8');
+if (site_section_enabled('nosotros')) sm_url(site_url('nosotros.php'), SITEMAP_STATIC_LASTMOD, 'monthly', '0.6');
 
 // Servicios
 sm_url(site_url('servicios/'), SITEMAP_STATIC_LASTMOD, 'monthly', '0.9');

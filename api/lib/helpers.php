@@ -110,10 +110,29 @@ function site_section_enabled(string $section): bool
         'directorio_medico' => 'section_directorio_medico_enabled',
         'recursos'          => 'section_recursos_enabled',
         'faqs'              => 'section_faqs_enabled',
+        'nosotros'          => 'section_nosotros_enabled',
+        'testimonios'       => 'section_testimonios_enabled',
     ];
     $key = $map[$section] ?? null;
     if ($key === null) return true; // sección desconocida: nunca se oculta por un typo
     return setting_bool($key, true);
+}
+
+/**
+ * Testimonios activos para el sitio público (partials/testimonios.php), o []
+ * si la sección está apagada o la BD/tabla no responde (migración 19 sin
+ * importar): el bloque simplemente no se muestra.
+ */
+function active_testimonials(): array
+{
+    try {
+        if (!site_section_enabled('testimonios')) return [];
+        return db()->query(
+            "SELECT quote, author, detail FROM testimonials WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
+        )->fetchAll(PDO::FETCH_ASSOC);
+    } catch (\Throwable $e) {
+        return [];
+    }
 }
 
 /** true si $u es una URL absoluta válida con esquema https. */

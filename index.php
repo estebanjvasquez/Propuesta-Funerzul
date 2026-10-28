@@ -13,6 +13,8 @@ $secObituarios       = true;
 $secDirectorioMedico = true;
 $secRecursos         = true;
 $secFaqs             = true;
+$secNosotros         = true;
+$testimonios         = [];
 // El Portal de Clientes, en cambio, falla CERRADO (ver client_portal_url()).
 $portalUrl           = null;
 $cfgFile = __DIR__ . '/api/config.php';
@@ -26,6 +28,8 @@ if (is_file($cfgFile)) {
         $secDirectorioMedico = site_section_enabled('directorio_medico');
         $secRecursos         = site_section_enabled('recursos');
         $secFaqs             = site_section_enabled('faqs');
+        $secNosotros         = site_section_enabled('nosotros');
+        $testimonios         = active_testimonials();
         $portalUrl           = client_portal_url();
         $faqs = $secFaqs ? db()->query(
             "SELECT question, answer FROM faqs WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
@@ -64,7 +68,7 @@ function fz_site_url(string $path = ''): string {
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="styles.css?v=20261027-6">
+    <link rel="stylesheet" href="styles.css?v=20261028-2">
 
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -172,9 +176,12 @@ function fz_site_url(string $path = ''): string {
             </a>
 
             <nav>
-                <ul class="nav-links">
+                <ul class="nav-links" id="siteNav">
                     <li><a href="#servicios" class="active">Servicios</a></li>
                     <li><a href="crematorios-del-zulia.php">Crematorio</a></li>
+                    <?php if ($secNosotros): ?>
+                    <li><a href="nosotros.php">Nosotros</a></li>
+                    <?php endif; ?>
                     <li><a href="#prevision">Previsión</a></li>
                     <?php if ($secObituarios): ?>
                     <li><a href="#obituarios">Obituarios</a></li>
@@ -197,8 +204,8 @@ function fz_site_url(string $path = ''): string {
 
             <div class="header-actions">
                 <a href="tel:+584246950136" class="btn btn-secondary btn-sm">Emergencias 24/7</a>
-                <button class="mobile-menu-btn" aria-label="Menú Móvil">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <button class="mobile-menu-btn" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="siteNav">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
                     </svg>
                 </button>
@@ -412,6 +419,9 @@ function fz_site_url(string $path = ''): string {
     </section>
     <?php endif; ?>
 
+    <!-- TESTIMONIOS (panel: Sitio web → Testimonios; interruptor en Configuración) -->
+    <?php require __DIR__ . '/partials/testimonios.php'; ?>
+
     <?php if ($secFaqs): ?>
     <!-- 6. SECCION DE PREGUNTAS FRECUENTES (FAQ) -->
     <section id="preguntas" class="section">
@@ -565,6 +575,9 @@ function fz_site_url(string $path = ''): string {
                     <ul class="footer-links-list">
                         <li><a href="#servicios">Servicios</a></li>
                         <li><a href="crematorios-del-zulia.php">Crematorios del Zulia</a></li>
+                        <?php if ($secNosotros): ?>
+                        <li><a href="nosotros.php">Nosotros</a></li>
+                        <?php endif; ?>
                         <?php if ($secObituarios): ?>
                         <li><a href="#obituarios">Obituarios</a></li>
                         <?php endif; ?>
@@ -731,6 +744,6 @@ function fz_site_url(string $path = ''): string {
     <!-- 12. TOAST NOTIFICATION -->
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="app.js?v=20260628"></script>
+    <script src="app.js?v=20261028-1"></script>
 </body>
 </html>

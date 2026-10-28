@@ -32,4 +32,30 @@ Options -Indexes -MultiViews
     # interna; o.php cuenta el clic y redirige). Ver
     # docs/specs/2026-10-27-enlaces-redes-y-analitica.md.
     RewriteRule ^o/([0-9]+)(?:/([a-z]+))?/?$ o.php?id=$1&s=$2 [L,QSA]
+
+    # --- URLs del WordPress anterior de www.funerariadelzulia.com (301) ---------
+    # Para no perder posicionamiento ni enlaces compartidos al reemplazarlo. Ver
+    # docs/specs/2026-10-28-migracion-dominio-final.md, sección 1.6. NE: no
+    # escapar el "#" de las anclas.
+    RewriteCond %{QUERY_STRING} ^(p|page_id|cat|s)=
+    RewriteCond %{REQUEST_URI} ^(.*/)$
+    RewriteRule ^$ %1? [R=301,L]
+    RewriteCond %{REQUEST_URI} ^(.*/)nosotros/?$
+    RewriteRule ^nosotros/?$ %1nosotros.php [R=301,L]
+    RewriteCond %{REQUEST_URI} ^(.*/)preguntas-frecuentes/?$
+    RewriteRule ^preguntas-frecuentes/?$ %1#preguntas [R=301,NE,L]
+    RewriteCond %{REQUEST_URI} ^(.*/)crematorios-del-zulia/?$
+    RewriteRule ^crematorios-del-zulia/?$ %1crematorios-del-zulia.php [R=301,L]
+    # Previsión y la tienda WooCommerce (no funcionaba) -> planes.
+    RewriteCond %{REQUEST_URI} ^(.*/)(familias-protegidas|tienda|carrito|finalizar-compra|mi-cuenta|producto|product)(/.*)?$
+    RewriteRule ^(familias-protegidas|tienda|carrito|finalizar-compra|mi-cuenta|producto|product)(/.*)?$ %1planes/ [R=301,L]
+    RewriteCond %{REQUEST_URI} ^(.*/)(testimonial|category/testimonial)(/.*)?$
+    RewriteRule ^(testimonial|category/testimonial)(/.*)?$ %1#testimonios [R=301,NE,L]
+    RewriteCond %{REQUEST_URI} ^(.*/)(category|tag|author|sample-page|feed|comments)(/.*)?$
+    RewriteRule ^(category|tag|author|sample-page|feed|comments)(/.*)?$ %1 [R=301,L]
+    RewriteCond %{REQUEST_URI} ^(.*/)[a-z_-]*sitemap[a-z0-9_-]*\.xml$
+    RewriteRule ^[a-z_-]*sitemap[a-z0-9_-]*\.xml$ %1sitemap.php [R=301,L]
+    # Rutas internas de WordPress: ya no existen (corta a los bots que las buscan).
+    RewriteRule ^(wp-admin|wp-includes|wp-content|wp-json)(/.*)?$ - [G,L]
+    RewriteRule ^(wp-login\.php|xmlrpc\.php|wp-cron\.php)$ - [G,L]
 </IfModule>

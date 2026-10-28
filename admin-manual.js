@@ -124,6 +124,16 @@ const MANUAL = [
         ],
     },
     {
+        id: 'testimonios', title: 'Testimonios', rol: 'todos',
+        intro: 'Las palabras de agradecimiento de las familias que se muestran en la portada y al final de la página Nosotros.',
+        steps: [
+            { t: 'Vaya a <strong>Sitio web → Testimonios</strong>. Igual que las preguntas frecuentes: <strong>Pausar / Activar</strong> los oculta o muestra sin borrarlos, <strong>Editar</strong> los cambia y <strong>Eliminar</strong> los borra.' },
+            { t: 'Pulse <strong>+ Nuevo testimonio</strong> y escriba el texto <strong>sin comillas</strong> (el sitio las agrega), el <strong>nombre</strong> como la familia quiere aparecer (por ejemplo, "Familia González" o "M. Pérez") y, si quiere, un <strong>detalle</strong> como el servicio o la ciudad. El <strong>Orden</strong> menor aparece primero.' },
+            { t: 'Para ocultar todos los testimonios de una vez, o la página <strong>Nosotros</strong>, use sus interruptores en <strong>Sistema → Configuración → Secciones del sitio</strong>.' },
+        ],
+        tips: ['Publique solo testimonios que la familia autorizó a mostrar.'],
+    },
+    {
         id: 'plantillas', title: 'Plantillas de obituario', rol: 'admin',
         intro: 'El diseño con que se muestra cada obituario en el sitio.',
         steps: [

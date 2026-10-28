@@ -21,6 +21,8 @@ const EDITABLE_SETTINGS = [
     'section_directorio_medico_enabled' => 'bool',
     'section_recursos_enabled'          => 'bool',
     'section_faqs_enabled'              => 'bool',
+    'section_nosotros_enabled'          => 'bool',
+    'section_testimonios_enabled'       => 'bool',
     // Portal de Clientes en Prevision-Funeraria (ver client_portal_url() en lib/helpers.php)
     'client_portal_enabled'             => 'bool',
     'client_portal_url'                 => 'url',

@@ -75,6 +75,7 @@ const TAB_PERMS = {
     medicos: 'sitio.contenido.write',
     recursos: 'sitio.contenido.write',
     faqs: 'sitio.contenido.write',
+    testimonios: 'sitio.contenido.write',
 };
 const PROFILE_NAMES = {
     'sitio.admin': 'Administrador',
@@ -227,6 +228,7 @@ function switchTab(tab, btn) {
     if (tab === 'medicos') loadDoctors();
     if (tab === 'recursos') loadArticles();
     if (tab === 'faqs') loadFaqs();
+    if (tab === 'testimonios') loadTestimonials();
     if (tab === 'plantillas') loadTemplates(true);
     if (tab === 'config') loadSettings();
     if (tab === 'usuarios') loadUsers();
@@ -1034,6 +1036,126 @@ async function toggleFaq(id, active) {
     } catch (e) { toast(e.message); }
 }
 
+// ==========================================================================
+//  TESTIMONIOS (portada y página Nosotros; api/testimonials.php)
+// ==========================================================================
+async function loadTestimonials() {
+    try {
+        const r = await API.req('testimonials.php?action=list&scope=admin');
+        renderTestimonialTable(r.items);
+    } catch (e) { toast(e.message); }
+}
+
+function renderTestimonialTable(items) {
+    const tb = $('#testimonialTableBody');
+    if (!items.length) {
+        tb.innerHTML = `<tr><td colspan="4" class="empty-row">No hay testimonios. Cree el primero con “+ Nuevo testimonio”.</td></tr>`;
+        return;
+    }
+    tb.innerHTML = items.map(t => `
+        <tr>
+            <td>${t.sort_order}</td>
+            <td><div class="row-name">${escapeHtml(t.author)}${t.detail ? ' · ' + escapeHtml(t.detail) : ''}</div>
+                <div class="row-sub">${escapeHtml(t.quote.length > 110 ? t.quote.slice(0, 110) + '…' : t.quote)}</div></td>
+            <td>${t.is_active ? '<span class="status-badge badge-green">Activo</span>' : '<span class="status-badge badge-amber">En pausa</span>'}</td>
+            <td>
+                <div class="admin-actions">
+                    <button class="btn btn-outline btn-sm" onclick="toggleTestimonial(${t.id}, ${t.is_active ? 0 : 1})">${t.is_active ? 'Pausar' : 'Activar'}</button>
+                    <button class="btn btn-outline btn-sm" onclick="editTestimonial(${t.id})">Editar</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteTestimonial(${t.id}, ${escapeAttr(t.author)})">Eliminar</button>
+                </div>
+            </td>
+        </tr>`).join('');
+}
+
+function testimonialFormHtml(t = {}) {
+    return `
+    <form id="testimonialForm">
+        <input type="hidden" id="tsf_id" value="${t.id || ''}">
+        <div class="form-group"><label class="form-label">Testimonio *</label>
+            <textarea id="tsf_quote" class="form-control" rows="5" maxlength="2000" required>${escapeHtml(t.quote || '')}</textarea>
+            <p class="setting-help">Escríbalo sin comillas: el sitio las agrega.</p></div>
+        <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">Nombre *</label>
+                <input type="text" id="tsf_author" class="form-control" maxlength="150" value="${escapeHtml(t.author || '')}" placeholder="Ej. Familia González" required></div>
+            <div class="form-group"><label class="form-label">Detalle (opcional)</label>
+                <input type="text" id="tsf_detail" class="form-control" maxlength="150" value="${escapeHtml(t.detail || '')}" placeholder="Ej. Traslado desde Bogotá"></div>
+        </div>
+        <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">Orden</label>
+                <input type="number" id="tsf_order" class="form-control" value="${t.sort_order ?? 0}">
+                <p class="setting-help">Menor número = aparece primero.</p></div>
+            <div class="form-group"><label class="form-label">Estado</label>
+                <select id="tsf_active" class="form-control">
+                    <option value="1" ${t.is_active !== false ? 'selected' : ''}>Activo (visible)</option>
+                    <option value="0" ${t.is_active === false ? 'selected' : ''}>En pausa</option>
+                </select></div>
+        </div>
+        <p class="setting-help">Publique solo testimonios que la familia autorizó a mostrar.</p>
+        <p id="tsf_error" class="login-error" hidden></p>
+        <div class="modal-actions">
+            <button type="submit" class="btn btn-primary" id="tsf_submit">Guardar testimonio</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+        </div>
+    </form>`;
+}
+
+function newTestimonial() { openModal('Nuevo testimonio', testimonialFormHtml({})); wireTestimonialForm(); }
+async function editTestimonial(id) {
+    try {
+        const r = await API.req('testimonials.php?action=get&id=' + id);
+        openModal('Editar testimonio', testimonialFormHtml(r.item));
+        wireTestimonialForm();
+    } catch (e) { toast(e.message); }
+}
+
+function wireTestimonialForm() {
+    $('#testimonialForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = $('#tsf_submit');
+        const err = $('#tsf_error'); err.hidden = true;
+        btn.disabled = true; btn.innerText = 'Guardando...';
+        try {
+            const id = $('#tsf_id').value;
+            await API.req('testimonials.php?action=' + (id ? 'update' : 'create'), {
+                method: 'POST',
+                json: {
+                    id: id || undefined,
+                    quote: $('#tsf_quote').value.trim(),
+                    author: $('#tsf_author').value.trim(),
+                    detail: $('#tsf_detail').value.trim(),
+                    sort_order: $('#tsf_order').value,
+                    is_active: $('#tsf_active').value === '1'
+                }
+            });
+            closeModal();
+            toast(id ? 'Testimonio actualizado.' : 'Testimonio creado.');
+            loadTestimonials();
+        } catch (ex) {
+            err.innerText = ex.message; err.hidden = false;
+        } finally {
+            btn.disabled = false; btn.innerText = 'Guardar testimonio';
+        }
+    });
+}
+
+async function toggleTestimonial(id, active) {
+    try {
+        await API.req('testimonials.php?action=toggle', { method: 'POST', json: { id, is_active: !!active } });
+        toast(active ? 'Testimonio activado.' : 'Testimonio en pausa.');
+        loadTestimonials();
+    } catch (e) { toast(e.message); }
+}
+
+async function deleteTestimonial(id, author) {
+    if (!confirmAction(`¿Eliminar definitivamente el testimonio de “${author}”?`)) return;
+    try {
+        await API.req('testimonials.php?action=delete', { method: 'POST', json: { id } });
+        toast('Testimonio eliminado.');
+        loadTestimonials();
+    } catch (e) { toast(e.message); }
+}
+
 async function deleteFaq(id, question) {
     if (!confirmAction(`¿Eliminar definitivamente la pregunta “${question}”?`)) return;
     try {
@@ -1134,6 +1256,8 @@ async function loadSettings() {
         $('#set_section_directorio_medico_enabled').checked = (s.section_directorio_medico_enabled?.value ?? '1') === '1';
         $('#set_section_recursos_enabled').checked = (s.section_recursos_enabled?.value ?? '1') === '1';
         $('#set_section_faqs_enabled').checked = (s.section_faqs_enabled?.value ?? '1') === '1';
+        $('#set_section_nosotros_enabled').checked = (s.section_nosotros_enabled?.value ?? '1') === '1';
+        $('#set_section_testimonios_enabled').checked = (s.section_testimonios_enabled?.value ?? '1') === '1';
         $('#set_client_portal_enabled').checked = (s.client_portal_enabled?.value ?? '0') === '1';
         $('#set_client_portal_url').value = s.client_portal_url?.value ?? '';
         $('#set_pf_panel_url').value = s.pf_panel_url?.value ?? '';
@@ -1160,6 +1284,8 @@ async function saveSettings(e) {
                     section_directorio_medico_enabled: $('#set_section_directorio_medico_enabled').checked,
                     section_recursos_enabled: $('#set_section_recursos_enabled').checked,
                     section_faqs_enabled: $('#set_section_faqs_enabled').checked,
+                    section_nosotros_enabled: $('#set_section_nosotros_enabled').checked,
+                    section_testimonios_enabled: $('#set_section_testimonios_enabled').checked,
                     client_portal_enabled: $('#set_client_portal_enabled').checked,
                     client_portal_url: $('#set_client_portal_url').value.trim(),
                     pf_panel_url: $('#set_pf_panel_url').value.trim(),
@@ -1278,6 +1404,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#newDoctorBtn').addEventListener('click', newDoctor);
     $('#newArticleBtn').addEventListener('click', newArticle);
     $('#newFaqBtn').addEventListener('click', newFaq);
+    $('#newTestimonialBtn').addEventListener('click', newTestimonial);
     $('#newTplBtn').addEventListener('click', newTemplate);
     $('#newUserBtn').addEventListener('click', newUser);
     $('#settingsForm').addEventListener('submit', saveSettings);

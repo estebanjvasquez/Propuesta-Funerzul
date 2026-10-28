@@ -109,6 +109,12 @@ a {
 .section {
     padding: 80px 0;
 }
+/* .container.section (páginas interiores): el shorthand de arriba anulaba el
+   margen lateral de .container y en móvil el texto tocaba el borde. */
+.container.section {
+    padding-left: 24px;
+    padding-right: 24px;
+}
 
 /* Botones Premium */
 .btn {
@@ -261,8 +267,9 @@ a {
 .nav-links {
     display: flex;
     list-style: none;
-    gap: 32px;
+    gap: 24px;
 }
+.nav-links a { white-space: nowrap; }
 
 .nav-links a {
     font-size: 14px;
@@ -1407,16 +1414,8 @@ textarea.form-control {
         font-size: 32px;
     }
     
-    .header .nav-links {
-        display: none; /* Sería reemplazado por menú móvil */
-    }
-    
     .header-actions .btn-outline {
         display: none;
-    }
-    
-    .mobile-menu-btn {
-        display: block;
     }
     
     .obituaries-header-container {
@@ -2534,4 +2533,60 @@ textarea.form-control {
     .manual-toc a { background: var(--color-surface); }
     .manual-ch { padding: 20px 16px; }
     .manual-step { padding-left: 38px; }
+}
+
+/* ==========================================================================
+   NOSOTROS (línea de tiempo) Y TESTIMONIOS (partials/testimonios.php)
+   ========================================================================== */
+.about-timeline { list-style: none; padding: 0; margin: 8px 0 32px; position: relative; }
+.about-timeline::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: var(--color-celeste-light); }
+.about-timeline li { position: relative; padding: 0 0 24px 36px; }
+.about-timeline li::before { content: ''; position: absolute; left: 0; top: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--color-surface); border: 3px solid var(--color-secondary); }
+.about-timeline-year { display: inline-block; font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--color-secondary); margin-bottom: 2px; }
+.about-timeline h3 { font-size: 18px; margin: 0 0 6px; color: var(--color-primary); }
+.about-timeline p { margin: 0; line-height: 1.75; }
+
+.testimonials-section { background-color: var(--color-surface-low); }
+.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+.testimonial-card { margin: 0; background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 28px 26px 22px; display: flex; flex-direction: column; gap: 14px; border-top: 3px solid var(--color-secondary); }
+.testimonial-mark { width: 32px; height: 24px; fill: var(--color-celeste); }
+.testimonial-card blockquote { margin: 0; flex: 1; }
+.testimonial-card blockquote p { margin: 0; font-family: var(--font-display); font-style: italic; font-size: 17px; line-height: 1.65; color: var(--color-text); }
+.testimonial-card figcaption { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.testimonial-card figcaption strong { color: var(--color-primary); }
+.testimonial-card figcaption span { color: var(--color-text-muted); }
+
+/* ==========================================================================
+   MENÚ DESPLEGABLE (app.js, botón .mobile-menu-btn). La cantidad de enlaces
+   depende de las secciones encendidas (hasta 10), así que app.js mide si caben
+   en una línea y, si no, pone .nav-compact y se recogen en un panel bajo la
+   cabecera. En celulares se recoge siempre (también sin JS medido).
+   ========================================================================== */
+.header.nav-compact .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; }
+.header.nav-compact nav { position: absolute; top: 100%; left: 0; right: 0; }
+.header.nav-compact .nav-links {
+    display: none;
+    flex-direction: column; gap: 0;
+    background: var(--color-primary-dark);
+    box-shadow: var(--shadow-lg);
+    padding: 8px max(24px, calc((100vw - 1200px) / 2 + 24px)) 16px;
+    max-height: calc(100vh - 80px); overflow-y: auto;
+}
+.header.nav-compact.nav-open .nav-links { display: flex; }
+.header.nav-compact .nav-links a { display: block; padding: 14px 0; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.header.nav-compact .nav-links a::after { display: none; }
+@media (max-width: 768px) {
+    .header .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; }
+    .header nav { position: absolute; top: 100%; left: 0; right: 0; }
+    .header .nav-links {
+        display: none;
+        flex-direction: column; gap: 0;
+        background: var(--color-primary-dark);
+        box-shadow: var(--shadow-lg);
+        padding: 8px max(24px, calc((100vw - 1200px) / 2 + 24px)) 16px;
+        max-height: calc(100vh - 80px); overflow-y: auto;
+    }
+    .header.nav-open .nav-links { display: flex; }
+    .header .nav-links a { display: block; padding: 14px 0; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .header .nav-links a::after { display: none; }
 }

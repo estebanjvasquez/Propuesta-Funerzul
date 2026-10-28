@@ -203,3 +203,34 @@ function showToast(message) {
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3200);
 }
+
+// ==========================================================================
+//  MENÚ DESPLEGABLE (pantallas angostas; ver styles.css "MENÚ DESPLEGABLE")
+// ==========================================================================
+(function () {
+    const header = document.querySelector('.header');
+    const btn = header && header.querySelector('.mobile-menu-btn');
+    if (!btn) return;
+    const setOpen = (open) => {
+        header.classList.toggle('nav-open', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    };
+    // ¿Caben los enlaces en una línea? Se mide con el menú desplegado en línea.
+    const nav = header.querySelector('.nav-links');
+    const inner = header.querySelector('.container');
+    const fit = () => {
+        header.classList.remove('nav-compact');
+        const tops = new Set([...nav.children].map(li => Math.round(li.getBoundingClientRect().top)));
+        if (inner.scrollWidth > inner.clientWidth + 1 || tops.size > 1) header.classList.add('nav-compact');
+        else setOpen(false);
+    };
+    let t;
+    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(fit, 100); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    fit();
+    btn.addEventListener('click', () => setOpen(!header.classList.contains('nav-open')));
+    header.querySelectorAll('.nav-links a').forEach(a => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    document.addEventListener('click', (e) => { if (!header.contains(e.target)) setOpen(false); });
+})();

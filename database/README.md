@@ -62,6 +62,10 @@ disco y backend PHP, todo junto).
   (límite de intentos del login local) y la clave `pf_panel_url` en `app_settings`.
   Importar **antes** de desplegar el código que la usa. Idempotente. Ver
   `docs/specs/2026-10-28-sso-prevision-funeraria.md`.
+- **`19_nosotros_testimonios.sql`** — Tabla `testimonials` con los 7
+  testimonios del WordPress anterior y los interruptores `section_nosotros_enabled`
+  y `section_testimonios_enabled` (encendidos). Idempotente. Ver
+  `docs/specs/2026-10-28-nosotros-y-testimonios.md`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -107,8 +111,8 @@ disco y backend PHP, todo junto).
    `11_secciones_toggle.sql`, `12_plantillas_esquela.sql`,
    `13_plantilla_cinta_imagen_real.sql`, `14_portal_clientes.sql`,
    `15_obituarios_ajustes_cliente.sql`, `16_faq_aseguradoras.sql`,
-   `17_enlaces_redes_y_analitica.sql` y `18_sso_prevision.sql` (en ese
-   orden).
+   `17_enlaces_redes_y_analitica.sql`, `18_sso_prevision.sql` y
+   `19_nosotros_testimonios.sql` (en ese orden).
 
 ### 3. Iniciar sesión y asegurar el admin
 

@@ -16,6 +16,9 @@ $base = ($PAGE['base'] ?? ''); ?>
                     <ul class="footer-links-list">
                         <li><a href="<?= $base ?>servicios/">Servicios</a></li>
                         <li><a href="<?= $base ?>crematorios-del-zulia.php">Crematorios del Zulia</a></li>
+                        <?php if (site_section_enabled('nosotros')): ?>
+                        <li><a href="<?= $base ?>nosotros.php">Nosotros</a></li>
+                        <?php endif; ?>
                         <li><a href="<?= $base ?>planes/">Previsión Familiar</a></li>
                         <?php if (site_section_enabled('obituarios')): ?>
                         <li><a href="<?= $base ?>obituarios.php">Obituarios</a></li>
@@ -57,6 +60,6 @@ $base = ($PAGE['base'] ?? ''); ?>
     </a>
 
     <div id="toast" class="toast">Notificación</div>
-    <script src="<?= $base ?>app.js?v=20260628"></script>
+    <script src="<?= $base ?>app.js?v=20261028-1"></script>
 </body>
 </html>

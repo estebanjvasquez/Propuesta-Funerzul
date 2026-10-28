@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Administración | Funeraria del Zulia</title>
     <link rel="icon" href="favicon.png?v=20260913-1" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20261028-1">
+    <link rel="stylesheet" href="styles.css?v=20261028-2">
 </head>
 <body class="admin-body">
 
@@ -61,6 +61,7 @@
                             <button class="admin-tab-btn" data-tab="medicos" type="button">Directorio Médico</button>
                             <button class="admin-tab-btn" data-tab="recursos" type="button">Recursos</button>
                             <button class="admin-tab-btn" data-tab="faqs" type="button">Preguntas frecuentes</button>
+                            <button class="admin-tab-btn" data-tab="testimonios" type="button">Testimonios</button>
                             <button class="admin-tab-btn admin-only" data-tab="plantillas" type="button" hidden>Plantillas de obituario</button>
                         </div>
                     </div>
@@ -182,6 +183,23 @@
                 </div>
             </section>
 
+            <!-- ---------- TESTIMONIOS ---------- -->
+            <section id="tab-testimonios" class="admin-tab-panel" hidden>
+                <div class="admin-toolbar">
+                    <h2>Testimonios</h2>
+                    <button class="btn btn-primary" id="newTestimonialBtn" type="button">+ Nuevo testimonio</button>
+                </div>
+                <p class="setting-help faq-admin-note">Los testimonios <strong>activos</strong> se muestran en la portada y al final de la página <strong>Nosotros</strong>, ordenados por el campo <strong>Orden</strong> (menor primero). Para ocultarlos todos de una vez, use el interruptor “Testimonios” en Configuración → Secciones del sitio.</p>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr><th>Orden</th><th>Testimonio</th><th>Estado</th><th>Acciones</th></tr>
+                        </thead>
+                        <tbody id="testimonialTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- ---------- PLANTILLAS ---------- -->
             <section id="tab-plantillas" class="admin-tab-panel" hidden>
                 <div class="admin-toolbar">
@@ -241,6 +259,14 @@
                     <div class="setting-row">
                         <div><strong>Preguntas Frecuentes</strong></div>
                         <label class="switch"><input type="checkbox" id="set_section_faqs_enabled"><span class="slider"></span></label>
+                    </div>
+                    <div class="setting-row">
+                        <div><strong>Nosotros</strong> <span class="setting-help">(página con la historia de la funeraria)</span></div>
+                        <label class="switch"><input type="checkbox" id="set_section_nosotros_enabled"><span class="slider"></span></label>
+                    </div>
+                    <div class="setting-row">
+                        <div><strong>Testimonios</strong> <span class="setting-help">(portada y página Nosotros)</span></div>
+                        <label class="switch"><input type="checkbox" id="set_section_testimonios_enabled"><span class="slider"></span></label>
                     </div>
 
                     <h3 class="settings-subheading">Portal de Clientes</h3>

@@ -80,9 +80,10 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 | Tarea | Estado | Notas |
 |---|---|---|
-| Responder las decisiones D1-D5 del plan (cuenta de cPanel, dominio principal o adicional, WooCommerce, páginas sin equivalente, fecha) | Pendiente | Plan completo en `docs/specs/2026-10-28-migracion-dominio-final.md`. |
-| Redirecciones 301 de las URLs de WordPress en `.htaccess` | Pendiente | Tabla en la sección 1.6 del plan. Se puede hacer ya: no afecta al sitio de prueba. |
+| **Corte a `www.funerariadelzulia.com`** — objetivo: en línea antes del 2-nov | En preparación | Decisiones respondidas (cuentas separadas, dominio principal, tienda sin uso, Nosotros + Testimonios). Calendario y pasos: `docs/specs/2026-10-28-migracion-dominio-final.md`, sección 3.1. |
+| Importar `19_nosotros_testimonios.sql` y revisar Nosotros, Testimonios y el menú nuevo en el sitio de prueba | Pendiente | Código del 2026-10-28, sin probar contra PHP/MySQL real. |
 | Confirmar la IP real de los visitantes detrás de Cloudflare | Pendiente | Si `REMOTE_ADDR` es de Cloudflare, el límite de intentos del login de emergencia agrupa a todos. Plan, punto 0.6. |
+| Redirecciones 301 de las URLs de WordPress | Hecho (2026-10-28) | En `.htaccess`; tabla en la sección 1.6 del plan. |
 | Reutilizar la propiedad de Google de Site Kit (`GT-PJ5S7WTQ`) y pasar Search Console a verificación DNS | Pendiente | Reemplaza las tareas "crear GA4" y "verificar Search Console" de la sección de enlaces y analítica. |
 
 ### Repositorio / documentación
