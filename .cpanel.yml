@@ -2,6 +2,8 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/legadoholding/public_html/funerzul
+    # Cuenta de FDZ (migración a www.funerariadelzulia.com): ensayo en fdz-nuevo; en el corte, public_html.
+    - 'if [ "$(/usr/bin/id -un)" = "funerariadelzuli" ]; then export DEPLOYPATH=/home/funerariadelzuli/fdz-nuevo; fi'
     - /bin/mkdir -p $DEPLOYPATH
     - /bin/cp -R index.php crematorios-del-zulia.php obituarios.php obituario.php obituario_og.php o.php nosotros.php directorio-medico.php medico.php recursos.php recurso.php sitemap.php robots.txt .htaccess styles.css app.js admin.js admin-manual.js admin.html favicon.png logo.png logo-horizontal-white.png logo-seal-footer.png api partials servicios planes img assets uploads cache manual $DEPLOYPATH
     - /bin/rm -f $DEPLOYPATH/index.html

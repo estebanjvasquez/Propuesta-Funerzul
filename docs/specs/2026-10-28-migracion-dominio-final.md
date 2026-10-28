@@ -107,11 +107,12 @@ ensayo (fase 2). En el corte, el sitio se despliega en `public_html/`.
    `https://github.com/estebanjvasquez/Propuesta-Funerzul.git`, rama
    `feature/prevision-funeraria`. El repo es público, así que no hace falta
    llave de acceso.
-2. `.cpanel.yml` tiene la ruta de la cuenta de Legado
-   (`/home/legadoholding/public_html/funerzul`). Para el ensayo, cambiar
-   `DEPLOYPATH` a `/home/funerariadelzuli/fdz-nuevo` (cambio en el repo). En el
-   corte, a `/home/funerariadelzuli/public_html`. Desde ese momento la cuenta de
-   Legado deja de recibir despliegues; su carpeta `funerzul/` pasa a ser solo
+2. `.cpanel.yml` elige la ruta según la cuenta que despliega (`id -un`,
+   **hecho** 2026-10-28): en `legadoholding` sigue en `public_html/funerzul`;
+   en `funerariadelzuli` va a `/home/funerariadelzuli/fdz-nuevo`. Así la misma
+   rama sirve a las dos cuentas durante el ensayo. En el corte, cambiar esa línea
+   a `/home/funerariadelzuli/public_html`. Desde ese momento la cuenta de
+   Legado deja de desplegar; su carpeta `funerzul/` pasa a ser solo
    redirección (fase 4).
 3. Desplegar con "Deploy HEAD Commit".
 
@@ -195,7 +196,8 @@ Hacerlo en el corte; nunca dejar los dos activos.
    - tarjeta PNG;
    - `/o/{id}/fb`;
    - `obituario_og.php`;
-   - `api/diag.php` (IP real, punto 0.6).
+   - `api/diag.php?token=CRON_SECRET`: tablas, `site_url` y `client_ip`
+     (`remote_addr_es_visitante` debe ser `true`; punto 0.6).
 3. Revisar el sitio con Cloudflare en medio: que no se rompa el JavaScript del
    panel y que no se cachee `admin.html`, `/api/*` ni `/o/*`. Si hace falta, crear
    una regla de caché "Bypass" para esas rutas.

@@ -29,6 +29,17 @@ $report = [
     'gd_webp' => function_exists('imagewebp'),
     'uploads_dir' => $GLOBALS['CONFIG']['paths']['uploads_dir'],
     'uploads_writable' => @is_writable($GLOBALS['CONFIG']['paths']['uploads_dir']),
+    'site_url' => $GLOBALS['CONFIG']['app']['site_url'] ?? null,
+    // Detrás de Cloudflare, REMOTE_ADDR debe ser la IP del visitante (igual a
+    // CF-Connecting-IP); si es una IP de Cloudflare, el límite de intentos del
+    // login agrupa a todos los visitantes (plan de migración, punto 0.6).
+    'client_ip' => [
+        'remote_addr'       => $_SERVER['REMOTE_ADDR'] ?? null,
+        'cf_connecting_ip'  => $_SERVER['HTTP_CF_CONNECTING_IP'] ?? null,
+        'x_forwarded_for'   => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
+        'remote_addr_es_visitante' => isset($_SERVER['HTTP_CF_CONNECTING_IP'])
+            ? ($_SERVER['REMOTE_ADDR'] ?? '') === $_SERVER['HTTP_CF_CONNECTING_IP'] : null,
+    ],
 ];
 
 try {
@@ -39,7 +50,8 @@ try {
     json_out(['ok' => true, 'diag' => $report]);
 }
 
-$expected = ['users', 'obituary_templates', 'obituaries', 'condolences', 'flower_offerings', 'app_settings', 'audit_log'];
+$expected = ['users', 'obituary_templates', 'obituaries', 'condolences', 'flower_offerings', 'app_settings', 'audit_log',
+    'articles', 'doctors', 'faqs', 'testimonials', 'auth_throttle', 'obituary_link_clicks'];
 foreach ($expected as $t) {
     try {
         $c = (int)db()->query("SELECT COUNT(*) FROM `$t`")->fetchColumn();
