@@ -97,9 +97,13 @@ WordPress sigue en línea sin ningún cambio mientras tanto.
 
 ### 1.1 Carpeta de ensayo
 
-En la cuenta de FDZ, crear `/home/funerariadelzuli/fdz-nuevo/` (fuera de
-`public_html`, para no mezclarla con WordPress). Sirve para el subdominio de
-ensayo (fase 2). En el corte, el sitio se despliega en `public_html/`.
+La carpeta de ensayo es `/home/funerariadelzuli/public_html/nuevo.funerariadelzulia.com/`:
+el cPanel de FDZ no deja crear raíces de subdominio fuera de `public_html`
+(comprobado el 2026-10-28). Que quede dentro de la carpeta del WordPress no
+molesta: el `.htaccess` del sitio activa su propio `RewriteEngine` y anula las
+reglas de WordPress. Sirve para el subdominio de ensayo (fase 2). En el corte,
+el sitio se despliega en `public_html/` y esta carpeta se borra junto con el
+subdominio (fase 4).
 
 ### 1.2 Código (cPanel → Git de la cuenta de FDZ)
 
@@ -109,7 +113,7 @@ ensayo (fase 2). En el corte, el sitio se despliega en `public_html/`.
    llave de acceso.
 2. `.cpanel.yml` elige la ruta según la cuenta que despliega (`id -un`,
    **hecho** 2026-10-28): en `legadoholding` sigue en `public_html/funerzul`;
-   en `funerariadelzuli` va a `/home/funerariadelzuli/fdz-nuevo`. Así la misma
+   en `funerariadelzuli` va a `/home/funerariadelzuli/public_html/nuevo.funerariadelzulia.com`. Así la misma
    rama sirve a las dos cuentas durante el ensayo. En el corte, cambiar esa línea
    a `/home/funerariadelzuli/public_html`. Desde ese momento la cuenta de
    Legado deja de desplegar; su carpeta `funerzul/` pasa a ser solo
@@ -214,7 +218,8 @@ Hacerlo en el corte; nunca dejar los dos activos.
    2. Mover **todo el contenido de WordPress** (`wp-admin/`, `wp-content/`,
       `wp-includes/`, `wp-*.php`, `index.php`, `.htaccess`, `xmlrpc.php`,
       `license.txt`, etc.) a `_wp-anterior/`. **No mover** `.well-known/` (lo usa
-      el certificado SSL) ni `cgi-bin/`.
+      el certificado SSL), `cgi-bin/` ni la carpeta del ensayo
+      `nuevo.funerariadelzulia.com/`.
    3. Cambiar en el repo `DEPLOYPATH` a `/home/funerariadelzuli/public_html`, hacer
       push y Deploy HEAD Commit en la cuenta de FDZ.
    4. Copiar a `public_html/` el `config.php` definitivo (en `api/`) y
@@ -244,6 +249,7 @@ completa. Lo que se haya cargado en el panel nuevo sigue en su base.
 | Cuándo | Tarea |
 |---|---|
 | El mismo día | **Sitio de prueba → redirección**: reemplazar `public_html/funerzul/` por un `.htaccess` que redirija todo con 301 a `https://www.funerariadelzulia.com/` conservando la ruta. Mantiene vivos los enlaces `/o/…` ya publicados en redes. Dejarlo al menos 6 meses. |
+| El mismo día | **Borrar el ensayo**: cPanel → Dominios → eliminar `nuevo.funerariadelzulia.com`, borrar la carpeta `public_html/nuevo.funerariadelzulia.com/` (si no, quedaría una segunda copia del sitio en `www.funerariadelzulia.com/nuevo.funerariadelzulia.com/`), su registro DNS en Cloudflare y su `redirect_uri` en PF. |
 | El mismo día | Panel → Configuración: cargar el `G-…` de Analytics (fase 0.8). Revisar que el Portal de Clientes y "Previsión (FDZ)" sigan bien. |
 | Primera semana | Search Console: enviar `https://www.funerariadelzulia.com/sitemap.php`, inspeccionar la portada y un obituario, y vigilar "Páginas" (404 y redirecciones). |
 | Primera semana | Probar compartir un obituario en Facebook y WhatsApp (vista previa con imagen) y depurarlo en el depurador de enlaces de Facebook. |
