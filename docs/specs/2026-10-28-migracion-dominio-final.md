@@ -77,7 +77,10 @@ WordPress sigue en línea sin ningún cambio mientras tanto.
 5. **Cloudflare** (la zona la administra Esteban):
    - SSL/TLS en **Full (strict)**, con certificado válido en el origen (AutoSSL de cPanel).
    - Anotar las reglas de caché existentes, Rocket Loader y la minificación de JS.
-6. **IP real de los visitantes detrás de Cloudflare** (verificar). Si
+6. **IP real de los visitantes detrás de Cloudflare** — **verificado el 2026-10-28 en
+   `nuevo.funerariadelzulia.com` con proxy activo: `REMOTE_ADDR` llega con la IP
+   pública del visitante** (el servidor ya la restaura; `CF-Connecting-IP` no llega a
+   PHP). No hace falta cambio de código. Texto original del riesgo: Si
    `REMOTE_ADDR` llega con la IP de Cloudflare, el límite de intentos del login de
    emergencia agruparía a todos bajo la misma IP. Comprobarlo con `api/diag.php`
    en el subdominio de pruebas (fase 2). Si pasa, hay dos salidas: que el hosting
