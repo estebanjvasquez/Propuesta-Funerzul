@@ -83,6 +83,15 @@ function sso_start(): void
     $cfg = sso_config();
     if (!$cfg) sso_redirect(sso_admin_url(['sso_error' => 'no_configurado']));
 
+    // La cookie de sesión es por dominio: si se entró por otro host (sin www, o el
+    // dominio viejo), primero se pasa al de redirect_uri para que el state guardado
+    // aquí exista cuando PF vuelva al callback.
+    $cb = parse_url($cfg['redirect_uri']);
+    $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+    if (!empty($cb['host']) && $host !== strtolower($cb['host'] . (isset($cb['port']) ? ':' . $cb['port'] : ''))) {
+        sso_redirect('https://' . $cb['host'] . (isset($cb['port']) ? ':' . $cb['port'] : '') . $cb['path'] . '?action=start');
+    }
+
     $verifier = sso_b64url(random_bytes(48));
     $state    = sso_b64url(random_bytes(24));
     $_SESSION['sso'] = ['state' => $state, 'verifier' => $verifier, 'at' => time()];
