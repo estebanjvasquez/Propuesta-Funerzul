@@ -12,7 +12,7 @@ require __DIR__ . '/lib/render.php';         // fmt_date_es()
 require __DIR__ . '/lib/obituary_card.php';
 
 require_method('GET');
-require_role('admin', 'editor');
+require_perm('sitio.obituarios.write');
 
 $id = (int)($_GET['id'] ?? 0);
 $style = in_array($_GET['style'] ?? '', ['cinta', 'esquela'], true) ? $_GET['style'] : 'cinta';

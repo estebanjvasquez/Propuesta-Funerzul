@@ -4,6 +4,7 @@
  *   GET  list
  *   POST create        { email, password, full_name, role }
  *   POST update        { id, full_name, role, is_active }
+ *        (cuentas de Previsión Funeraria: solo is_active; nombre y perfil vienen de PF)
  *   POST set_password  { id, password }
  *   POST delete        { id }
  */
@@ -18,6 +19,7 @@ function user_row_out(array $r): array
         'email'         => $r['email'],
         'full_name'     => $r['full_name'],
         'role'          => $r['role'],
+        'auth_source'   => $r['auth_source'] ?? 'local',
         'is_active'     => (bool)$r['is_active'],
         'last_login_at' => $r['last_login_at'],
         'created_at'    => $r['created_at'],
@@ -28,14 +30,14 @@ switch ($action) {
 
     case 'list': {
         require_method('GET');
-        require_role('admin');
-        $rows = db()->query("SELECT id,email,full_name,role,is_active,last_login_at,created_at FROM users ORDER BY created_at DESC")->fetchAll();
+        require_perm('sitio.admin');
+        $rows = db()->query("SELECT id,email,full_name,role,auth_source,is_active,last_login_at,created_at FROM users ORDER BY created_at DESC")->fetchAll();
         json_out(['ok' => true, 'items' => array_map('user_row_out', $rows)]);
     }
 
     case 'create': {
         require_method('POST');
-        require_role('admin');
+        require_perm('sitio.admin');
         require_csrf();
         $b = body_json();
         $email = clean_str($b['email'] ?? '', 190);
@@ -59,7 +61,7 @@ switch ($action) {
 
     case 'update': {
         require_method('POST');
-        $me = require_role('admin');
+        $me = require_perm('sitio.admin');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
@@ -67,6 +69,19 @@ switch ($action) {
         $name = clean_str($b['full_name'] ?? '', 150);
         $role = in_array($b['role'] ?? 'editor', ['admin', 'editor'], true) ? $b['role'] : 'editor';
         $active = !empty($b['is_active']) ? 1 : 0;
+
+        $src = db()->prepare("SELECT auth_source FROM users WHERE id = ?");
+        $src->execute([$id]);
+        if ($src->fetchColumn() === 'pf') {
+            // Perfil y nombre se administran en Previsión Funeraria; aquí solo se
+            // puede cortar el acceso a este panel.
+            if ($id === (int)$me['id'] && $active !== 1) {
+                json_out(['ok' => false, 'error' => 'No puede desactivar su propio usuario.'], 409);
+            }
+            db()->prepare("UPDATE users SET is_active=? WHERE id=?")->execute([$active, $id]);
+            audit('user.update', 'users', $id, ['is_active' => (bool)$active]);
+            json_out(['ok' => true]);
+        }
 
         // Evita que el admin se quite a sí mismo su propio acceso/rol
         if ($id === (int)$me['id'] && ($role !== 'admin' || $active !== 1)) {
@@ -80,12 +95,17 @@ switch ($action) {
 
     case 'set_password': {
         require_method('POST');
-        require_role('admin');
+        require_perm('sitio.admin');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
         $pass = (string)($b['password'] ?? '');
         if (!$id || strlen($pass) < 8) json_out(['ok' => false, 'error' => 'Contraseña de al menos 8 caracteres.'], 422);
+        $src = db()->prepare("SELECT auth_source FROM users WHERE id = ?");
+        $src->execute([$id]);
+        if ($src->fetchColumn() === 'pf') {
+            json_out(['ok' => false, 'error' => 'Este usuario entra con Previsión Funeraria: su contraseña se cambia allá.'], 409);
+        }
         db()->prepare("UPDATE users SET password_hash=? WHERE id=?")
             ->execute([password_hash($pass, PASSWORD_BCRYPT), $id]);
         audit('user.set_password', 'users', $id);
@@ -94,7 +114,7 @@ switch ($action) {
 
     case 'delete': {
         require_method('POST');
-        $me = require_role('admin');
+        $me = require_perm('sitio.admin');
         require_csrf();
         $id = (int)(body_json()['id'] ?? 0);
         if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);

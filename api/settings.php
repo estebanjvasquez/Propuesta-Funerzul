@@ -24,6 +24,8 @@ const EDITABLE_SETTINGS = [
     // Portal de Clientes en Prevision-Funeraria (ver client_portal_url() en lib/helpers.php)
     'client_portal_enabled'             => 'bool',
     'client_portal_url'                 => 'url',
+    // Botón "Previsión (FDZ)" de la cabecera del panel (api/auth.php?action=me)
+    'pf_panel_url'                      => 'url',
     // Google Analytics 4 y Search Console (ver partials/analytics.php)
     'ga4_measurement_id'                => 'ga4',
     'google_site_verification'          => 'gsc',
@@ -40,7 +42,7 @@ switch ($action) {
 
     case 'get': {
         require_method('GET');
-        require_role('admin', 'editor');
+        require_staff();
         $rows = db()->query("SELECT setting_key, setting_value, description FROM app_settings ORDER BY setting_key")->fetchAll();
         $out = [];
         foreach ($rows as $r) {
@@ -51,7 +53,7 @@ switch ($action) {
 
     case 'update': {
         require_method('POST');
-        require_role('admin');
+        require_perm('sitio.admin');
         require_csrf();
         $incoming = body_json()['settings'] ?? [];
         if (!is_array($incoming) || !$incoming) json_out(['ok' => false, 'error' => 'Nada que actualizar.'], 422);

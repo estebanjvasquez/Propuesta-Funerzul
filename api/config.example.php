@@ -82,6 +82,18 @@ return [
         ],
     ],
 
+    // "Entrar con Previsión Funeraria" (inicio de sesión único del panel). Ver
+    // docs/specs/2026-10-28-sso-prevision-funeraria.md. Sin este bloque (o con
+    // algún valor vacío) el panel usa solo el login local, como antes.
+    // client_id y client_secret los imprime `npm run oauth-client` en el repo
+    // Prevision-Funeraria; redirect_uri debe ser EXACTAMENTE la registrada allá.
+    // 'pf_sso' => [
+    //     'base_url'      => 'https://app.previsionfuneraria.com',
+    //     'client_id'     => '',
+    //     'client_secret' => '',
+    //     'redirect_uri'  => 'https://www.funerariadelzulia.com/api/sso.php?action=callback',
+    // ],
+
     // Integración con Prevision-Funeraria (repo hermano, tenant `fdz`). Ver
     // docs/specs/2026-08-28-migracion-a-prevision-funeraria.md antes de tocar esto.
     // Mientras 'enabled' sea false, ninguna página ni endpoint la llama -- se

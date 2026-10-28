@@ -104,9 +104,13 @@ Guía para el personal de Funeraria del Zulia que gestiona los obituarios del si
 
 1. Abre en el navegador: **`https://www.funerariadelzulia.com/admin.html`**
    (o la URL donde esté publicado el sitio).
-2. Inicia sesión con tu **correo** y **contraseña**.
-3. Si es la primera vez, usa el administrador inicial y **cámbiale la contraseña
-   de inmediato** (ver punto 7).
+2. Pulsa **Entrar con Previsión Funeraria**: se entra con el **mismo usuario**
+   del sistema de Previsión Funeraria (empresa Funeraria del Zulia), con su
+   contraseña y su código de verificación. Ver
+   [`docs/specs/2026-10-28-sso-prevision-funeraria.md`](docs/specs/2026-10-28-sso-prevision-funeraria.md).
+3. Si el inicio de sesión único aún no está configurado en `api/config.php`
+   (bloque `pf_sso`), o para las **cuentas locales de emergencia**
+   (`admin.html?emergencia=1`), se entra con correo y contraseña de este panel.
 
 > **Seguridad:** cada persona debe tener su propio usuario. No compartas credenciales.
 > La sesión se cierra con el botón **Salir** (arriba a la derecha).
@@ -121,15 +125,20 @@ La barra superior agrupa el trabajo en dos menús y un acceso directo:
 > siniestros...) que vivía aquí en PHP/MySQL fue retirado — ver sección 14
 > más abajo.
 
-### 2. Roles de usuario
+### 2. Perfiles de usuario
 
-| Rol | Puede hacer |
+Se asignan en **Previsión Funeraria** (empresa `fdz` → Roles → sección
+"Panel del sitio web"); cada pestaña del panel exige su permiso:
+
+| Perfil (permiso en PF) | Puede hacer |
 |---|---|
-| **Editor** | Crear, editar, destacar y dar de baja obituarios; moderar y editar condolencias. |
-| **Admin** | Todo lo del editor **+** gestionar plantillas, usuarios, configuración y purga, y eliminar definitivamente. |
+| **Administrador** (`sitio.admin`) | Todo: plantillas, usuarios, configuración y purga, borrado definitivo. Implica los otros tres. |
+| **Obituarios** (`sitio.obituarios.write`) | Crear, editar, destacar y dar de baja obituarios; tarjetas y enlaces para redes. |
+| **Moderador** (`sitio.condolencias.moderate`) | Moderar y editar condolencias. |
+| **Contenido** (`sitio.contenido.write`) | Directorio médico, recursos y preguntas frecuentes. |
 
-Las opciones **Plantillas** (menú *Sitio web*) y el menú **Sistema**
-(**Configuración** y **Usuarios**) solo las ve el admin.
+Las cuentas **locales** de emergencia conservan los roles de antes: **admin** =
+Administrador; **editor** = Obituarios + Moderador + Contenido.
 
 ### 3. Tablero (pestaña Obituarios)
 
@@ -253,9 +262,13 @@ dejan de funcionar al mudarse. Detalle técnico:
 
 Pestaña **Usuarios**:
 
-- **+ Nuevo usuario**: correo, contraseña (mín. 8 caracteres) y rol (Editor/Admin).
-- **Editar**: cambiar nombre, rol o activar/desactivar el acceso.
-- **Clave**: asignar una contraseña nueva.
+- Los usuarios con la etiqueta **Previsión** se crean solos la primera vez que
+  entran con su cuenta de Previsión Funeraria. Su nombre, contraseña y perfil se
+  administran en PF; aquí **Editar** solo permite desactivar su acceso a este panel.
+- Los usuarios **Local** son cuentas de emergencia (entran por
+  `admin.html?emergencia=1`, 5 intentos fallidos = bloqueo de 15 minutos).
+  **+ Nuevo usuario** crea una (correo propio, que nadie use en PF), **Clave**
+  le asigna contraseña nueva. Mantener solo una o dos.
 - **Eliminar**: quitar el usuario.
 
 > Por seguridad no puedes quitarte a ti mismo el rol de admin ni eliminar tu propio

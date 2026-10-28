@@ -1,6 +1,8 @@
 ---
 Estado: **Aprobada (2026-10-27)** — decisiones en la sección 8. Paso 2 (enlace
-al portal de clientes) implementado; Fase 1 de seguridad pendiente.
+al portal de clientes) implementado. La Fase 2 (SSO) se adelantó el 2026-10-28:
+`2026-10-28-sso-prevision-funeraria.md` (incluye los 4 perfiles y el límite de
+intentos). Resto de la Fase 1 pendiente.
 ---
 
 # Inicio de sesión del personal administrativo + portal de clientes con OTP

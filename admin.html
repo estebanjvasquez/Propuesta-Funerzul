@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Administración | Funeraria del Zulia</title>
     <link rel="icon" href="favicon.png?v=20260913-1" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20261027-6">
+    <link rel="stylesheet" href="styles.css?v=20261028-1">
 </head>
 <body class="admin-body">
 
@@ -15,18 +15,28 @@
         <form id="loginForm" class="login-card" autocomplete="on">
             <img src="logo-seal-footer.png" alt="Funeraria del Zulia" class="login-logo">
             <h1 class="login-title">Panel de Obituarios</h1>
-            <p class="login-sub">Acceso para personal autorizado</p>
+            <p class="login-sub" id="loginSub">Acceso para personal autorizado</p>
 
-            <div class="form-group">
-                <label for="loginEmail" class="form-label">Correo electrónico</label>
-                <input type="email" id="loginEmail" class="form-control" required autocomplete="username">
-            </div>
-            <div class="form-group">
-                <label for="loginPassword" class="form-label">Contraseña</label>
-                <input type="password" id="loginPassword" class="form-control" required autocomplete="current-password">
-            </div>
             <p id="loginError" class="login-error" hidden></p>
-            <button type="submit" class="btn btn-primary login-btn" id="loginBtn">Iniciar sesión</button>
+
+            <!-- Inicio de sesión único (docs/specs/2026-10-28-sso-prevision-funeraria.md) -->
+            <div id="ssoLogin" hidden>
+                <a href="api/sso.php?action=start" class="btn btn-primary login-btn" id="ssoBtn">Entrar con Previsión Funeraria</a>
+                <p class="login-hint">Use el mismo usuario y contraseña con el que entra al sistema de Previsión Funeraria.</p>
+            </div>
+
+            <!-- Login local: sin inicio de sesión único configurado, o cuentas de emergencia (?emergencia=1) -->
+            <div id="localLogin" hidden>
+                <div class="form-group">
+                    <label for="loginEmail" class="form-label">Correo electrónico</label>
+                    <input type="email" id="loginEmail" class="form-control" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword" class="form-label">Contraseña</label>
+                    <input type="password" id="loginPassword" class="form-control" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary login-btn" id="loginBtn">Iniciar sesión</button>
+            </div>
             <a href="index.php" class="login-back">← Volver al sitio</a>
         </form>
     </div>
@@ -67,6 +77,7 @@
                 </nav>
                 <div class="admin-user">
                     <span id="currentUserName" class="admin-user-name"></span>
+                    <a class="btn btn-outline btn-sm admin-pf-btn" id="pfPanelBtn" href="#" target="_blank" rel="noopener" title="Abrir el sistema de Previsión Funeraria (empresa Funeraria del Zulia)" hidden>Previsión (FDZ)</a>
                     <button class="btn btn-outline btn-sm admin-tab-btn admin-manual-btn" data-tab="manual" type="button" title="Manual de Usuario">Manual</button>
                     <button class="btn btn-outline btn-sm" id="logoutBtn" type="button">Salir</button>
                 </div>
@@ -246,6 +257,15 @@
                         <input type="url" id="set_client_portal_url" class="form-control setting-input-url" maxlength="255" placeholder="https://app.previsionfuneraria.com/portal/login?empresa=fdz">
                     </div>
 
+                    <h3 class="settings-subheading">Sistema de Previsión Funeraria</h3>
+                    <div class="setting-row">
+                        <div>
+                            <strong>Enlace “Previsión (FDZ)” del panel</strong>
+                            <p class="setting-help">Botón en la cabecera de este panel que abre el sistema de Previsión Funeraria directamente en la empresa Funeraria del Zulia. Vacío = sin botón.</p>
+                        </div>
+                        <input type="url" id="set_pf_panel_url" class="form-control setting-input-url" maxlength="255" placeholder="https://app.previsionfuneraria.com/?empresa=fdz">
+                    </div>
+
                     <h3 class="settings-subheading">Analítica (Google)</h3>
                     <p class="setting-help">Déjelos vacíos para no usar Google. Se aplican a las páginas públicas del sitio, nunca a este panel.</p>
                     <div class="setting-row">
@@ -308,7 +328,7 @@
 
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="admin-manual.js?v=20261027-1"></script>
-    <script src="admin.js?v=20261027-4"></script>
+    <script src="admin-manual.js?v=20261028-1"></script>
+    <script src="admin.js?v=20261028-1"></script>
 </body>
 </html>

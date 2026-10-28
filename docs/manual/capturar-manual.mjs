@@ -131,9 +131,18 @@ console.log('1. Inicio de sesión');
 await page.goto(BASE + 'admin.html', { waitUntil: 'networkidle' });
 await addStyle();
 await page.waitForSelector('#loginView:not([hidden])');
-await page.fill('#loginEmail', 'su.correo@ejemplo.com');
-await page.fill('#loginPassword', 'contraseña');
-await shot('01-login', { el: '#loginForm', pad: 40, hl: '#loginBtn' });
+if (await page.isVisible('#ssoBtn')) {
+    // Con "Entrar con Previsión Funeraria" activo: se fotografía esa pantalla y se
+    // entra con una cuenta local de emergencia (MANUAL_USER debe ser una de ellas).
+    await shot('01-login', { el: '#loginForm', pad: 40, hl: '#ssoBtn' });
+    await page.goto(BASE + 'admin.html?emergencia=1', { waitUntil: 'networkidle' });
+    await addStyle();
+    await page.waitForSelector('#loginEmail', { state: 'visible' });
+} else {
+    await page.fill('#loginEmail', 'su.correo@ejemplo.com');
+    await page.fill('#loginPassword', 'contraseña');
+    await shot('01-login', { el: '#loginForm', pad: 40, hl: '#loginBtn' });
+}
 await page.fill('#loginEmail', USER);
 await page.fill('#loginPassword', PASS);
 await page.click('#loginBtn');

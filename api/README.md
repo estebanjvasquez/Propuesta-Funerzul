@@ -58,10 +58,20 @@ La purga respeta `app_settings.photo_purge_enabled` y `photo_retention_days`.
 Todos responden JSON `{ ok: true|false, ... }`. Las acciones que modifican datos
 requieren sesión y la cabecera `X-CSRF-Token` (se obtiene al hacer login).
 
+**Acceso por perfil** (desde 2026-10-28; `require_perm()` en `lib/auth.php`):
+"editor/admin" en la tabla significa el permiso del módulo —
+`sitio.obituarios.write` (obituarios, tarjetas), `sitio.condolencias.moderate`
+(condolencias), `sitio.contenido.write` (directorio, recursos, FAQs); `upload.php`
+acepta obituarios o contenido — y "admin" significa `sitio.admin`. Los usuarios que
+entran con Previsión Funeraria traen sus permisos de PF y se revalidan cada 5 min
+contra `/oauth/userinfo`.
+
 | Endpoint | Método | Acceso | Descripción |
 |---|---|---|---|
 | `auth.php?action=login` | POST | público | inicia sesión, devuelve `csrf` |
-| `auth.php?action=me` | GET | público | usuario actual + `csrf` |
+| `auth.php?action=me` | GET | público | usuario actual (con `perms` y `auth_source`) + `csrf` + `sso_enabled` + `pf_panel_url` |
+| `sso.php?action=start` | GET | público | "Entrar con Previsión Funeraria": redirige a `/oauth/authorize` de PF (state + PKCE en la sesión) |
+| `sso.php?action=callback` | GET | público | vuelta desde PF: canjea el código servidor a servidor, crea la sesión y redirige a `admin.html` (errores: `admin.html?sso_error=…`). Ver `lib/sso.php` y `docs/specs/2026-10-28-sso-prevision-funeraria.md` |
 | `auth.php?action=logout` | POST | sesión | cierra sesión |
 | `obituaries.php?action=homepage` | GET | público | destacados + recientes |
 | `obituaries.php?action=list` | GET | público* | listado (filtros q/type/time, paginado) |
@@ -77,7 +87,7 @@ requieren sesión y la cabecera `X-CSRF-Token` (se obtiene al hacer login).
 | `templates.php?action=create\|update\|set_default\|delete` | POST | admin | gestión |
 | `settings.php?action=get` | GET | staff | leer configuración |
 | `settings.php?action=update` | POST | admin | cambiar purga/portada/**secciones del sitio** (`section_obituarios_enabled`, `section_directorio_medico_enabled`, `section_recursos_enabled`, `section_faqs_enabled` — ver `site_section_enabled()` en `lib/helpers.php`) y **portal de clientes** (`client_portal_enabled`, `client_portal_url` — https obligatorio, 422 si no; ver `client_portal_url()`) y **Google** (`ga4_measurement_id` con formato `G-…`, `google_site_verification`; 422 si el formato no es válido — los imprime `partials/analytics.php`). Valida todo antes de guardar: un valor inválido no aplica ningún cambio. |
-| `users.php?action=...` | GET/POST | admin | gestión de usuarios |
+| `users.php?action=...` | GET/POST | admin | gestión de usuarios (las cuentas de PF solo admiten activar/desactivar) |
 | `upload.php` | POST | editor/admin | subir foto (multipart, campo `photo`) |
 | `obituary_card.php?id=&style=cinta\|esquela` | GET | editor/admin | Descarga PNG (1080×1920) de la tarjeta de obituario para compartir — ver `docs/specs/2026-09-08-tarjetas-obituario.md`. Puro GD (sin Imagick), fuentes en `assets/fonts/`. |
 

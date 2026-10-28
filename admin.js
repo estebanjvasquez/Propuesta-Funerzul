@@ -67,32 +67,94 @@ function closeModal() {
 // ==========================================================================
 //  AUTENTICACIÓN
 // ==========================================================================
+// Perfiles del panel = permisos sitio.* (api/lib/auth.php). Con "Entrar con
+// Previsión Funeraria" vienen del rol de la persona en la empresa fdz de PF.
+const TAB_PERMS = {
+    obituarios: 'sitio.obituarios.write',
+    condolencias: 'sitio.condolencias.moderate',
+    medicos: 'sitio.contenido.write',
+    recursos: 'sitio.contenido.write',
+    faqs: 'sitio.contenido.write',
+};
+const PROFILE_NAMES = {
+    'sitio.admin': 'Administrador',
+    'sitio.obituarios.write': 'Obituarios',
+    'sitio.condolencias.moderate': 'Moderador',
+    'sitio.contenido.write': 'Contenido',
+};
+const SSO_ERRORS = {
+    sin_permiso: 'Su usuario de Previsión Funeraria no tiene acceso a este panel. Pida al administrador de Funeraria del Zulia que le asigne un perfil del sitio web en Previsión Funeraria (Roles).',
+    desactivado: 'Su acceso a este panel está desactivado. Consulte con un administrador.',
+    expirado: 'El inicio de sesión tardó demasiado o se abrió en otra pestaña. Intente de nuevo.',
+    pf_caido: 'No se pudo conectar con Previsión Funeraria. Intente de nuevo en unos minutos.',
+    no_configurado: 'El inicio de sesión con Previsión Funeraria no está configurado en este sitio.',
+    fallo: 'No se pudo completar el inicio de sesión con Previsión Funeraria. Intente de nuevo.',
+};
+
+// sitio.admin implica todos (el servidor ya los expande; esto es por si acaso).
+function hasPerm(p) {
+    const perms = (State.user && State.user.perms) || [];
+    return perms.includes(p) || perms.includes('sitio.admin');
+}
+function isAdminUser() { return hasPerm('sitio.admin'); }
+
 async function bootstrapAuth() {
+    const params = new URLSearchParams(location.search);
+    const ssoError = params.get('sso_error');
+    if (ssoError) history.replaceState(null, '', location.pathname + (params.has('emergencia') ? '?emergencia=1' : ''));
     try {
         const me = await API.req('auth.php?action=me');
         API.csrf = me.csrf || '';
-        if (me.user) { onLoggedIn(me.user); }
-        else { showLogin(); }
+        if (me.user) { onLoggedIn(me.user, me); }
+        else { showLogin(me.sso_enabled, ssoError); }
     } catch (e) {
-        showLogin();
+        showLogin(false, null);
     }
 }
 
-function showLogin() {
+// Con inicio de sesión único: solo el botón de Previsión Funeraria; el
+// formulario local queda para cuentas de emergencia en admin.html?emergencia=1.
+function showLogin(ssoEnabled, ssoError) {
+    const emergencia = new URLSearchParams(location.search).has('emergencia');
+    const local = !ssoEnabled || emergencia;
+    $('#ssoLogin').hidden = !ssoEnabled || emergencia;
+    $('#localLogin').hidden = !local;
+    $('#loginEmail').required = $('#loginPassword').required = local;
+    if (ssoEnabled && emergencia) $('#loginSub').innerText = 'Acceso de emergencia (cuentas locales)';
+    if (ssoError) {
+        $('#loginError').innerText = SSO_ERRORS[ssoError] || SSO_ERRORS.fallo;
+        $('#loginError').hidden = false;
+    }
     $('#appView').hidden = true;
     $('#loginView').hidden = false;
 }
 
-async function onLoggedIn(user) {
+async function onLoggedIn(user, me = {}) {
     State.user = user;
     $('#loginView').hidden = true;
     $('#appView').hidden = false;
-    $('#currentUserName').innerText = `${user.full_name || user.email} · ${user.role}`;
-    // Mostrar pestañas exclusivas de admin
-    $all('.admin-only').forEach(el => { el.hidden = (user.role !== 'admin'); });
+    const perms = user.perms || [];
+    const perfil = perms.includes('sitio.admin')
+        ? PROFILE_NAMES['sitio.admin']
+        : perms.map(p => PROFILE_NAMES[p]).filter(Boolean).join(', ');
+    $('#currentUserName').innerText = `${user.full_name || user.email} · ${perfil}`;
+    // Pestañas según el perfil
+    $all('.admin-only').forEach(el => { el.hidden = !isAdminUser(); });
+    $all('.admin-tab-btn[data-tab]').forEach(b => {
+        const p = TAB_PERMS[b.dataset.tab];
+        if (p) b.hidden = !hasPerm(p);
+    });
+    // Botón al sistema de Previsión Funeraria (empresa fdz)
+    if (me.pf_panel_url) { $('#pfPanelBtn').href = me.pf_panel_url; $('#pfPanelBtn').hidden = false; }
     // Carga inicial
     await Promise.all([loadTemplates(), loadStats()]);
-    await loadObituaries();
+    if (hasPerm(TAB_PERMS.obituarios)) {
+        await loadObituaries();
+    } else {
+        // Sin obituarios: abrir la primera pestaña que sí puede usar.
+        const first = $all('.admin-tab-btn[data-tab]').find(b => !b.hidden && TAB_PERMS[b.dataset.tab]);
+        switchTab(first ? first.dataset.tab : 'manual', first);
+    }
     refreshPendingBadge();
 }
 
@@ -1074,6 +1136,7 @@ async function loadSettings() {
         $('#set_section_faqs_enabled').checked = (s.section_faqs_enabled?.value ?? '1') === '1';
         $('#set_client_portal_enabled').checked = (s.client_portal_enabled?.value ?? '0') === '1';
         $('#set_client_portal_url').value = s.client_portal_url?.value ?? '';
+        $('#set_pf_panel_url').value = s.pf_panel_url?.value ?? '';
         $('#set_ga4_measurement_id').value = s.ga4_measurement_id?.value ?? '';
         $('#set_google_site_verification').value = s.google_site_verification?.value ?? '';
     } catch (e) { toast(e.message); }
@@ -1099,6 +1162,7 @@ async function saveSettings(e) {
                     section_faqs_enabled: $('#set_section_faqs_enabled').checked,
                     client_portal_enabled: $('#set_client_portal_enabled').checked,
                     client_portal_url: $('#set_client_portal_url').value.trim(),
+                    pf_panel_url: $('#set_pf_panel_url').value.trim(),
                     ga4_measurement_id: $('#set_ga4_measurement_id').value.trim(),
                     google_site_verification: $('#set_google_site_verification').value.trim()
                 }
@@ -1120,29 +1184,34 @@ function renderUsers(items) {
         <tr>
             <td>${escapeHtml(u.full_name || '—')}</td>
             <td>${escapeHtml(u.email)}</td>
-            <td><span class="status-badge ${u.role === 'admin' ? 'badge-blue' : 'badge-gray'}">${u.role}</span></td>
+            <td><span class="status-badge ${u.role === 'admin' ? 'badge-blue' : 'badge-gray'}">${u.role}</span>
+                ${u.auth_source === 'pf'
+                    ? '<span class="status-badge badge-green" title="Entra con su usuario de Previsión Funeraria; su perfil se asigna allá (Roles).">Previsión</span>'
+                    : '<span class="status-badge badge-gray" title="Cuenta local (correo y clave de este panel): solo para emergencias.">Local</span>'}</td>
             <td>${u.is_active ? '<span class="status-badge badge-green">Activo</span>' : '<span class="status-badge badge-gray">Inactivo</span>'}</td>
             <td>${u.last_login_at ? fmtDate(u.last_login_at) : '—'}</td>
             <td><div class="admin-actions">
-                <button class="btn btn-outline btn-sm" onclick="editUser(${u.id}, ${escapeAttr(u.full_name)}, '${u.email}', '${u.role}', ${u.is_active ? 1 : 0})">Editar</button>
-                <button class="btn btn-outline btn-sm" onclick="changePassword(${u.id})">Clave</button>
+                <button class="btn btn-outline btn-sm" onclick="editUser(${u.id}, ${escapeAttr(u.full_name)}, '${u.email}', '${u.role}', ${u.is_active ? 1 : 0}, '${u.auth_source}')">Editar</button>
+                ${u.auth_source === 'pf' ? '' : `<button class="btn btn-outline btn-sm" onclick="changePassword(${u.id})">Clave</button>`}
                 <button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Eliminar</button>
             </div></td>
         </tr>`).join('');
 }
 function userFormHtml(u = {}, isNew = true) {
+    const pf = u.auth_source === 'pf';
     return `
     <form id="userForm">
         <input type="hidden" id="uf_id" value="${u.id || ''}">
+        ${pf ? '<p class="setting-help">Este usuario entra con Previsión Funeraria: su nombre, contraseña y perfil se administran allá (Usuarios y Roles de la empresa Funeraria del Zulia). Aquí solo puede desactivar su acceso a este panel.</p>' : ''}
         <div class="form-group"><label class="form-label">Nombre completo</label>
-            <input type="text" id="uf_name" class="form-control" value="${escapeHtml(u.full_name || '')}"></div>
+            <input type="text" id="uf_name" class="form-control" value="${escapeHtml(u.full_name || '')}" ${pf ? 'disabled' : ''}></div>
         <div class="form-group"><label class="form-label">Correo *</label>
             <input type="email" id="uf_email" class="form-control" value="${escapeHtml(u.email || '')}" ${isNew ? '' : 'disabled'} required></div>
         ${isNew ? `<div class="form-group"><label class="form-label">Contraseña * (mín. 8)</label>
             <input type="text" id="uf_password" class="form-control" minlength="8" required></div>` : ''}
         <div class="form-grid-2">
             <div class="form-group"><label class="form-label">Rol</label>
-                <select id="uf_role" class="form-control">
+                <select id="uf_role" class="form-control" ${pf ? 'disabled' : ''}>
                     <option value="editor" ${u.role === 'editor' ? 'selected' : ''}>Editor</option>
                     <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
                 </select></div>
@@ -1157,8 +1226,8 @@ function userFormHtml(u = {}, isNew = true) {
     </form>`;
 }
 function newUser() { openModal('Nuevo usuario', userFormHtml({}, true)); wireUserForm(true); }
-function editUser(id, name, email, role, active) {
-    openModal('Editar usuario', userFormHtml({ id, full_name: name, email, role, is_active: !!active }, false));
+function editUser(id, name, email, role, active, authSource) {
+    openModal('Editar usuario', userFormHtml({ id, full_name: name, email, role, is_active: !!active, auth_source: authSource }, false));
     wireUserForm(false);
 }
 function wireUserForm(isNew) {

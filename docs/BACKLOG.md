@@ -69,10 +69,12 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 | Tarea | Estado | Notas |
 |---|---|---|
-| Fase 1 de seguridad del login: límite de intentos, MFA TOTP, vencimientos, revocación, recuperación por correo, cabeceras, 4 perfiles | Pendiente (aprobada) | Opción C aprobada el 2026-10-27. Detalle: `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md`, secciones 4-5. Migración nueva `database/15_...sql`. |
+| Fase 1 de seguridad del login local (ahora solo emergencia): MFA TOTP, vencimientos, revocación, cabeceras | Pendiente (aprobada) | Ya hechos el 2026-10-28 con el SSO: límite de intentos y los 4 perfiles. Lo demás en `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md`, sección 4; necesita una migración nueva después de la 18. |
 | Probar el interruptor del Portal de Clientes tras el deploy | Pendiente | Migración 14 aplicada (2026-10-27); código sin probar contra PHP/MySQL real. Activar el enlace solo cuando el portal de PF esté listo para `fdz`. |
 | PF: entregabilidad del correo del OTP y marca FDZ | Pendiente (en Prevision-Funeraria) | El OTP queda **solo por correo** (decisión 2026-10-27); clientes sin correo registrado no pueden entrar — limitación conocida. |
-| PF: proveedor de identidad para "Entrar con Previsión Funeraria" (Fase 2, SSO del panel con el staff de `fdz`) | Bloqueado | Reemplaza la tarea de SSO anterior. No existe en Prevision-Funeraria; contrato mínimo en la spec del 2026-10-27, sección 4. |
+| **"Entrar con Previsión Funeraria" (SSO del panel con el staff de `fdz`)** — puesta en marcha | Pendiente — código listo (2026-10-28) | PF: rama `feature/sso-sitios` (465 pruebas OK) → merge, migración `control/0017` en remoto, deploy, `npm run oauth-client`. Este repo: importar `18_sso_prevision.sql`, bloque `pf_sso` en `api/config.php`, deploy, y dejar 1-2 cuentas locales de emergencia (correo propio). Pasos en `docs/specs/2026-10-28-sso-prevision-funeraria.md`, sección 7. PHP sin probar contra servidor real. |
+| Asignar los perfiles del sitio (`sitio.*`) a los roles de `fdz` en PF | Pendiente | Solo `tenant_global_admin` los recibe por migración. Definir con el cliente qué rol modera condolencias, publica obituarios, etc. |
+| Regenerar las capturas del manual (login nuevo + botón "Previsión (FDZ)") | Pendiente | Después del deploy del SSO. `docs/manual/capturar-manual.mjs` usa login local: correrlo con una cuenta local de emergencia y `admin.html?emergencia=1`. |
 
 ### Repositorio / documentación
 

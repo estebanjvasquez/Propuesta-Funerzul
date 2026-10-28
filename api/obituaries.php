@@ -95,7 +95,7 @@ switch ($action) {
     case 'list': {
         require_method('GET');
         $adminScope = (($_GET['scope'] ?? '') === 'admin');
-        if ($adminScope) require_role('admin', 'editor');
+        if ($adminScope) require_perm('sitio.obituarios.write');
 
         $where = $adminScope ? "deleted_at IS NULL" : "status = 'active' AND deleted_at IS NULL";
         $params = [];
@@ -166,7 +166,7 @@ switch ($action) {
     // ---- CREAR ------------------------------------------------------------
     case 'create': {
         require_method('POST');
-        $u = require_role('admin', 'editor');
+        $u = require_perm('sitio.obituarios.write');
         require_csrf();
         $in = obit_input(body_json());
 
@@ -202,7 +202,7 @@ switch ($action) {
     // ---- ACTUALIZAR -------------------------------------------------------
     case 'update': {
         require_method('POST');
-        $u = require_role('admin', 'editor');
+        $u = require_perm('sitio.obituarios.write');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
@@ -251,7 +251,7 @@ switch ($action) {
     // ---- FIJAR / DESFIJAR -------------------------------------------------
     case 'pin': {
         require_method('POST');
-        require_role('admin', 'editor');
+        require_perm('sitio.obituarios.write');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
@@ -275,11 +275,11 @@ switch ($action) {
         $hard = (($_GET['hard'] ?? '') === '1');
 
         if ($hard) {
-            require_role('admin');
+            require_perm('sitio.admin');
             db()->prepare("DELETE FROM obituaries WHERE id = ?")->execute([$id]);
             audit('obituary.hard_delete', 'obituaries', $id);
         } else {
-            require_role('admin', 'editor');
+            require_perm('sitio.obituarios.write');
             db()->prepare("UPDATE obituaries SET deleted_at = NOW(), status='inactive' WHERE id = ?")->execute([$id]);
             audit('obituary.soft_delete', 'obituaries', $id);
         }
@@ -288,7 +288,7 @@ switch ($action) {
 
     case 'restore': {
         require_method('POST');
-        require_role('admin', 'editor');
+        require_perm('sitio.obituarios.write');
         require_csrf();
         $id = (int)(body_json()['id'] ?? 0);
         if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);
@@ -300,7 +300,8 @@ switch ($action) {
     // ---- ESTADÍSTICAS (dashboard) ----------------------------------------
     case 'stats': {
         require_method('GET');
-        require_role('admin', 'editor');
+        // Solo conteos; también alimenta el aviso de condolencias pendientes.
+        require_staff();
         $pdo = db();
         $total  = (int)$pdo->query("SELECT COUNT(*) FROM obituaries WHERE deleted_at IS NULL")->fetchColumn();
         $active = (int)$pdo->query("SELECT COUNT(*) FROM obituaries WHERE deleted_at IS NULL AND status='active'")->fetchColumn();
@@ -320,7 +321,7 @@ switch ($action) {
     // Ver docs/specs/2026-10-27-enlaces-redes-y-analitica.md.
     case 'link_stats': {
         require_method('GET');
-        require_role('admin', 'editor');
+        require_perm('sitio.obituarios.write');
         $id = (int)($_GET['id'] ?? 0);
         if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);
         try {

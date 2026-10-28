@@ -42,7 +42,7 @@ switch ($action) {
 
     case 'admin_list': {
         require_method('GET');
-        require_role('admin', 'editor');
+        require_perm('sitio.condolencias.moderate');
         $status = $_GET['status'] ?? 'all';
         $where = "1=1"; $params = [];
         if (in_array($status, ['pending', 'approved', 'hidden'], true)) {
@@ -97,7 +97,7 @@ switch ($action) {
 
     case 'moderate': {
         require_method('POST');
-        $u = require_role('admin', 'editor');
+        $u = require_perm('sitio.condolencias.moderate');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
@@ -113,7 +113,7 @@ switch ($action) {
 
     case 'update': {
         require_method('POST');
-        require_role('admin', 'editor');
+        require_perm('sitio.condolencias.moderate');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
@@ -127,7 +127,7 @@ switch ($action) {
 
     case 'delete': {
         require_method('POST');
-        require_role('admin', 'editor');
+        require_perm('sitio.condolencias.moderate');
         require_csrf();
         $id = (int)(body_json()['id'] ?? 0);
         if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);

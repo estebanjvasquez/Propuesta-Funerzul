@@ -57,6 +57,11 @@ disco y backend PHP, todo junto).
   datos personales) y las claves `ga4_measurement_id` y
   `google_site_verification` en `app_settings` (vacías). Ver
   `docs/specs/2026-10-27-enlaces-redes-y-analitica.md`.
+- **`18_sso_prevision.sql`** — "Entrar con Previsión Funeraria": columnas
+  `users.auth_source` (`local`/`pf`) y `users.pf_user_id`, tabla `auth_throttle`
+  (límite de intentos del login local) y la clave `pf_panel_url` en `app_settings`.
+  Importar **antes** de desplegar el código que la usa. Idempotente. Ver
+  `docs/specs/2026-10-28-sso-prevision-funeraria.md`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -67,7 +72,7 @@ disco y backend PHP, todo junto).
 
 | Tabla | Propósito |
 |---|---|
-| `users` | Usuarios del panel con login PHP (bcrypt). Roles: **admin**, **editor**. |
+| `users` | Usuarios del panel. `auth_source = 'pf'`: entran con Previsión Funeraria (perfiles desde PF); `'local'`: cuentas de emergencia con login PHP (bcrypt), roles **admin**/**editor**. |
 | `obituaries` | Obituarios. Foto en disco; permanece indexable tras la purga. |
 | `obituary_templates` | Plantillas editables; una marcada como predeterminada. |
 | `condolences` | Mensajes del público (moderados: pending → approved/hidden). |
@@ -101,8 +106,8 @@ disco y backend PHP, todo junto).
 4. Repite la importación con `02_directorio_recursos.sql`, `03_faqs.sql`,
    `11_secciones_toggle.sql`, `12_plantillas_esquela.sql`,
    `13_plantilla_cinta_imagen_real.sql`, `14_portal_clientes.sql`,
-   `15_obituarios_ajustes_cliente.sql`, `16_faq_aseguradoras.sql` y
-   `17_enlaces_redes_y_analitica.sql` (en ese
+   `15_obituarios_ajustes_cliente.sql`, `16_faq_aseguradoras.sql`,
+   `17_enlaces_redes_y_analitica.sql` y `18_sso_prevision.sql` (en ese
    orden).
 
 ### 3. Iniciar sesión y asegurar el admin

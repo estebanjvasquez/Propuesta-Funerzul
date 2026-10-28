@@ -25,7 +25,17 @@ switch ($action) {
 
     case 'me':
         $u = auth_user();
-        json_out(['ok' => true, 'user' => $u ? public_user($u) : null, 'csrf' => csrf_token()]);
+        $panelUrl = '';
+        if ($u) {
+            try { $panelUrl = (string)get_setting('pf_panel_url', ''); } catch (\Throwable $e) {}
+        }
+        json_out([
+            'ok'           => true,
+            'user'         => $u ? public_user($u) : null,
+            'csrf'         => csrf_token(),
+            'sso_enabled'  => sso_enabled(),
+            'pf_panel_url' => is_https_url($panelUrl) ? $panelUrl : '',
+        ]);
 
     default:
         json_out(['ok' => false, 'error' => 'Acción no encontrada.'], 404);

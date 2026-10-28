@@ -48,7 +48,7 @@ switch ($action) {
     case 'list': {
         require_method('GET');
         $adminScope = (($_GET['scope'] ?? '') === 'admin');
-        if ($adminScope) require_role('admin', 'editor');
+        if ($adminScope) require_perm('sitio.contenido.write');
 
         $where = $adminScope ? '1=1' : 'is_active = 1';
         $sql = "SELECT * FROM faqs WHERE $where ORDER BY sort_order ASC, id ASC";
@@ -71,7 +71,7 @@ switch ($action) {
     // ---- CREAR ------------------------------------------------------------
     case 'create': {
         require_method('POST');
-        $u = require_role('admin', 'editor');
+        $u = require_perm('sitio.contenido.write');
         require_csrf();
         $in = faq_input(body_json());
 
@@ -91,7 +91,7 @@ switch ($action) {
     // ---- ACTUALIZAR -------------------------------------------------------
     case 'update': {
         require_method('POST');
-        $u = require_role('admin', 'editor');
+        $u = require_perm('sitio.contenido.write');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
@@ -116,7 +116,7 @@ switch ($action) {
     // ---- PAUSAR / ACTIVAR -------------------------------------------------
     case 'toggle': {
         require_method('POST');
-        $u = require_role('admin', 'editor');
+        $u = require_perm('sitio.contenido.write');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
@@ -131,7 +131,7 @@ switch ($action) {
     // ---- ELIMINAR ---------------------------------------------------------
     case 'delete': {
         require_method('POST');
-        require_role('admin', 'editor');
+        require_perm('sitio.contenido.write');
         require_csrf();
         $id = (int)(body_json()['id'] ?? 0);
         if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);

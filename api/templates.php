@@ -51,7 +51,7 @@ switch ($action) {
     case 'create':
     case 'update': {
         require_method('POST');
-        $u = require_role('admin');
+        $u = require_perm('sitio.admin');
         require_csrf();
         $b = body_json();
         $name = clean_str($b['name'] ?? '', 120);
@@ -83,7 +83,7 @@ switch ($action) {
 
     case 'set_default': {
         require_method('POST');
-        require_role('admin');
+        require_perm('sitio.admin');
         require_csrf();
         $id = (int)(body_json()['id'] ?? 0);
         if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);
@@ -99,7 +99,7 @@ switch ($action) {
 
     case 'delete': {
         require_method('POST');
-        require_role('admin');
+        require_perm('sitio.admin');
         require_csrf();
         $id = (int)(body_json()['id'] ?? 0);
         if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);

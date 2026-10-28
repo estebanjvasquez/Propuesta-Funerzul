@@ -64,7 +64,7 @@ switch ($action) {
     case 'list': {
         require_method('GET');
         $adminScope = (($_GET['scope'] ?? '') === 'admin');
-        if ($adminScope) require_role('admin', 'editor');
+        if ($adminScope) require_perm('sitio.contenido.write');
 
         $where = $adminScope ? "deleted_at IS NULL" : "status = 'active' AND deleted_at IS NULL";
         $params = [];
@@ -119,7 +119,7 @@ switch ($action) {
     // ---- CREAR ------------------------------------------------------------
     case 'create': {
         require_method('POST');
-        $u = require_role('admin', 'editor');
+        $u = require_perm('sitio.contenido.write');
         require_csrf();
         $in = article_input(body_json());
 
@@ -148,7 +148,7 @@ switch ($action) {
     // ---- ACTUALIZAR -------------------------------------------------------
     case 'update': {
         require_method('POST');
-        $u = require_role('admin', 'editor');
+        $u = require_perm('sitio.contenido.write');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
@@ -188,7 +188,7 @@ switch ($action) {
     // ---- DESTACAR / QUITAR ------------------------------------------------
     case 'feature': {
         require_method('POST');
-        require_role('admin', 'editor');
+        require_perm('sitio.contenido.write');
         require_csrf();
         $b = body_json();
         $id = (int)($b['id'] ?? 0);
@@ -212,11 +212,11 @@ switch ($action) {
         $hard = (($_GET['hard'] ?? '') === '1');
 
         if ($hard) {
-            require_role('admin');
+            require_perm('sitio.admin');
             db()->prepare("DELETE FROM articles WHERE id = ?")->execute([$id]);
             audit('article.hard_delete', 'articles', $id);
         } else {
-            require_role('admin', 'editor');
+            require_perm('sitio.contenido.write');
             db()->prepare("UPDATE articles SET deleted_at = NOW(), status='inactive' WHERE id = ?")->execute([$id]);
             audit('article.soft_delete', 'articles', $id);
         }
@@ -225,7 +225,7 @@ switch ($action) {
 
     case 'restore': {
         require_method('POST');
-        require_role('admin', 'editor');
+        require_perm('sitio.contenido.write');
         require_csrf();
         $id = (int)(body_json()['id'] ?? 0);
         if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);
@@ -237,7 +237,7 @@ switch ($action) {
     // ---- ESTADÍSTICAS -----------------------------------------------------
     case 'stats': {
         require_method('GET');
-        require_role('admin', 'editor');
+        require_perm('sitio.contenido.write');
         $pdo = db();
         $total    = (int)$pdo->query("SELECT COUNT(*) FROM articles WHERE deleted_at IS NULL")->fetchColumn();
         $active   = (int)$pdo->query("SELECT COUNT(*) FROM articles WHERE deleted_at IS NULL AND status='active'")->fetchColumn();

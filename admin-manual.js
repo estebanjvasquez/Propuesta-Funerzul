@@ -18,15 +18,18 @@ const MANUAL = [
         id: 'inicio', title: 'Entrar al panel', rol: 'todos',
         intro: 'El panel es la herramienta para publicar y mantener al día el contenido del sitio web de Funeraria del Zulia: obituarios, condolencias, directorio médico, recursos de lectura y preguntas frecuentes.',
         steps: [
-            { t: 'Abra en el navegador la dirección del panel (termina en <strong>/admin.html</strong>). Escriba su <strong>correo</strong> y su <strong>contraseña</strong> y pulse <strong>Iniciar sesión</strong>.', img: '01-login', cap: 'Pantalla de inicio de sesión.' },
-            { t: 'Al entrar verá los indicadores del día y la lista de obituarios. Arriba a la derecha están los menús <strong>Sitio web</strong> y <strong>Sistema</strong> (este último solo para administradores), su nombre, el botón <strong>Manual</strong> y el botón <strong>Salir</strong>.', img: '02-panel-inicio', cap: 'Vista principal del panel.' },
+            { t: 'Abra en el navegador la dirección del panel (termina en <strong>/admin.html</strong>) y pulse <strong>Entrar con Previsión Funeraria</strong>. Se usa el <strong>mismo usuario y contraseña</strong> del sistema de Previsión Funeraria: no hay una clave aparte para este panel.', img: '01-login', cap: 'Pantalla de inicio de sesión.' },
+            { t: 'Si ya tiene abierto Previsión Funeraria en ese navegador, entra directo. Si no, Previsión Funeraria le pide su correo, su contraseña y el <strong>código de verificación</strong> de su aplicación autenticadora, y lo devuelve al panel.' },
+            { t: 'Al entrar verá los indicadores del día y la lista de obituarios. Arriba a la derecha están los menús <strong>Sitio web</strong> y <strong>Sistema</strong> (este último solo para administradores), su nombre y perfil, el botón <strong>Previsión (FDZ)</strong> que abre el sistema de Previsión Funeraria en la empresa Funeraria del Zulia, el botón <strong>Manual</strong> y el botón <strong>Salir</strong>.', img: '02-panel-inicio', cap: 'Vista principal del panel.' },
             { t: 'El menú <strong>Sitio web</strong> lleva a cada sección que se publica en la página: Obituarios, Condolencias, Directorio Médico, Recursos, Preguntas frecuentes y (solo administradores) Plantillas de obituario. El número amarillo indica condolencias por revisar.', img: '03-menu-sitio', cap: 'Menú "Sitio web".' },
             { t: 'El menú <strong>Sistema</strong> (solo administradores) tiene la <strong>Configuración</strong> del sitio y los <strong>Usuarios</strong> del panel.', img: '04-menu-sistema', cap: 'Menú "Sistema".' },
             { t: 'Al terminar, pulse <strong>Salir</strong>. Hágalo siempre en computadoras compartidas.' },
         ],
         tips: [
             'Cada persona debe tener su propio usuario. No comparta su contraseña.',
-            'Si olvidó su contraseña, pídale a un administrador que le asigne una nueva (Sistema → Usuarios → Clave).',
+            'Solo ve las secciones de su perfil. Los perfiles (Administrador, Obituarios, Moderador, Contenido) los asigna el administrador en Previsión Funeraria.',
+            'Si olvidó su contraseña o perdió el código de verificación, pídale ayuda al administrador de Previsión Funeraria: la cuenta es la misma para ambos sistemas.',
+            'Si cierra sesión en Previsión Funeraria, este panel también se cierra a los pocos minutos.',
         ],
     },
     {
@@ -142,14 +145,16 @@ const MANUAL = [
     },
     {
         id: 'usuarios', title: 'Usuarios del panel', rol: 'admin',
-        intro: 'Quién puede entrar al panel y qué puede hacer.',
+        intro: 'Quién puede entrar al panel y qué puede hacer. Los usuarios se administran en Previsión Funeraria: cada persona entra con su cuenta de allá.',
         steps: [
-            { t: 'Vaya a <strong>Sistema → Usuarios</strong>. Por cada usuario: <strong>Editar</strong> (nombre, rol, activar o desactivar el acceso), <strong>Clave</strong> (asignar una contraseña nueva) y <strong>Eliminar</strong>.', img: '80-usuarios', cap: 'Usuarios del panel.' },
-            { t: 'Pulse <strong>+ Nuevo usuario</strong>, escriba el nombre, el correo y una contraseña de al menos 8 caracteres, y elija el rol: <strong>Editor</strong> gestiona el contenido (obituarios, condolencias, directorio, recursos, preguntas); <strong>Admin</strong> además gestiona plantillas, configuración y usuarios.', img: '81-usuario-formulario', cap: 'Alta de un usuario.' },
+            { t: 'Para dar acceso a alguien, en <strong>Previsión Funeraria</strong> (empresa Funeraria del Zulia) créele el usuario en <strong>Usuarios</strong> y asígnele un rol que tenga algún permiso de la sección <strong>Panel del sitio web</strong> (en <strong>Roles</strong>): <strong>administrador</strong> (todo), <strong>obituarios y tarjetas</strong>, <strong>moderar condolencias</strong> o <strong>directorio médico, recursos y preguntas frecuentes</strong>.' },
+            { t: 'La primera vez que esa persona entra al panel aparece en <strong>Sistema → Usuarios</strong> con la etiqueta <strong>Previsión</strong>. Su nombre, contraseña y perfil se cambian en Previsión Funeraria; aquí, con <strong>Editar</strong>, solo puede desactivar su acceso a este panel.', img: '80-usuarios', cap: 'Usuarios del panel.' },
+            { t: 'Los usuarios con la etiqueta <strong>Local</strong> son <strong>cuentas de emergencia</strong>, para entrar si Previsión Funeraria no está disponible, desde <strong>/admin.html?emergencia=1</strong>. Se crean con <strong>+ Nuevo usuario</strong> (correo propio, contraseña larga) y su clave se cambia con <strong>Clave</strong>. Mantenga solo una o dos.', img: '81-usuario-formulario', cap: 'Alta de una cuenta local de emergencia.' },
         ],
         tips: [
-            'Por seguridad, nadie puede quitarse a sí mismo el rol de administrador ni eliminar su propio usuario.',
-            'Desactive (en vez de eliminar) a quien deje de trabajar temporalmente: conserva su historial.',
+            'Quitarle el rol o desactivar a alguien en Previsión Funeraria le corta también este panel en pocos minutos.',
+            'Use para las cuentas de emergencia un correo que nadie use en Previsión Funeraria: si coincide, la cuenta pasa a ser de Previsión la primera vez que esa persona entra con el botón.',
+            'Por seguridad, nadie puede quitarse a sí mismo el acceso de administrador ni eliminar su propio usuario.',
         ],
     },
     {
@@ -158,7 +163,9 @@ const MANUAL = [
         steps: [
             { t: '<strong>Hice un cambio y no se ve en el sitio:</strong> recargue la página con <strong>Ctrl + F5</strong>. Revise también que el contenido esté en estado <strong>Activo</strong> y que su sección esté encendida en Configuración.' },
             { t: '<strong>No puedo subir una foto:</strong> use JPG, PNG o WebP. Si sigue fallando, avise al soporte técnico.' },
-            { t: '<strong>El panel me saca o dice "No autenticado":</strong> su sesión venció. Vuelva a iniciar sesión.' },
+            { t: '<strong>El panel me saca o dice "No autenticado":</strong> su sesión venció o se cerró en Previsión Funeraria. Vuelva a entrar.' },
+            { t: '<strong>Dice que mi usuario no tiene acceso a este panel:</strong> su rol en Previsión Funeraria no tiene ningún permiso del <strong>Panel del sitio web</strong>. Pídale al administrador que se lo asigne.' },
+            { t: '<strong>Previsión Funeraria no responde y necesito publicar algo urgente:</strong> un administrador puede entrar con una cuenta de emergencia en <strong>/admin.html?emergencia=1</strong>.' },
             { t: '<strong>Un enlace de redes lleva a la lista de obituarios:</strong> el obituario no está Activo o fue dado de baja.' },
         ],
     },
@@ -170,7 +177,7 @@ const MANUAL = [
 let manualRendered = false;
 
 function manualIsAdmin() {
-    try { return typeof State !== 'undefined' && State.user && State.user.role === 'admin'; } catch (e) { return false; }
+    try { return typeof State !== 'undefined' && !!State.user && (State.user.perms || []).includes('sitio.admin'); } catch (e) { return false; }
 }
 function manualText(html) { return String(html).replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/g, ' ').toLowerCase(); }
 function manualImg(name) { return `manual/img/${name}.png?v=${MANUAL_IMG_VERSION}`; }

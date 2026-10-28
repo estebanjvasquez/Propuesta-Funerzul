@@ -9,7 +9,7 @@
 require __DIR__ . '/lib/bootstrap.php';
 
 require_method('POST');
-require_role('admin', 'editor');
+require_perm('sitio.obituarios.write', 'sitio.contenido.write');
 require_csrf();
 
 $cfg = $GLOBALS['CONFIG']['uploads'];

@@ -1747,6 +1747,7 @@ textarea.form-control {
 .login-sub { font-size: 13px; color: var(--color-text-muted); margin-bottom: 24px; }
 .login-card .form-group { text-align: left; }
 .login-btn { width: 100%; margin-top: 8px; }
+.login-hint { font-size: 13px; color: var(--color-text-muted); margin-top: 12px; }
 .login-back { display: inline-block; margin-top: 16px; font-size: 13px; color: var(--color-text-muted); }
 .login-back:hover { color: var(--color-primary); }
 .login-error {
