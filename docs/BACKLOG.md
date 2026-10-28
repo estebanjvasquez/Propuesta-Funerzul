@@ -76,6 +76,15 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 | Asignar los perfiles del sitio (`sitio.*`) a los roles de `fdz` en PF | Pendiente | Solo `tenant_global_admin` los recibe por migración. Definir con el cliente qué rol modera condolencias, publica obituarios, etc. |
 | Regenerar las capturas del manual (login nuevo + botón "Previsión (FDZ)") | Pendiente | Después del deploy del SSO. `docs/manual/capturar-manual.mjs` usa login local: correrlo con una cuenta local de emergencia y `admin.html?emergencia=1`. |
 
+### Migración a `www.funerariadelzulia.com` (reemplaza el WordPress)
+
+| Tarea | Estado | Notas |
+|---|---|---|
+| Responder las decisiones D1-D5 del plan (cuenta de cPanel, dominio principal o adicional, WooCommerce, páginas sin equivalente, fecha) | Pendiente | Plan completo en `docs/specs/2026-10-28-migracion-dominio-final.md`. |
+| Redirecciones 301 de las URLs de WordPress en `.htaccess` | Pendiente | Tabla en la sección 1.6 del plan. Se puede hacer ya: no afecta al sitio de prueba. |
+| Confirmar la IP real de los visitantes detrás de Cloudflare | Pendiente | Si `REMOTE_ADDR` es de Cloudflare, el límite de intentos del login de emergencia agrupa a todos. Plan, punto 0.6. |
+| Reutilizar la propiedad de Google de Site Kit (`GT-PJ5S7WTQ`) y pasar Search Console a verificación DNS | Pendiente | Reemplaza las tareas "crear GA4" y "verificar Search Console" de la sección de enlaces y analítica. |
+
 ### Repositorio / documentación
 
 | Tarea | Estado | Notas |
