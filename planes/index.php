@@ -5,11 +5,13 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('planes/');
 $img       = site_url('planes/img/plan-vanguardia.svg');
 $title     = 'Planes de Previsión Funeraria en Maracaibo';
-$desc      = 'Planes de previsión funeraria en Maracaibo: Tradición, Esencial y Vanguardia. Cuotas accesibles y cobertura familiar.';
+$desc      = 'Planes de previsión funeraria en Maracaibo: Tradición, Esencial, Vanguardia y Grupo Selecto, con cobertura en toda Venezuela. Cuotas accesibles y cobertura familiar.';
 
 // Orden y textos pedidos por el cliente (2026-10-27): Tradición, Esencial,
-// Vanguardia; el Vanguardia Plus se retiró y su lugar lo ocupará Grupo Selecto
-// (pendiente de contenido). Edad máxima: catálogo de Prevision-Funeraria.
+// Vanguardia y Grupo Selecto (en el lugar del Vanguardia Plus, ya retirado).
+// Vanguardia y Grupo Selecto (2026-10-29) siguen el "Plan Vanguardia Zulia" y el
+// "Plan Vanguardia Grupo Selecto" de Legado Holding (Prevision-Funeraria, tenant
+// lh), sin precios. Edad máxima: catálogo de Prevision-Funeraria.
 $planes = [
     ['slug' => 'plan-tradicion.php', 'img' => 'img/plan-tradicion.svg', 'name' => 'Plan Tradición', 'featured' => false,
      'subtitle' => '(Servicio funerario)',
@@ -22,30 +24,38 @@ $planes = [
      'features' => ['Acto velatorio y cremación', 'Traslados locales', 'Gestión documental (actas y permisos)', 'Coordinación funeraria'],
      'age' => 'Edad máxima de ingreso: 65 años'],
     ['slug' => 'plan-vanguardia.php', 'img' => 'img/plan-vanguardia.svg', 'name' => 'Plan Vanguardia', 'featured' => true,
-     'subtitle' => '(Funeral + cremación / gastos de inhumación)',
-     'target' => 'Servicio funerario completo, con cremación o gastos de inhumación incluidos.',
-     'features' => ['Servicio funerario completo', 'Cremación o gastos de inhumación', 'Acompañamiento integral'],
+     'subtitle' => '(Funeral completo + cremación, bóveda o inhumación)',
+     'target' => 'Lo mejor de nuestros planes en el Zulia. Padres hasta 80 años.',
+     'features' => ['Servicio funerario completo con ataúd', 'Oficios religiosos y flores naturales', 'Cremación, bóveda aérea o inhumación', '6 miembros de su familia'],
+     'age' => 'Edad máxima de ingreso: 65 años (padres hasta 80)'],
+    ['slug' => 'plan-grupo-selecto.php', 'img' => 'img/plan-grupo-selecto.svg', 'name' => 'Plan Grupo Selecto', 'featured' => false,
+     'subtitle' => '(Cobertura en toda Venezuela)',
+     'target' => 'El plan más amplio: usted elige cada componente del servicio.',
+     'features' => ['Cobertura en toda Venezuela y traslado entre estados', 'Componentes del funeral a su elección', 'Cremación o bóveda en cementerio privado', 'Titular + 6 familiares'],
      'age' => 'Edad máxima de ingreso: 65 años'],
 ];
 
 // Tabla comparativa (pedido 2026-10-27). Columnas en el mismo orden que $planes:
-// Tradición, Esencial, Vanguardia. Fuente: textos de este sitio + descripción
-// detallada de cada plan en el catálogo de Prevision-Funeraria (Esencial: "velatorio,
-// embalsamamiento, transporte, asistencia administrativa y cremación" -- sin oficios
-// ni arreglo floral; Vanguardia: "todo lo del Plan Tradición más cremación o gastos
-// de inhumación"). true = incluido, false = no incluido, string = texto propio.
-// Confirmar con el cliente antes de anunciar (ver docs/BACKLOG.md).
+// Tradición, Esencial, Vanguardia, Grupo Selecto. Fuente: textos de este sitio +
+// descripción detallada de cada plan en el catálogo de Prevision-Funeraria (Esencial
+// fdz: "velatorio, embalsamamiento, transporte, asistencia administrativa y
+// cremación" -- sin oficios ni arreglo floral; Vanguardia y Grupo Selecto: tenant lh,
+// vanguardia-zulia y vanguardia-selecto). true = incluido, false = no incluido,
+// string = texto propio. Confirmar con el cliente antes de anunciar (ver docs/BACKLOG.md).
 $comparativa = [
-    ['Traslado y preparación del cuerpo',          [true, true, true]],
-    ['Acto velatorio en capilla',                  [true, true, true]],
-    ['Servicio a domicilio',                       [true, false, true]],
-    ['Oficios religiosos católicos',               [true, false, true]],
-    ['Arreglo floral',                             [true, false, true]],
-    ['Cafetería',                                  [true, false, true]],
-    ['Gestión documental (actas y permisos)',      [true, true, true]],
-    ['Cremación',                                  [false, true, 'Incluida (o gastos de inhumación, a elección)']],
-    ['Gastos de inhumación en cementerio',         ['Requiere bóveda o espacio propio', false, 'Incluidos (o cremación, a elección)']],
-    ['Edad máxima de ingreso',                     ['65 años', '65 años', '65 años']],
+    ['Traslado y preparación del cuerpo',          [true, true, true, true]],
+    ['Ataúd',                                      [true, false, true, 'A su elección']],
+    ['Acto velatorio en capilla',                  [true, true, true, 'A su elección']],
+    ['Servicio a domicilio',                       [true, false, true, 'A su elección']],
+    ['Oficios religiosos',                         [true, false, true, 'A su elección']],
+    ['Arreglo floral',                             [true, false, 'Flores naturales', 'A su elección']],
+    ['Cafetería',                                  [true, false, true, 'A su elección']],
+    ['Gestión documental (actas y permisos)',      [true, true, true, true]],
+    ['Cremación',                                  [false, true, 'A elección (o bóveda aérea o inhumación)', 'A elección (o bóveda en cementerio privado)']],
+    ['Bóveda o gastos de inhumación',              ['Requiere bóveda o espacio propio', false, 'Bóveda aérea o gastos de inhumación (o cremación)', 'Bóveda en parcela de cementerio privado (o cremación)']],
+    ['Sin cobros extra por sobrepeso o marcapasos', [false, false, false, true]],
+    ['Cobertura geográfica',                       ['Estado Zulia', 'Estado Zulia', 'Estado Zulia', 'Toda Venezuela, con traslado entre estados']],
+    ['Edad máxima de ingreso',                     ['65 años', '65 años', '65 años (padres hasta 80)', '65 años']],
 ];
 
 $itemList = ['@context' => 'https://schema.org', '@type' => 'ItemList',

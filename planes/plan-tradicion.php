@@ -43,7 +43,7 @@ require __DIR__ . '/../partials/site_header.php';
         <p>Con el Plan Tradición, su familia contará con una <a href="../servicios/capillas-velatorias.php">capilla velatoria</a> digna, oficios religiosos católicos y todo el acompañamiento del equipo de Funeraria del Zulia. Incluye <strong>cobertura familiar</strong>, financiamiento adaptable y atención 24 horas.</p>
 
         <h2>Compare con otros planes</h2>
-        <p>Si busca incluir la cremación o los gastos de inhumación, el <a href="plan-vanguardia.php">Plan Vanguardia</a> es el más elegido. Para una opción económica con cremación, vea el <a href="plan-esencial.php">Plan Esencial</a>.</p>
+        <p>Si busca incluir la cremación o los gastos de inhumación, el <a href="plan-vanguardia.php">Plan Vanguardia</a> es el más elegido. Para una opción económica con cremación, vea el <a href="plan-esencial.php">Plan Esencial</a>; y para cobertura en toda Venezuela, el <a href="plan-grupo-selecto.php">Plan Grupo Selecto</a>.</p>
 
         <?php
         $ctaHeading    = 'Solicite asesoría sobre el Plan Tradición';
@@ -62,6 +62,7 @@ require __DIR__ . '/../partials/site_header.php';
             <ul>
                 <li><a href="plan-esencial.php">Plan Esencial</a></li>
                 <li><a href="plan-vanguardia.php">Plan Vanguardia</a></li>
+                <li><a href="plan-grupo-selecto.php">Plan Grupo Selecto</a></li>
                 <li><a href="../servicios/">Ver todos los servicios</a></li>
             </ul>
         </div>

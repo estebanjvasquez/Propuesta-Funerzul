@@ -42,7 +42,7 @@ require __DIR__ . '/../partials/site_header.php';
         <p>La previsión funeraria le permite organizar con anticipación todos los servicios, fijando condiciones favorables y protegiendo a su familia de decisiones difíciles en un momento de dolor. Todos nuestros planes incluyen <strong>cobertura familiar</strong>, <strong>financiamiento adaptable</strong>, atención 24 horas y planificación anticipada.</p>
 
         <h2>Compare con otros planes</h2>
-        <p>Si su familia posee bóveda o espacio para inhumación, considere el <a href="plan-tradicion.php">Plan Tradición</a>; si desea cremación o gastos de inhumación con el servicio funerario completo, el <a href="plan-vanguardia.php">Plan Vanguardia</a> (el más elegido).</p>
+        <p>Si su familia posee bóveda o espacio para inhumación, considere el <a href="plan-tradicion.php">Plan Tradición</a>; si desea cremación o gastos de inhumación con el servicio funerario completo, el <a href="plan-vanguardia.php">Plan Vanguardia</a> (el más elegido). Para cobertura en toda Venezuela, el <a href="plan-grupo-selecto.php">Plan Grupo Selecto</a>.</p>
 
         <?php
         $ctaHeading   = 'Solicite asesoría sobre el Plan Esencial';
@@ -61,6 +61,7 @@ require __DIR__ . '/../partials/site_header.php';
             <ul>
                 <li><a href="plan-tradicion.php">Plan Tradición</a></li>
                 <li><a href="plan-vanguardia.php">Plan Vanguardia</a></li>
+                <li><a href="plan-grupo-selecto.php">Plan Grupo Selecto</a></li>
                 <li><a href="../servicios/">Ver todos los servicios</a></li>
             </ul>
         </div>

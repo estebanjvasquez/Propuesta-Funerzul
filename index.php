@@ -68,7 +68,7 @@ function fz_site_url(string $path = ''): string {
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="styles.css?v=20261028-2">
+    <link rel="stylesheet" href="styles.css?v=20261029-1">
 
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -377,18 +377,33 @@ function fz_site_url(string $path = ''): string {
                 <article class="plan-card plan-featured">
                     <span class="plan-badge">Más elegido</span>
                     <h3 class="plan-name">Plan Vanguardia</h3>
-                    <p class="plan-subtitle">(Funeral + cremación / gastos de inhumación)</p>
-                    <p class="plan-target">Servicio funerario completo, con cremación o gastos de inhumación incluidos.</p>
+                    <p class="plan-subtitle">(Funeral completo + cremación, bóveda o inhumación)</p>
+                    <p class="plan-target">Lo mejor de nuestros planes en el Zulia. Padres hasta 80 años.</p>
                     <ul class="plan-features">
-                        <li>Servicio funerario completo</li>
-                        <li>Cremación o gastos de inhumación</li>
-                        <li>Acompañamiento integral</li>
+                        <li>Servicio funerario completo con ataúd</li>
+                        <li>Oficios religiosos y flores naturales</li>
+                        <li>Cremación, bóveda aérea o inhumación</li>
+                        <li>6 miembros de su familia</li>
                     </ul>
-                    <p class="plan-age">Edad máxima de ingreso: 65 años</p>
+                    <p class="plan-age">Edad máxima de ingreso: 65 años (padres hasta 80)</p>
                     <a href="planes/plan-vanguardia.php" class="btn btn-secondary plan-cta">Ver plan en detalle</a>
                 </article>
 
-                <!-- 4to lugar: Grupo Selecto (pendiente: falta el contenido del cliente) -->
+                <!-- 4to lugar: Grupo Selecto (= "Plan Vanguardia Grupo Selecto" de
+                     Legado Holding, tenant lh en Prevision-Funeraria; sin precios) -->
+                <article class="plan-card">
+                    <h3 class="plan-name">Plan Grupo Selecto</h3>
+                    <p class="plan-subtitle">(Cobertura en toda Venezuela)</p>
+                    <p class="plan-target">El plan más amplio: usted elige cada componente del servicio.</p>
+                    <ul class="plan-features">
+                        <li>Cobertura en toda Venezuela y traslado entre estados</li>
+                        <li>Componentes del funeral a su elección</li>
+                        <li>Cremación o bóveda en cementerio privado</li>
+                        <li>Titular + 6 familiares</li>
+                    </ul>
+                    <p class="plan-age">Edad máxima de ingreso: 65 años</p>
+                    <a href="planes/plan-grupo-selecto.php" class="btn btn-outline plan-cta">Ver plan en detalle</a>
+                </article>
             </div>
 
             <p class="prevision-note">Todos los planes incluyen cobertura familiar, financiamiento adaptable, atención 24 horas y planificación anticipada. Asesoría de planes: <a href="tel:+584146523319">+58 414 652-3319</a>.</p>
