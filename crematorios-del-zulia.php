@@ -45,7 +45,7 @@ require __DIR__ . '/partials/site_header.php';
     <nav class="breadcrumb"><a href="index.php">Inicio</a> › <span>Crematorios del Zulia</span></nav>
 
     <article class="service-detail-body">
-        <img src="img/crematorio.svg?v=20261102" alt="Crematorios del Zulia — crematorio propio en el Estado Zulia" class="service-hero-img" width="1200" height="600">
+        <img src="img/crematorio.svg?v=20261102-2" alt="Crematorios del Zulia — crematorio propio en el Estado Zulia" class="service-hero-img" width="1200" height="600">
 
         <h1>Crematorios del Zulia</h1>
         <p class="service-lead">Desde 2021, <strong>Crematorios del Zulia</strong> —la unidad de cremación de Funeraria del Zulia, que desde 1942 hace de cada despedida un homenaje a la vida— sirve a las familias que prefieren la <strong>cremación</strong> como forma de disposición final, con <strong>crematorio propio en el Estado Zulia</strong> y sin que tengan que recorrer largas distancias para lograrlo.</p>
