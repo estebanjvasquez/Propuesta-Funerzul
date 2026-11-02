@@ -9,6 +9,17 @@ DirectoryIndex index.php index.html
 # pasar por la regla de abajo (y sin el id); ver enlaces cortos más abajo.
 Options -Indexes -MultiViews
 
+# Copias de prueba fuera de Google (2026-11-02): nuevo.funerariadelzulia.com y
+# legadoholding.com/funerzul/ servían el sitio con "index, follow" y competían
+# con el dominio real. Solo aplica a esos hosts; www.funerariadelzulia.com no
+# cambia.
+<IfModule mod_setenvif.c>
+    SetEnvIfNoCase Host "^(nuevo\.funerariadelzulia\.com|(www\.)?legadoholding\.com)$" FDZ_NOINDEX
+</IfModule>
+<IfModule mod_headers.c>
+    Header always set X-Robots-Tag "noindex, nofollow" env=FDZ_NOINDEX
+</IfModule>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     # Las redirecciones toman la carpeta real de la petición (%1) en vez de "/"

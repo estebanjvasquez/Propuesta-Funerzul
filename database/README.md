@@ -66,6 +66,10 @@ disco y backend PHP, todo junto).
   testimonios del WordPress anterior y los interruptores `section_nosotros_enabled`
   y `section_testimonios_enabled` (encendidos). Idempotente. Ver
   `docs/specs/2026-10-28-nosotros-y-testimonios.md`.
+- **`20_plantilla_catolica.sql`** — Plantilla de obituario "Cruz de Luz (Católica)":
+  variante de la Cinta Conmemorativa con cruz dorada y rayos de luz. Inserta por
+  nombre (sin id fijo), sin predeterminar. Idempotente. Ver
+  `docs/specs/2026-11-02-plantillas-obituario-por-credo.md`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -111,8 +115,8 @@ disco y backend PHP, todo junto).
    `11_secciones_toggle.sql`, `12_plantillas_esquela.sql`,
    `13_plantilla_cinta_imagen_real.sql`, `14_portal_clientes.sql`,
    `15_obituarios_ajustes_cliente.sql`, `16_faq_aseguradoras.sql`,
-   `17_enlaces_redes_y_analitica.sql`, `18_sso_prevision.sql` y
-   `19_nosotros_testimonios.sql` (en ese orden).
+   `17_enlaces_redes_y_analitica.sql`, `18_sso_prevision.sql`,
+   `19_nosotros_testimonios.sql` y `20_plantilla_catolica.sql` (en ese orden).
 
 ### 3. Iniciar sesión y asegurar el admin
 

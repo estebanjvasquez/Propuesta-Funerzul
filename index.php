@@ -68,7 +68,7 @@ function fz_site_url(string $path = ''): string {
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="styles.css?v=20261029-1">
+    <link rel="stylesheet" href="styles.css?v=20261102-1">
 
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -88,11 +88,14 @@ function fz_site_url(string $path = ''): string {
     <meta property="og:image" content="<?= fz_e(fz_site_url('logo.png')) ?>">
     <meta name="twitter:card" content="summary_large_image">
 
-    <!-- JSON-LD: FuneralService (SEO Local + GEO para respuestas de IA) -->
+    <!-- JSON-LD: LocalBusiness de funeraria (SEO Local + GEO para respuestas de IA).
+         schema.org no tiene un tipo "FuneralService"/"FuneralHome": Google
+         descartaba este bloque. additionalType indica el rubro. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "FuneralService",
+      "@type": "LocalBusiness",
+      "additionalType": "https://en.wikipedia.org/wiki/Funeral_home",
       "name": "Funeraria del Zulia",
       "description": "Funeraria en Maracaibo con más de 80 años de trayectoria. Servicios funerarios integrales, cremación, traslados nacionales e internacionales y planes de previsión familiar. Atención inmediata 24 horas en Maracaibo y todo el Estado Zulia.",
       "url": "<?= fz_site_url() ?>",
@@ -650,6 +653,7 @@ function fz_site_url(string $path = ''): string {
 
             <div class="footer-bottom">
                 <p>© 2026 Funeraria del Zulia. Dignidad y Respeto en Maracaibo. Todos los derechos reservados.</p>
+                <a href="admin.html" class="footer-admin-link" rel="nofollow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm3 11c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>Acceso administradores</a>
             </div>
         </div>
     </footer>
@@ -759,6 +763,6 @@ function fz_site_url(string $path = ''): string {
     <!-- 12. TOAST NOTIFICATION -->
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="app.js?v=20261028-1"></script>
+    <script src="app.js?v=20261102-1"></script>
 </body>
 </html>

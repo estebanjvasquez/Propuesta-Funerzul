@@ -41,6 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Las Preguntas Frecuentes de la portada se renderizan en el servidor (index.php)
     // desde la base de datos; no se cargan por JS para no sobrescribir ese contenido.
 
+    document.querySelectorAll('[data-carousel]').forEach(initTestimonialsCarousel);
+
     // Cierre de modales al pulsar fuera
     window.addEventListener('click', (e) => {
         if (e.target.classList && e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
@@ -108,6 +110,78 @@ function obituaryCardHtml(o) {
             </div>
         </div>
     </article>`;
+}
+
+// ---------- Carrusel de testimonios (partials/testimonios.php) ----------
+// La pista ya se desliza sola (scroll-snap); aquí se agregan flechas, puntos
+// (uno por "página" visible) y avance automático cada 7 s, que se detiene al
+// pasar el mouse, al enfocar con teclado o con "reducir movimiento" activo.
+function initTestimonialsCarousel(root) {
+    const track = root.querySelector('[data-carousel-track]');
+    const prev = root.querySelector('[data-carousel-prev]');
+    const next = root.querySelector('[data-carousel-next]');
+    const dotsBox = root.querySelector('[data-carousel-dots]');
+    const cards = Array.from(track.children);
+    if (cards.length < 2) return;
+
+    const step = () => cards[0].getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap || 24);
+    const perPage = () => Math.max(1, Math.round(track.clientWidth / step()));
+    const pages = () => Math.max(1, Math.ceil((cards.length - perPage()) / perPage()) + 1);
+    const maxScroll = () => track.scrollWidth - track.clientWidth;
+    const currentPage = () => {
+        if (track.scrollLeft >= maxScroll() - 4) return pages() - 1;
+        return Math.round(track.scrollLeft / (step() * perPage()));
+    };
+    const goTo = (p) => {
+        const n = pages();
+        p = ((p % n) + n) % n;
+        track.scrollTo({ left: Math.min(p * perPage() * step(), maxScroll()) });
+    };
+
+    function renderDots() {
+        const n = pages();
+        const show = n > 1;
+        prev.hidden = next.hidden = dotsBox.hidden = !show;
+        dotsBox.innerHTML = '';
+        for (let i = 0; i < n; i++) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'carousel-dot';
+            b.setAttribute('aria-label', `Ir al grupo ${i + 1} de ${n}`);
+            b.addEventListener('click', () => { goTo(i); restart(); });
+            dotsBox.appendChild(b);
+        }
+        sync();
+    }
+    function sync() {
+        const p = currentPage();
+        dotsBox.querySelectorAll('.carousel-dot').forEach((d, i) => d.setAttribute('aria-current', i === p ? 'true' : 'false'));
+    }
+
+    prev.addEventListener('click', () => { goTo(currentPage() - 1); restart(); });
+    next.addEventListener('click', () => { goTo(currentPage() + 1); restart(); });
+    let raf;
+    track.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(sync); }, { passive: true });
+    window.addEventListener('resize', renderDots);
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let timer = null, paused = false;
+    function restart() {
+        clearInterval(timer);
+        if (reduced) return;
+        timer = setInterval(() => { if (!paused && !document.hidden) goTo(currentPage() + 1); }, 7000);
+    }
+    root.addEventListener('mouseenter', () => { paused = true; });
+    root.addEventListener('mouseleave', () => { paused = false; });
+    root.addEventListener('focusin', () => { paused = true; });
+    root.addEventListener('focusout', () => { paused = false; });
+    track.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') { e.preventDefault(); goTo(currentPage() + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(currentPage() - 1); }
+    });
+
+    renderDots();
+    restart();
 }
 
 // ---------- Modales ----------

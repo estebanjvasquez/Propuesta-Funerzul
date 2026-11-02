@@ -34,6 +34,15 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 | Corregir precio de Tradición por debajo de Esencial | Pendiente | 2026-10-08: TRADICION US$12,00/mes vs. ESENCIAL US$13,70/mes. El catálogo de `fdz` tiene ahora 9 planes (incluye variantes "NEW" y planes de empleados al 30%/50%) — confirmar cuáles deben mostrarse en el sitio público. |
 | Mercantil: spec completa (`POST /api` + MasterKey del webhook) | Bloqueado | Depende del banco. Relevante para Prevision-Funeraria; este repo ya no tiene endpoints de cobro. *(Migrada de Notion.)* |
 
+### Comentarios del cliente (2026-11-02)
+
+| Tarea | Estado | Notas |
+|---|---|---|
+| Testimonios en carrusel | Hecho, falta desplegar | `partials/testimonios.php` + `initTestimonialsCarousel` en `app.js`: 3 visibles en escritorio, 1 en celular, flechas, puntos y avance cada 7 s. Probado en navegador. |
+| Acceso de administradores en el pie de página | Hecho, falta desplegar | Enlace discreto "Acceso administradores" (`rel="nofollow"`) en el pie de la portada y de las demás páginas; no está en el menú. |
+| Plantillas de obituario por credo | Católica hecha; resto propuesto | "Cruz de Luz (Católica)": importar `database/20_plantilla_catolica.sql` y probar la tarjeta PNG en el servidor (no se pudo ejecutar PHP local). Propuestas evangélica, judía y sin credo en `docs/specs/2026-11-02-plantillas-obituario-por-credo.md`, esperando visto bueno. Se corrigió "En memoria de" invisible en la Cinta. |
+| SEO: por qué no aparece mejor en Google | Diagnóstico hecho | `docs/specs/2026-11-02-seo-search-console.md`. Corregido: schema.org inválido y copias de prueba indexables. Pendiente: publicar en el dominio, Search Console el día del corte, Google Business Profile, confirmar la propiedad de Analytics ("Legado Holding"), FAQ sobre sepelio, páginas de urnas/mascotas solo si se ofrecen. |
+
 ### Comentarios del cliente (2026-10-27) — pendientes
 
 | Tarea | Estado | Notas |

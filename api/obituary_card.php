@@ -1,7 +1,7 @@
 <?php
 /**
  * Tarjeta de obituario para compartir (PNG, staff):
- *   GET api/obituary_card.php?id=123&style=cinta|esquela
+ *   GET api/obituary_card.php?id=123&style=cinta|catolica|esquela
  *
  * Genera la imagen con api/lib/obituary_card.php (puro GD, sin Imagick) y la
  * entrega como descarga. No requiere que el obituario esté "activo" -- el
@@ -15,7 +15,7 @@ require_method('GET');
 require_perm('sitio.obituarios.write');
 
 $id = (int)($_GET['id'] ?? 0);
-$style = in_array($_GET['style'] ?? '', ['cinta', 'esquela'], true) ? $_GET['style'] : 'cinta';
+$style = in_array($_GET['style'] ?? '', ['cinta', 'catolica', 'esquela'], true) ? $_GET['style'] : 'cinta';
 if (!$id) json_out(['ok' => false, 'error' => 'Falta id.'], 422);
 
 $st = db()->prepare("SELECT * FROM obituaries WHERE id = ? AND deleted_at IS NULL");

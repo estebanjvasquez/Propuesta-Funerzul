@@ -163,7 +163,8 @@ function service_jsonld(string $name, string $desc, string $canonical, string $i
         'image'       => $image,
         'areaServed'  => ['@type' => 'AdministrativeArea', 'name' => 'Estado Zulia, Venezuela'],
         'provider'    => [
-            '@type'     => 'FuneralHome',
+            '@type'     => 'LocalBusiness', // schema.org no tiene FuneralHome
+            'additionalType' => 'https://en.wikipedia.org/wiki/Funeral_home',
             'name'      => 'Funeraria del Zulia',
             'telephone' => '+58 424 695-0136',
             'url'       => site_url(),

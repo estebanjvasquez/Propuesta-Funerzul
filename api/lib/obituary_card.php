@@ -253,6 +253,139 @@ function obit_card_cinta(array $o)
     return $img;
 }
 
+/** Dorado de la cruz: mismas paradas que el degradado SVG de la plantilla web. */
+function oc_gold_at(float $t): array
+{
+    $stops = [[0.0, [156, 114, 20]], [0.45, [247, 223, 160]], [0.55, [232, 196, 108]], [1.0, [156, 114, 20]]];
+    for ($i = 1; $i < count($stops); $i++) {
+        [$t1, $c1] = $stops[$i];
+        if ($t <= $t1) {
+            [$t0, $c0] = $stops[$i - 1];
+            $k = ($t - $t0) / max(0.0001, $t1 - $t0);
+            return array_map(fn($a, $b) => (int)round($a + ($b - $a) * $k), $c0, $c1);
+        }
+    }
+    return $stops[count($stops) - 1][1];
+}
+
+/** Barra de la cruz con degradado dorado de izquierda a derecha. */
+function oc_gold_bar($img, int $x1, int $y1, int $x2, int $y2): void
+{
+    $w = max(1, $x2 - $x1);
+    for ($x = $x1; $x <= $x2; $x++) {
+        [$r, $g, $b] = oc_gold_at(($x - $x1) / $w);
+        imageline($img, $x, $y1, $x, $y2, imagecolorallocate($img, $r, $g, $b));
+    }
+}
+
+/** Compone una imagen con alfa (p.ej. el logo) en ($x,$y) con ancho $w. */
+function oc_place_image($img, string $path, int $x, int $y, int $w): void
+{
+    $src = oc_load_image($path);
+    if (!$src) return;
+    $h = (int)round($w * imagesy($src) / imagesx($src));
+    imagecopyresampled($img, $src, $x, $y, 0, 0, $w, $h, imagesx($src), imagesy($src));
+    imagedestroy($src);
+}
+
+/**
+ * Plantilla "Cruz de Luz (Católica)" -- variante de la Cinta (mismo navy,
+ * textos y sello de agua) con una cruz latina dorada sobre halo y rayos de
+ * luz en vez de la cinta. Todo dibujado con GD (sin imagen de fondo). Ver
+ * docs/specs/2026-11-02-plantillas-obituario-por-credo.md.
+ */
+function obit_card_catolica(array $o)
+{
+    $img = imagecreatetruecolor(OC_WIDTH, OC_HEIGHT);
+    imagefilledrectangle($img, 0, 0, OC_WIDTH, OC_HEIGHT, oc_color($img, '#041D31'));
+    imagealphablending($img, true);
+    imagesavealpha($img, true);
+
+    $cx = (int)(OC_WIDTH / 2); $cy = 430;
+
+    // Rayos: 24 haces finos, apilados en 4 largos para que se desvanezcan hacia afuera.
+    foreach ([640, 500, 360, 220] as $len) {
+        $ray = imagecolorallocatealpha($img, 247, 223, 160, 121);
+        for ($deg = 0; $deg < 360; $deg += 15) {
+            $a1 = deg2rad($deg); $a2 = deg2rad($deg + 3);
+            imagefilledpolygon($img, [
+                $cx, $cy,
+                (int)($cx + $len * cos($a1)), (int)($cy + $len * sin($a1)),
+                (int)($cx + $len * cos($a2)), (int)($cy + $len * sin($a2)),
+            ], $ray);
+        }
+    }
+    // Halo: círculos concéntricos casi transparentes (más denso al centro).
+    $halo = imagecolorallocatealpha($img, 232, 196, 108, 126);
+    for ($r = 440; $r > 0; $r -= 8) imagefilledellipse($img, $cx, $cy, $r * 2, $r * 2, $halo);
+
+    // Cruz latina: brillo alrededor y luego las dos barras doradas.
+    $v = [$cx - 33, $cy - 250, $cx + 33, $cy + 250];      // vertical
+    $h = [$cx - 140, $cy - 128, $cx + 140, $cy - 62];      // horizontal
+    $glow = imagecolorallocatealpha($img, 247, 223, 160, 123);
+    for ($g = 26; $g > 0; $g -= 2) {
+        imagefilledrectangle($img, $v[0] - $g, $v[1] - $g, $v[2] + $g, $v[3] + $g, $glow);
+        imagefilledrectangle($img, $h[0] - $g, $h[1] - $g, $h[2] + $g, $h[3] + $g, $glow);
+    }
+    oc_gold_bar($img, ...$v);
+    oc_gold_bar($img, ...$h);
+
+    oc_place_image($img, __DIR__ . '/../../logo-horizontal-white.png', 64, 64, 300);
+
+    $headerH = 900;
+    oc_watermark_seal($img, $cx, (int)($headerH + (OC_HEIGHT - $headerH) * 0.62), 560, 92);
+
+    $fPlayfair       = oc_font('PlayfairDisplay-Variable');
+    $fPlayfairItalic = oc_font('PlayfairDisplay-Italic-Variable');
+    $fInter          = oc_font('Inter-Variable');
+    $gold  = oc_color($img, '#F2C572');
+    $white = oc_color($img, '#FFFFFF');
+    $mist  = oc_color($img, '#C3DAEE');
+    $soft  = oc_color($img, '#DDE6EE');
+
+    $y = $headerH + 70;
+    oc_text_center($img, 'En memoria de', $fPlayfairItalic, 42, $mist, $y);
+    $y += 100;
+
+    $nameLines = oc_wrap_lines(mb_strtoupper($o['full_name'] ?? ''), $fPlayfair, 66, OC_WIDTH - 200);
+    if (count($nameLines) > 2) {
+        $nameLines = oc_wrap_lines(mb_strtoupper($o['full_name'] ?? ''), $fPlayfair, 52, OC_WIDTH - 160);
+        $y = oc_text_block($img, $nameLines, $fPlayfair, 52, $white, $y, 76);
+    } else {
+        $y = oc_text_block($img, $nameLines, $fPlayfair, 66, $white, $y, 96);
+    }
+    $y += 30;
+
+    $hasPhoto = false;
+    if (oc_has_real_photo($o)) {
+        $photoAbs = __DIR__ . '/../../' . ltrim($o['photo_path'], '/');
+        if (is_file($photoAbs)) {
+            oc_circle_photo($img, $photoAbs, $cx, (int)$y + 160, 300, $gold);
+            $y += 350;
+            $hasPhoto = true;
+        }
+    }
+
+    oc_text_center($img, 'Descanse en paz', $fPlayfairItalic, 58, $white, $y);
+    $y += 100;
+
+    $dates = trim(($o['birth_year'] ? $o['birth_year'] . ' — ' : '') . ($o['death_date'] ?? ''));
+    if ($dates !== '') { oc_text_center($img, $dates, $fInter, 34, $mist, $y); $y += 80; }
+
+    // Cita bíblica: se omite si con la foto ya no cabe en la tarjeta.
+    $verse = oc_wrap_lines('«Yo soy la resurrección y la vida; el que cree en mí, aunque muera, vivirá.»', $fPlayfairItalic, 32, OC_WIDTH - 280);
+    if ($y + 60 + count($verse) * 48 + 60 < OC_HEIGHT - 60) {
+        imagefilledrectangle($img, $cx - 220, (int)$y, $cx + 220, (int)$y + 1, $gold);
+        $y += 70;
+        $y = oc_text_block($img, $verse, $fPlayfairItalic, 32, $soft, $y, 48);
+        oc_text_center($img, 'JUAN 11, 25', $fInter, 22, $gold, $y + 10);
+    } elseif (!$hasPhoto) {
+        oc_text_center($img, 'FUNERARIA DEL ZULIA', $fInter, 22, $gold, OC_HEIGHT - 70);
+    }
+
+    return $img;
+}
+
 /** Plantilla "Esquela Familiar" -- fondo blanco, cruz, invitación al velatorio. */
 function obit_card_esquela(array $o)
 {
@@ -321,8 +454,9 @@ function obit_card_esquela(array $o)
 function obit_card_generate(array $o, string $style)
 {
     return match ($style) {
-        'esquela' => obit_card_esquela($o),
-        default   => obit_card_cinta($o),
+        'esquela'  => obit_card_esquela($o),
+        'catolica' => obit_card_catolica($o),
+        default    => obit_card_cinta($o),
     };
 }
 

@@ -28,7 +28,8 @@ $aboutJsonLd = '<script type="application/ld+json">' . json_encode([
     'url'        => $canonical,
     'description'=> $desc,
     'mainEntity' => [
-        '@type'        => 'FuneralHome',
+        '@type'        => 'LocalBusiness', // schema.org no tiene FuneralHome
+        'additionalType' => 'https://en.wikipedia.org/wiki/Funeral_home',
         'name'         => 'Funeraria del Zulia',
         'url'          => site_url(),
         'foundingDate' => '1942',

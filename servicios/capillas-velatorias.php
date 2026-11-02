@@ -5,7 +5,7 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('servicios/capillas-velatorias.php');
 $img       = site_url('servicios/img/capillas-velatorias.svg');
 $title     = 'Capillas Velatorias en Maracaibo | Funeraria del Zulia';
-$desc      = 'Capillas velatorias en Maracaibo: salas amplias, climatizadas y serenas, con privacidad para la familia y atención 24 horas.';
+$desc      = 'Capillas y salas velatorias en Maracaibo (salas de velación o tanatorio): amplias, climatizadas y serenas, con privacidad para la familia y atención 24 horas.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Capillas Velatorias', $desc, $canonical, $img)
@@ -26,6 +26,7 @@ require __DIR__ . '/../partials/site_header.php';
 
         <h1>Capillas Velatorias en Maracaibo</h1>
         <p class="service-lead">Nuestras <strong>capillas velatorias en Maracaibo</strong> son espacios amplios, climatizados y serenos, diseñados para garantizar el confort y la privacidad de la familia durante la vigilia. Un lugar digno para reunirse, acompañarse y despedir con paz.</p>
+        <p>También se les conoce como <strong>salas velatorias</strong>, salas de velación o tanatorio: el lugar donde la familia y los amigos acompañan al ser querido antes del sepelio o la cremación.</p>
 
         <h2>Comodidades de nuestras salas para el acto velatorio</h2>
         <ul class="service-list">

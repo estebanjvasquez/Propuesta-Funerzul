@@ -49,7 +49,7 @@ if (!empty($o['birth_year'])) $jsonld['birthDate'] = (string)$o['birth_year'];
 $jsonld['subjectOf'] = [
     '@type'     => 'WebPage',
     'name'      => $title,
-    'publisher' => ['@type' => 'FuneralService', 'name' => 'Funeraria del Zulia', 'url' => site_url()],
+    'publisher' => ['@type' => 'Organization', 'name' => 'Funeraria del Zulia', 'url' => site_url()],
 ];
 
 // Vista previa para redes: imagen 1200x630 propia del obituario (obituario_og.php),
