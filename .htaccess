@@ -15,6 +15,9 @@ Options -Indexes -MultiViews
 # cambia.
 <IfModule mod_setenvif.c>
     SetEnvIfNoCase Host "^(nuevo\.funerariadelzulia\.com|(www\.)?legadoholding\.com)$" FDZ_NOINDEX
+    # La carpeta del ensayo vive dentro de public_html: también se ve como
+    # www.funerariadelzulia.com/nuevo.funerariadelzulia.com/ (verificado 2026-11-02).
+    SetEnvIfNoCase Request_URI "^/nuevo\.funerariadelzulia\.com(/|$)" FDZ_NOINDEX
 </IfModule>
 <IfModule mod_headers.c>
     Header always set X-Robots-Tag "noindex, nofollow" env=FDZ_NOINDEX
