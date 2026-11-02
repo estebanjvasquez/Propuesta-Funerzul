@@ -51,7 +51,8 @@ try {
 }
 
 $expected = ['users', 'obituary_templates', 'obituaries', 'condolences', 'flower_offerings', 'app_settings', 'audit_log',
-    'articles', 'doctors', 'faqs', 'testimonials', 'auth_throttle', 'obituary_link_clicks'];
+    'articles', 'doctors', 'faqs', 'testimonials', 'auth_throttle', 'obituary_link_clicks',
+    'interest_daily', 'interest_responses'];
 foreach ($expected as $t) {
     try {
         $c = (int)db()->query("SELECT COUNT(*) FROM `$t`")->fetchColumn();

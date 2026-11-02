@@ -232,6 +232,7 @@ function switchTab(tab, btn) {
     if (tab === 'plantillas') loadTemplates(true);
     if (tab === 'config') loadSettings();
     if (tab === 'usuarios') loadUsers();
+    if (tab === 'interes') loadInterest();
     if (tab === 'manual' && typeof renderManual === 'function') renderManual();
 }
 
@@ -1392,6 +1393,102 @@ async function deleteUser(id) {
 }
 
 // ==========================================================================
+//  INTERÉS DEL PÚBLICO EN SERVICIOS EN EVALUACIÓN (api/interest.php)
+//  docs/specs/2026-11-02-interes-servicios-nuevos.md
+// ==========================================================================
+async function loadInterest() {
+    const root = $('#interestRoot');
+    const days = $('#interestDays').value;
+    root.innerHTML = '<p class="empty-row">Cargando…</p>';
+    try {
+        const r = await API.req('interest.php?action=stats&days=' + encodeURIComponent(days));
+        renderInterest(r);
+    } catch (e) {
+        root.innerHTML = '<p class="empty-row">' + escapeHtml(e.message) + '</p>';
+    }
+}
+
+function renderInterest(r) {
+    const pct = (n, t) => t ? Math.round(n * 100 / t) + ' %' : '—';
+    const svc = r.services.map(s => {
+        const bars = s.breakdown.map(q => {
+            // En preguntas de varias opciones el porcentaje es sobre el total de respuestas.
+            const total = q.multi ? s.responses : q.options.reduce((a, o) => a + o.count, 0);
+            return `<div class="interest-q-admin">
+                <h4>${escapeHtml(q.label)}</h4>
+                ${q.options.map(o => `<div class="interest-bar-row">
+                    <span class="interest-bar-label">${escapeHtml(o.label)}</span>
+                    <span class="interest-bar"><span style="width:${total ? Math.round(o.count * 100 / total) : 0}%"></span></span>
+                    <span class="interest-bar-n">${o.count} <small>${pct(o.count, total)}</small></span>
+                </div>`).join('')}
+            </div>`;
+        }).join('');
+        return `<div class="interest-service">
+            <div class="admin-toolbar">
+                <h3>${escapeHtml(s.label)} <a class="interest-page-link" href="${escapeHtml(s.page)}" target="_blank" rel="noopener">ver página ↗</a></h3>
+                <div class="admin-actions">
+                    <button class="btn btn-outline btn-sm" onclick="openInterestResponses('${s.key}', ${escapeAttr(s.label)})">Ver respuestas</button>
+                    <a class="btn btn-outline btn-sm" href="api/interest.php?action=responses&amp;service=${encodeURIComponent(s.key)}&amp;format=csv">Descargar para Excel (CSV)</a>
+                </div>
+            </div>
+            <div class="dashboard-stats">
+                <div class="stat-card"><span class="stat-label">Personas que vieron la página</span><span class="stat-value">${s.visitors}</span><span class="stat-sub">${s.visits} visitas</span></div>
+                <div class="stat-card"><span class="stat-label">Abrieron la pregunta frecuente</span><span class="stat-value">${s.faq_opens}</span></div>
+                <div class="stat-card"><span class="stat-label">Respondieron el formulario</span><span class="stat-value">${s.responses}</span><span class="stat-sub">${s.with_contact} dejaron sus datos</span></div>
+                <div class="stat-card"><span class="stat-label">Clics en WhatsApp o Llamar</span><span class="stat-value">${s.whatsapp + s.calls}</span><span class="stat-sub">${s.whatsapp} WhatsApp · ${s.calls} llamadas</span></div>
+            </div>
+            <div class="interest-breakdown">${s.responses ? bars : '<p class="setting-help">Todavía no hay respuestas al formulario en este periodo.</p>'}</div>
+        </div>`;
+    }).join('');
+
+    const faqRows = r.faqs.map(f => `<tr>
+        <td>${escapeHtml(f.question)}${f.interest_key ? ' <span class="status-badge badge-amber">servicio en evaluación</span>' : ''}${f.is_active ? '' : ' <span class="status-badge">en pausa</span>'}</td>
+        <td class="num">${f.opens}</td>
+    </tr>`).join('');
+
+    $('#interestRoot').innerHTML = svc + `
+        <div class="interest-service">
+            <h3>Preguntas frecuentes más consultadas</h3>
+            <p class="setting-help">Cuántas personas abrieron cada pregunta de la portada (una vez por visita). Muestra qué dudas tiene el público.</p>
+            <div class="table-responsive"><table class="admin-table">
+                <thead><tr><th>Pregunta</th><th class="num">Aperturas</th></tr></thead>
+                <tbody>${faqRows || '<tr><td colspan="2" class="empty-row">Sin preguntas.</td></tr>'}</tbody>
+            </table></div>
+        </div>`;
+}
+
+async function openInterestResponses(key, label) {
+    try {
+        const r = await API.req('interest.php?action=responses&service=' + encodeURIComponent(key));
+        const head = r.questions.map(q => `<th>${escapeHtml(q.label)}</th>`).join('');
+        const rows = r.items.map(i => `<tr>
+            <td>${fmtDate(i.created_at)}</td>
+            ${r.questions.map(q => `<td>${escapeHtml(i.answers[q.key] || '')}</td>`).join('')}
+            <td>${escapeHtml(i.full_name || '')}<div class="row-sub">${escapeHtml([i.phone, i.email].filter(Boolean).join(' · '))}</div>${i.comment ? `<div class="row-sub">«${escapeHtml(i.comment)}»</div>` : ''}</td>
+            <td>${escapeHtml(i.source || '')}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteInterestResponse(${i.id}, '${key}', ${escapeAttr(label)})">Eliminar</button></td>
+        </tr>`).join('');
+        openModalWide('Respuestas: ' + label, `
+            <p class="setting-help">Quienes dejaron teléfono o correo autorizaron que se les contacte sobre este servicio. Si una persona pide que borren sus datos, elimine su respuesta.</p>
+            <div class="table-responsive"><table class="admin-table">
+                <thead><tr><th>Fecha</th>${head}<th>Contacto</th><th>Origen</th><th></th></tr></thead>
+                <tbody>${rows || `<tr><td colspan="${r.questions.length + 4}" class="empty-row">Todavía no hay respuestas.</td></tr>`}</tbody>
+            </table></div>`);
+    } catch (e) { toast(e.message); }
+}
+
+async function deleteInterestResponse(id, key, label) {
+    if (!confirmAction('¿Eliminar esta respuesta? No se puede deshacer.')) return;
+    try {
+        await API.req('interest.php?action=delete_response', { method: 'POST', json: { id } });
+        toast('Respuesta eliminada.');
+        closeModal();
+        openInterestResponses(key, label);
+        loadInterest();
+    } catch (e) { toast(e.message); }
+}
+
+// ==========================================================================
 //  INICIALIZACIÓN
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -1408,6 +1505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#newTestimonialBtn').addEventListener('click', newTestimonial);
     $('#newTplBtn').addEventListener('click', newTemplate);
     $('#newUserBtn').addEventListener('click', newUser);
+    $('#interestDays').addEventListener('change', loadInterest);
     $('#settingsForm').addEventListener('submit', saveSettings);
     $('#obitSearch').addEventListener('input', () => { clearTimeout(obitSearchTimer); obitSearchTimer = setTimeout(loadObituaries, 300); });
     $('#docSearch').addEventListener('input', () => { clearTimeout(docSearchTimer); docSearchTimer = setTimeout(loadDoctors, 300); });

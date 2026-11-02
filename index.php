@@ -24,6 +24,7 @@ if (is_file($cfgFile)) {
         $GLOBALS['CONFIG'] = require $cfgFile;
         require_once __DIR__ . '/api/lib/db.php';
         require_once __DIR__ . '/api/lib/helpers.php';
+        require_once __DIR__ . '/api/lib/interest.php';
         $secObituarios       = site_section_enabled('obituarios');
         $secDirectorioMedico = site_section_enabled('directorio_medico');
         $secRecursos         = site_section_enabled('recursos');
@@ -31,9 +32,17 @@ if (is_file($cfgFile)) {
         $secNosotros         = site_section_enabled('nosotros');
         $testimonios         = active_testimonials();
         $portalUrl           = client_portal_url();
-        $faqs = $secFaqs ? db()->query(
-            "SELECT question, answer FROM faqs WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
-        )->fetchAll(PDO::FETCH_ASSOC) : [];
+        if ($secFaqs) {
+            try { // interest_key: migración 21 (interés en servicios en evaluación)
+                $faqs = db()->query(
+                    "SELECT id, question, answer, interest_key FROM faqs WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
+                )->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                $faqs = db()->query(
+                    "SELECT id, question, answer FROM faqs WHERE is_active = 1 ORDER BY sort_order ASC, id ASC"
+                )->fetchAll(PDO::FETCH_ASSOC);
+            }
+        }
     } catch (\Throwable $e) {
         $faqs = [];
     }
@@ -68,7 +77,7 @@ function fz_site_url(string $path = ''): string {
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="styles.css?v=20261102-1">
+    <link rel="stylesheet" href="styles.css?v=20261102-2">
 
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -452,12 +461,12 @@ function fz_site_url(string $path = ''): string {
             <!-- Las preguntas se administran desde el panel (pestaña Preguntas) y el servidor las renderiza desde la BD. -->
             <div class="faq-list" id="faqList">
                 <?php foreach ($faqs as $f): ?>
-                <details class="faq-item">
+                <details class="faq-item"<?php if (!empty($f['id'])): ?> data-faq-id="<?= (int)$f['id'] ?>"<?php endif; ?><?php if (!empty($f['interest_key'])): ?> data-interest="<?= fz_e($f['interest_key']) ?>"<?php endif; ?>>
                     <summary>
                         <?= fz_e($f['question']) ?>
                         <svg class="arrow-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                     </summary>
-                    <div class="faq-content"><?= fz_e($f['answer']) ?></div>
+                    <div class="faq-content"><?= fz_e($f['answer']) ?><?php $iPage = (!empty($f['interest_key']) && defined('INTEREST_SERVICES')) ? (INTEREST_SERVICES[$f['interest_key']]['page'] ?? null) : null; if ($iPage): ?> <a href="<?= fz_e($iPage) ?>#avisenme" class="faq-interest-link">Quiero que me avisen →</a><?php endif; ?></div>
                 </details>
                 <?php endforeach; ?>
             </div>
@@ -763,6 +772,6 @@ function fz_site_url(string $path = ''): string {
     <!-- 12. TOAST NOTIFICATION -->
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="app.js?v=20261102-1"></script>
+    <script src="app.js?v=20261102-2"></script>
 </body>
 </html>

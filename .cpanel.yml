@@ -2,8 +2,11 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/legadoholding/public_html/funerzul
-    # Cuenta de FDZ (migración a www.funerariadelzulia.com): ensayo en public_html/nuevo.funerariadelzulia.com (cPanel no deja raíces fuera de public_html); en el corte, public_html.
-    - 'if [ "$(/usr/bin/id -un)" = "funerariadelzuli" ]; then export DEPLOYPATH=/home/funerariadelzuli/public_html/nuevo.funerariadelzulia.com; fi'
+    # Cuenta de FDZ (www.funerariadelzulia.com, docs/specs/2026-10-28-migracion-dominio-final.md):
+    # mientras WordPress siga en public_html, despliega en la carpeta de ensayo; en cuanto
+    # existe public_html/_wp-anterior (paso 4.1-4.2 del corte: WordPress ya movido),
+    # despliega en public_html. Así el corte no necesita cambiar este archivo.
+    - 'if [ "$(/usr/bin/id -un)" = "funerariadelzuli" ]; then if [ -d /home/funerariadelzuli/public_html/_wp-anterior ]; then export DEPLOYPATH=/home/funerariadelzuli/public_html; else export DEPLOYPATH=/home/funerariadelzuli/public_html/nuevo.funerariadelzulia.com; fi; fi'
     - /bin/mkdir -p $DEPLOYPATH
     - /bin/cp -R index.php crematorios-del-zulia.php obituarios.php obituario.php obituario_og.php o.php nosotros.php directorio-medico.php medico.php recursos.php recurso.php sitemap.php robots.txt .htaccess styles.css app.js admin.js admin-manual.js admin.html favicon.png logo.png logo-horizontal-white.png logo-seal-footer.png api partials servicios planes img assets uploads cache manual $DEPLOYPATH
     - /bin/rm -f $DEPLOYPATH/index.html

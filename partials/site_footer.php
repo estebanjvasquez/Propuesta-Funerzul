@@ -61,6 +61,6 @@ $base = ($PAGE['base'] ?? ''); ?>
     </a>
 
     <div id="toast" class="toast">Notificación</div>
-    <script src="<?= $base ?>app.js?v=20261102-1"></script>
+    <script src="<?= $base ?>app.js?v=20261102-2"></script>
 </body>
 </html>

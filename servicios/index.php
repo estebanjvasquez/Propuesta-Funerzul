@@ -65,6 +65,8 @@ require __DIR__ . '/../partials/site_header.php';
     require __DIR__ . '/../partials/cta_pago_electronico.php';
     ?>
 
+    <p class="service-related service-soon-note">¿Busca <strong>cremación de mascotas</strong>? Estamos evaluando ofrecerla en Maracaibo: <a href="cremacion-mascotas.php">cuéntenos qué necesitaría</a>.</p>
+
     <p class="service-related" style="text-align:center">¿Desea organizarlo con anticipación? Conozca nuestros <a href="../planes/">Planes de Previsión Familiar</a>.</p>
 </main>
 <?php require __DIR__ . '/../partials/site_footer.php'; ?>

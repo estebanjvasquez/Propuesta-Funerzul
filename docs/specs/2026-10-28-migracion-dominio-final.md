@@ -1,5 +1,5 @@
 ---
-Estado: **Aprobado (2026-10-28)**, en preparación. Decisiones en la sección 3.
+Estado: **Aprobado (2026-10-28)**. **Corte autorizado por el cliente el 2026-11-02** (www y sin www). Decisiones en la sección 3.
 Objetivo: el sitio nuevo en línea **antes del 2 de noviembre de 2026** (fecha
 exacta del corte por confirmar). Calendario en la sección 3.1. Lo marcado
 "(verificar)" no se puede ver desde fuera del servidor.
@@ -117,8 +117,9 @@ subdominio (fase 4).
 2. `.cpanel.yml` elige la ruta según la cuenta que despliega (`id -un`,
    **hecho** 2026-10-28): en `legadoholding` sigue en `public_html/funerzul`;
    en `funerariadelzuli` va a `/home/funerariadelzuli/public_html/nuevo.funerariadelzulia.com`. Así la misma
-   rama sirve a las dos cuentas durante el ensayo. En el corte, cambiar esa línea
-   a `/home/funerariadelzuli/public_html`. Desde ese momento la cuenta de
+   rama sirve a las dos cuentas durante el ensayo. **Desde el 2026-11-02 el cambio
+   es automático**: si existe `public_html/_wp-anterior/` (WordPress ya movido),
+   despliega en `/home/funerariadelzuli/public_html`. Desde ese momento la cuenta de
    Legado deja de desplegar; su carpeta `funerzul/` pasa a ser solo
    redirección (fase 4).
 3. Desplegar con "Deploy HEAD Commit".
@@ -223,8 +224,10 @@ Hacerlo en el corte; nunca dejar los dos activos.
       `license.txt`, etc.) a `_wp-anterior/`. **No mover** `.well-known/` (lo usa
       el certificado SSL), `cgi-bin/` ni la carpeta del ensayo
       `nuevo.funerariadelzulia.com/`.
-   3. Cambiar en el repo `DEPLOYPATH` a `/home/funerariadelzuli/public_html`, hacer
-      push y Deploy HEAD Commit en la cuenta de FDZ.
+   3. cPanel → Git Version Control (cuenta de FDZ) → **Update from Remote** y
+      **Deploy HEAD Commit**. No hay que tocar el repo: como ya existe
+      `_wp-anterior/`, `.cpanel.yml` despliega solo en `public_html/`. Comprobar
+      que aparecieron `public_html/index.php` (del sitio nuevo) y `public_html/api/`.
    4. Copiar a `public_html/` el `config.php` definitivo (en `api/`) y
       `uploads/` (1.4).
 5. Cloudflare → **Purgar todo el caché**.

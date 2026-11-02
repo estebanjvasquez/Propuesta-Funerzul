@@ -22,6 +22,14 @@ Options -Indexes -MultiViews
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Dominio sin www -> www (301), conservando ruta y parámetros. Hasta el corte
+    # lo hacía WordPress (x-redirect-by: WordPress, verificado 2026-11-02), no
+    # Cloudflare: sin esta regla, funerariadelzulia.com serviría una copia del
+    # sitio. http -> https lo hace Cloudflare ("Always Use HTTPS").
+    RewriteCond %{HTTP_HOST} ^funerariadelzulia\.com$ [NC]
+    RewriteRule ^(.*)$ https://www.funerariadelzulia.com/$1 [R=301,L,NE]
+
     # Las redirecciones toman la carpeta real de la petición (%1) en vez de "/"
     # fijo: el sitio puede vivir en una subcarpeta (hoy /funerzul/ dentro de
     # legadoholding.com) y "/" mandaba a la raíz del dominio -- es decir, a

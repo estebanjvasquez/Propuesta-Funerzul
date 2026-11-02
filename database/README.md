@@ -70,6 +70,12 @@ disco y backend PHP, todo junto).
   variante de la Cinta Conmemorativa con cruz dorada y rayos de luz. Inserta por
   nombre (sin id fijo), sin predeterminar. Idempotente. Ver
   `docs/specs/2026-11-02-plantillas-obituario-por-credo.md`.
+- **`21_interes_servicios.sql`** — Medición del interés del público en servicios
+  que la empresa aún no ofrece (primero: cremación de mascotas). Tablas
+  `interest_daily` (contadores agregados, sin datos personales) e
+  `interest_responses` (formulario "Quiero que me avisen"), columna
+  `faqs.interest_key` y la pregunta frecuente "¿Ofrecen cremación de mascotas?".
+  Idempotente. Ver `docs/specs/2026-11-02-interes-servicios-nuevos.md`.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -116,7 +122,8 @@ disco y backend PHP, todo junto).
    `13_plantilla_cinta_imagen_real.sql`, `14_portal_clientes.sql`,
    `15_obituarios_ajustes_cliente.sql`, `16_faq_aseguradoras.sql`,
    `17_enlaces_redes_y_analitica.sql`, `18_sso_prevision.sql`,
-   `19_nosotros_testimonios.sql` y `20_plantilla_catolica.sql` (en ese orden).
+   `19_nosotros_testimonios.sql`, `20_plantilla_catolica.sql` y
+   `21_interes_servicios.sql` (en ese orden).
 
 ### 3. Iniciar sesión y asegurar el admin
 

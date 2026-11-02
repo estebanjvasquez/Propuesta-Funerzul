@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-label="Cremación de mascotas en Maracaibo - Funeraria del Zulia">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1F4E79"/>
+      <stop offset="1" stop-color="#163A5F"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <circle cx="600" cy="250" r="185" fill="#2F6DB3" opacity="0.25"/>
+  <circle cx="600" cy="250" r="135" fill="#b8860b" opacity="0.18"/>
+  <g fill="#ffffff">
+    <ellipse cx="600" cy="292" rx="62" ry="52"/>
+    <ellipse cx="528" cy="210" rx="24" ry="32" transform="rotate(-20 528 210)"/>
+    <ellipse cx="575" cy="178" rx="24" ry="33" transform="rotate(-6 575 178)"/>
+    <ellipse cx="625" cy="178" rx="24" ry="33" transform="rotate(6 625 178)"/>
+    <ellipse cx="672" cy="210" rx="24" ry="32" transform="rotate(20 672 210)"/>
+  </g>
+  <rect x="540" y="430" width="120" height="4" fill="#b8860b"/>
+  <text x="600" y="498" text-anchor="middle" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="bold">Cremación de Mascotas</text>
+  <text x="600" y="543" text-anchor="middle" fill="#C3DAEE" font-family="Arial, Helvetica, sans-serif" font-size="23">Próximamente · Maracaibo, Estado Zulia</text>
+</svg>

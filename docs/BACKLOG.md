@@ -41,6 +41,9 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 | Testimonios en carrusel | Hecho, falta desplegar | `partials/testimonios.php` + `initTestimonialsCarousel` en `app.js`: 3 visibles en escritorio, 1 en celular, flechas, puntos y avance cada 7 s. Probado en navegador. |
 | Acceso de administradores en el pie de página | Hecho, falta desplegar | Enlace discreto "Acceso administradores" (`rel="nofollow"`) en el pie de la portada y de las demás páginas; no está en el menú. |
 | Plantillas de obituario por credo | Católica hecha; resto propuesto | "Cruz de Luz (Católica)": importar `database/20_plantilla_catolica.sql` y probar la tarjeta PNG en el servidor (no se pudo ejecutar PHP local). Propuestas evangélica, judía y sin credo en `docs/specs/2026-11-02-plantillas-obituario-por-credo.md`, esperando visto bueno. Se corrigió "En memoria de" invisible en la Cinta. |
+| Medir el interés en cremación de mascotas (y servicios relacionados) | Hecho, falta desplegar | `docs/specs/2026-11-02-interes-servicios-nuevos.md`. Importar `database/21_interes_servicios.sql`. Página "Próximamente" `servicios/cremacion-mascotas.php` con formulario, pregunta frecuente con enlace, contador de aperturas de todas las FAQ, pestaña **Sistema → Interés del público** con descarga CSV. Probado en navegador con API simulada; PHP sin probar contra servidor real. Revisar resultados a los 60 y 90 días del corte. |
+| Manual de usuario al día | Hecho (2026-11-02) | Capítulos nuevos/actualizados: acceso desde el pie, alta de usuarios en Previsión Funeraria paso a paso, tarjetas 🎗️/✝/📰, plantilla católica, secciones Nosotros/Testimonios, Interés del público. Faltan capturas de lo nuevo (regenerar tras el corte). |
+| Plan de onboarding del personal para la dirección | Hecho (2026-11-02) | Publicado como artifact para la reunión con la dirección. Usuarios solo desde Previsión Funeraria. |
 | SEO: por qué no aparece mejor en Google | Diagnóstico hecho | `docs/specs/2026-11-02-seo-search-console.md`. Corregido: schema.org inválido y copias de prueba indexables. Pendiente: publicar en el dominio, Search Console el día del corte, Google Business Profile, confirmar la propiedad de Analytics ("Legado Holding"), FAQ sobre sepelio, páginas de urnas/mascotas solo si se ofrecen. |
 
 ### Comentarios del cliente (2026-10-27) — pendientes
@@ -89,7 +92,7 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 | Tarea | Estado | Notas |
 |---|---|---|
-| **Corte a `www.funerariadelzulia.com`** — objetivo: en línea antes del 2-nov | En preparación | Decisiones respondidas (cuentas separadas, dominio principal, tienda sin uso, Nosotros + Testimonios). Calendario y pasos: `docs/specs/2026-10-28-migracion-dominio-final.md`, sección 3.1. |
+| **Corte a `www.funerariadelzulia.com`** (www y sin www) | **Autorizado por el cliente (2026-11-02)** — se ejecuta en cPanel | Pasos: `docs/specs/2026-10-28-migracion-dominio-final.md`, sección 7. `.cpanel.yml` ya despliega solo en `public_html/` cuando existe `public_html/_wp-anterior/`. **Nuevo:** la redirección sin www → www la hacía WordPress; ahora la hace `.htaccess`. Antes del corte: borrar `manual@funerariadelzulia.com`, importar migraciones 19-21, `config.php` de producción. |
 | Importar `19_nosotros_testimonios.sql` y revisar Nosotros, Testimonios y el menú nuevo en el sitio de prueba | Pendiente | Código del 2026-10-28, sin probar contra PHP/MySQL real. |
 | Confirmar la IP real de los visitantes detrás de Cloudflare | Pendiente | Si `REMOTE_ADDR` es de Cloudflare, el límite de intentos del login de emergencia agrupa a todos. Plan, punto 0.6. |
 | Redirecciones 301 de las URLs de WordPress | Hecho (2026-10-28) | En `.htaccess`; tabla en la sección 1.6 del plan. |

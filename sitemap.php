@@ -30,7 +30,8 @@ if (site_section_enabled('nosotros')) sm_url(site_url('nosotros.php'), SITEMAP_S
 
 // Servicios
 sm_url(site_url('servicios/'), SITEMAP_STATIC_LASTMOD, 'monthly', '0.9');
-foreach (['sepelio-tradicional', 'cremacion', 'traslados', 'capillas-velatorias'] as $s) {
+// cremacion-mascotas: servicio en evaluación (mide búsquedas en Search Console; retirar si se descarta).
+foreach (['sepelio-tradicional', 'cremacion', 'traslados', 'capillas-velatorias', 'cremacion-mascotas'] as $s) {
     sm_url(site_url('servicios/' . $s . '.php'), SITEMAP_STATIC_LASTMOD, 'monthly', '0.8');
 }
 

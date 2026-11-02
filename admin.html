@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Panel de Administración | Funeraria del Zulia</title>
     <link rel="icon" href="favicon.png?v=20260913-1" type="image/png">
-    <link rel="stylesheet" href="styles.css?v=20261102-1">
+    <link rel="stylesheet" href="styles.css?v=20261102-2">
 </head>
 <body class="admin-body">
 
@@ -73,6 +73,7 @@
                         <div class="admin-menu-panel" id="menu-sistema" hidden>
                             <button class="admin-tab-btn" data-tab="config" type="button">Configuración</button>
                             <button class="admin-tab-btn" data-tab="usuarios" type="button">Usuarios</button>
+                            <button class="admin-tab-btn" data-tab="interes" type="button">Interés del público</button>
                         </div>
                     </div>
                 </nav>
@@ -331,6 +332,21 @@
                 </div>
             </section>
 
+            <!-- ---------- INTERÉS DEL PÚBLICO EN SERVICIOS NUEVOS (api/interest.php) ---------- -->
+            <section id="tab-interes" class="admin-tab-panel" hidden>
+                <div class="admin-toolbar">
+                    <h2>Interés del público</h2>
+                    <select id="interestDays" class="form-control interest-days" aria-label="Periodo">
+                        <option value="7">Últimos 7 días</option>
+                        <option value="30" selected>Últimos 30 días</option>
+                        <option value="90">Últimos 90 días</option>
+                        <option value="0">Desde el inicio</option>
+                    </select>
+                </div>
+                <p class="setting-help faq-admin-note">Cuánta gente muestra interés en servicios que la empresa <strong>todavía no ofrece</strong>, para decidir si vale la pena invertir en ellos. Los contadores no guardan datos personales y no cuentan robots. Las búsquedas en Google que llevan a estas páginas se ven en <strong>Search Console</strong> (Rendimiento → filtrar por página).</p>
+                <div id="interestRoot"></div>
+            </section>
+
             <!-- ---------- MANUAL DE USUARIO (contenido en admin-manual.js) ---------- -->
             <section id="tab-manual" class="admin-tab-panel" hidden>
                 <div id="manualRoot"></div>
@@ -354,7 +370,7 @@
 
     <div id="toast" class="toast">Notificación</div>
 
-    <script src="admin-manual.js?v=20261028-1"></script>
-    <script src="admin.js?v=20261102-1"></script>
+    <script src="admin-manual.js?v=20261102-2"></script>
+    <script src="admin.js?v=20261102-2"></script>
 </body>
 </html>

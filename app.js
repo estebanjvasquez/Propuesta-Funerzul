@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // desde la base de datos; no se cargan por JS para no sobrescribir ese contenido.
 
     document.querySelectorAll('[data-carousel]').forEach(initTestimonialsCarousel);
+    initFaqTracking();
 
     // Cierre de modales al pulsar fuera
     window.addEventListener('click', (e) => {
@@ -308,3 +309,26 @@ function showToast(message) {
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
     document.addEventListener('click', (e) => { if (!header.contains(e.target)) setOpen(false); });
 })();
+
+// ==========================================================================
+//  Preguntas frecuentes: cuenta qué preguntas abre el público (contador
+//  agregado por pregunta y día, sin datos personales; una vez por sesión).
+//  Las que llevan data-interest suman además al servicio en evaluación.
+//  Ver docs/specs/2026-11-02-interes-servicios-nuevos.md.
+// ==========================================================================
+function initFaqTracking() {
+    document.querySelectorAll('details.faq-item[data-faq-id]').forEach(d => {
+        d.addEventListener('toggle', () => {
+            if (!d.open) return;
+            const subject = 'faq:' + d.dataset.faqId;
+            try { if (sessionStorage.getItem('fz_' + subject)) return; sessionStorage.setItem('fz_' + subject, '1'); } catch (e) { /* sin sessionStorage: cuenta igual */ }
+            fetch(API_BASE + 'interest.php?action=track', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+                body: JSON.stringify({ subject, event: 'open' }),
+            }).catch(() => {});
+            if (typeof window.gtag === 'function') {
+                window.gtag('event', 'faq_abierta', { pregunta: (d.querySelector('summary')?.textContent || '').trim().slice(0, 100), servicio: d.dataset.interest || '' });
+            }
+        });
+    });
+}
