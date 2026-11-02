@@ -40,7 +40,7 @@ require __DIR__ . '/../partials/site_header.php';
         <p>Realizamos traslados desde cualquier municipio del Zulia —San Francisco, Cabimas, Ciudad Ojeda, Santa Bárbara, Machiques y más— hacia nuestras instalaciones en Maracaibo, así como traslados hacia otras regiones del país. Cumplimos estrictamente con la normativa de sanidad vigente en cada etapa.</p>
 
         <h2>Integre el traslado con otros servicios</h2>
-        <p>Una vez en Maracaibo, su familia puede continuar con un <a href="sepelio-tradicional.php">acto velatorio tradicional</a>, la <a href="cremacion.php">cremación</a> en nuestro crematorio, o el uso de nuestras <a href="capillas-velatorias.php">capillas velatorias</a>. También puede prever este servicio con un <a href="../planes/">plan de previsión familiar</a>.</p>
+        <p>Una vez en Maracaibo, su familia puede continuar con un <a href="funeral-tradicional.php">acto velatorio tradicional</a>, la <a href="cremacion.php">cremación</a> en nuestro crematorio, o el uso de nuestras <a href="capillas-velatorias.php">capillas velatorias</a>. También puede prever este servicio con un <a href="../planes/">plan de previsión familiar</a>.</p>
 
         <?php
         $ctaHeading = 'Coordine un traslado ahora';
@@ -54,7 +54,7 @@ require __DIR__ . '/../partials/site_header.php';
         <div class="service-related">
             <h3>Otros servicios</h3>
             <ul>
-                <li><a href="sepelio-tradicional.php">Sepelio Tradicional</a></li>
+                <li><a href="funeral-tradicional.php">Funeral Tradicional</a></li>
                 <li><a href="cremacion.php">Cremación en Maracaibo</a></li>
                 <li><a href="capillas-velatorias.php">Capillas Velatorias</a></li>
                 <li><a href="../planes/">Planes de Previsión Familiar</a></li>

@@ -5,7 +5,7 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('servicios/capillas-velatorias.php');
 $img       = site_url('servicios/img/capillas-velatorias.svg');
 $title     = 'Capillas Velatorias en Maracaibo | Funeraria del Zulia';
-$desc      = 'Capillas y salas velatorias en Maracaibo (salas de velación o tanatorio): amplias, climatizadas y serenas, con privacidad para la familia y atención 24 horas.';
+$desc      = 'Capillas y salas velatorias en Maracaibo para el acto velatorio: amplias, climatizadas y serenas, con privacidad para la familia y atención 24 horas.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Capillas Velatorias', $desc, $canonical, $img)
@@ -26,7 +26,7 @@ require __DIR__ . '/../partials/site_header.php';
 
         <h1>Capillas Velatorias en Maracaibo</h1>
         <p class="service-lead">Nuestras <strong>capillas velatorias en Maracaibo</strong> son espacios amplios, climatizados y serenos, diseñados para garantizar el confort y la privacidad de la familia durante la vigilia. Un lugar digno para reunirse, acompañarse y despedir con paz.</p>
-        <p>También se les conoce como <strong>salas velatorias</strong>, salas de velación o tanatorio: el lugar donde la familia y los amigos acompañan al ser querido antes del sepelio o la cremación.</p>
+        <p>También se les conoce como <strong>salas velatorias</strong> o tanatorio: el lugar del acto velatorio, donde la familia y los amigos acompañan al ser querido antes de la inhumación o la cremación.</p>
 
         <h2>Comodidades de nuestras salas para el acto velatorio</h2>
         <ul class="service-list">
@@ -41,7 +41,7 @@ require __DIR__ . '/../partials/site_header.php';
         <p>Sabemos lo importante que es contar con un lugar adecuado para reunir a quienes acompañan a la familia. Nuestras capillas, ubicadas en Maracaibo, ofrecen el entorno sereno que ese momento merece, con personal atento a cada necesidad durante la vigilia.</p>
 
         <h2>Combine el acto velatorio con el servicio que prefiera</h2>
-        <p>El acto velatorio puede formar parte de un <a href="sepelio-tradicional.php">sepelio tradicional</a> o realizarse como paso previo a la <a href="cremacion.php">cremación</a>. Si el fallecimiento ocurrió en otra ciudad, coordinamos el <a href="traslados.php">traslado</a>. Considere también nuestros <a href="../planes/">planes de previsión</a> para dejarlo todo organizado con anticipación.</p>
+        <p>El acto velatorio puede formar parte de un <a href="funeral-tradicional.php">funeral tradicional</a> o realizarse como paso previo a la <a href="cremacion.php">cremación</a>. Si el fallecimiento ocurrió en otra ciudad, coordinamos el <a href="traslados.php">traslado</a>. Considere también nuestros <a href="../planes/">planes de previsión</a> para dejarlo todo organizado con anticipación.</p>
 
         <?php
         $ctaHeading = 'Reserve una capilla velatoria';
@@ -55,7 +55,7 @@ require __DIR__ . '/../partials/site_header.php';
         <div class="service-related">
             <h3>Otros servicios</h3>
             <ul>
-                <li><a href="sepelio-tradicional.php">Sepelio Tradicional</a></li>
+                <li><a href="funeral-tradicional.php">Funeral Tradicional</a></li>
                 <li><a href="cremacion.php">Cremación en Maracaibo</a></li>
                 <li><a href="traslados.php">Traslados Nacionales</a></li>
                 <li><a href="../planes/">Planes de Previsión Familiar</a></li>

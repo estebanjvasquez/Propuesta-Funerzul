@@ -65,7 +65,7 @@ $waText = 'Hola, me interesa el servicio de cremación de mascotas.';
             <h3>Nuestros servicios</h3>
             <ul>
                 <li><a href="cremacion.php">Cremación en Maracaibo</a></li>
-                <li><a href="sepelio-tradicional.php">Sepelio Tradicional</a></li>
+                <li><a href="funeral-tradicional.php">Funeral Tradicional</a></li>
                 <li><a href="capillas-velatorias.php">Capillas Velatorias</a></li>
                 <li><a href="../planes/">Planes de Previsión Familiar</a></li>
             </ul>

@@ -9,7 +9,7 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('planes/plan-vanguardia.php');
 $img       = site_url('planes/img/plan-vanguardia.svg');
 $title     = 'Plan Vanguardia de Previsión Funeraria | Funeraria del Zulia';
-$desc      = 'Plan Vanguardia: lo mejor de nuestros planes en el Zulia. Servicio funerario completo con ataúd, oficios religiosos y flores naturales, más cremación, bóveda aérea o inhumación. Padres hasta 80 años.';
+$desc      = 'Plan Vanguardia: lo mejor de nuestros planes en el Zulia. Servicio funerario completo, oficios religiosos y flores naturales, más cremación, bóveda aérea o inhumación. Padres hasta 80 años.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Plan Vanguardia de Previsión Funeraria', $desc, $canonical, $img, 'Plan de previsión funeraria')
@@ -28,7 +28,7 @@ require __DIR__ . '/../partials/site_header.php';
     <article class="service-detail-body">
         <img src="img/plan-vanguardia.svg" alt="Plan Vanguardia de previsión funeraria en Maracaibo — Funeraria del Zulia" class="service-hero-img" width="1200" height="600">
 
-        <h1>Plan Vanguardia de Previsión Funeraria <span class="plan-subtitle-inline">(Funeral completo + cremación, bóveda o inhumación)</span> <span class="inline-badge">Más elegido</span></h1>
+        <h1>Plan Vanguardia de Previsión Funeraria <span class="plan-subtitle-inline">(Funeral completo + cremación o gastos de inhumación)</span> <span class="inline-badge">Más elegido</span></h1>
         <p class="service-lead">El <strong>Plan Vanguardia</strong> es lo mejor de nuestros planes en el Estado Zulia: el <strong>servicio funerario completo en Funeraria del Zulia</strong>, con oficios religiosos y flores naturales, y además la <strong>cremación, la bóveda aérea o los gastos de inhumación</strong> en cementerio, a elección de la familia. Cubre a <strong>6 miembros de su familia</strong>, con los padres hasta los 80 años.</p>
 
         <h2>¿Qué incluye el Plan Vanguardia?</h2>

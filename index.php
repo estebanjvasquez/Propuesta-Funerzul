@@ -77,7 +77,7 @@ function fz_site_url(string $path = ''): string {
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="styles.css?v=20261102-2">
+    <link rel="stylesheet" href="styles.css?v=20261102-3">
 
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -231,14 +231,14 @@ function fz_site_url(string $path = ''): string {
         <div class="hero-overlay"></div>
         <div class="hero-angel-watermark" aria-hidden="true"></div>
         <div class="container">
-            <span class="hero-eyebrow">Desde 1942 · Más de 80 años acompañando a las familias zulianas</span>
+            <span class="hero-eyebrow">Desde 1942 · Honrando la vida</span>
             <h1 class="hero-title">
                 Funeraria del Zulia
-                <span>Servicios Funerarios y Previsión Familiar en Maracaibo</span>
+                <span>Servicios Funerarios y Previsión Familiar desde Maracaibo para toda Venezuela</span>
             </h1>
-            <p class="hero-vision">Hacemos de la despedida un homenaje a la vida.</p>
+            <p class="hero-vision">Hacemos de cada despedida un homenaje a la vida.</p>
             <p class="hero-desc">
-                Atención inmediata, servicio integral y acompañamiento continuo para las familias de Maracaibo y todo el Estado Zulia, con la mayor dignidad, empatía y respeto.
+                Atención inmediata, servicio integral y acompañamiento continuo para las familias de todo el Estado Zulia.
             </p>
             <div class="hero-actions">
                 <a href="tel:+584246950136" class="btn btn-primary btn-hero">
@@ -257,7 +257,7 @@ function fz_site_url(string $path = ''): string {
             <ul class="hero-trust">
                 <li><strong>24/7</strong> Atención inmediata</li>
                 <li><strong>+80 años</strong> de trayectoria</li>
-                <li><strong>Todo el Zulia</strong> Cobertura regional</li>
+                <li><strong>Desde el Zulia</strong> a toda Venezuela</li>
             </ul>
         </div>
     </section>
@@ -266,21 +266,21 @@ function fz_site_url(string $path = ''): string {
     <section id="servicios" class="section">
         <div class="container">
             <div class="section-header">
-                <h2>Nuestros Servicios Funerarios en Maracaibo</h2>
-                <p>Soluciones integrales diseñadas para honrar la memoria de sus seres queridos con la mayor solemnidad, respeto y cuidado en todo el Estado Zulia.</p>
+                <h2>Nuestros Servicios Funerarios</h2>
+                <p>Desde nuestra sede en Maracaibo, servimos a todos los venezolanos.</p>
             </div>
             
             <div class="services-grid">
-                <!-- Servicio 1: Sepelio Tradicional -->
-                <a class="service-card" href="servicios/sepelio-tradicional.php">
+                <!-- Servicio 1: Funeral Tradicional -->
+                <a class="service-card" href="servicios/funeral-tradicional.php">
                     <div class="service-icon">
                         <!-- Icono Iglesia / Templo -->
                         <svg viewBox="0 0 24 24">
                             <path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2zm0 7.5c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5z"/>
                         </svg>
                     </div>
-                    <h3 class="service-title">Sepelio Tradicional</h3>
-                    <p class="service-desc">Ceremonias completas que respetan plenamente sus creencias y tradiciones familiares, brindando un espacio de paz y recogimiento para la despedida.</p>
+                    <h3 class="service-title">Funeral Tradicional en Maracaibo</h3>
+                    <p class="service-desc">Acto velatorio solemne y respetuoso, fiel a sus creencias y tradiciones familiares, en amplias capillas y con atención las 24 horas.</p>
                     <span class="service-card-more">Ver detalle →</span>
                 </a>
                 
@@ -326,14 +326,12 @@ function fz_site_url(string $path = ''): string {
 
                 <!-- Servicio 5: Crematorios del Zulia -->
                 <a class="service-card" href="crematorios-del-zulia.php">
-                    <div class="service-icon">
-                        <!-- Icono Urna / Cremación -->
-                        <svg viewBox="0 0 24 24">
-                            <path d="M12 2c-1.1 0-2 .9-2 2 0 .74.4 1.38 1 1.72V7H8c-1.1 0-2 .9-2 2v1c0 .74.4 1.38 1 1.72V19c0 1.66 1.79 3 4 3s4-1.34 4-3v-6.28c.6-.34 1-.98 1-1.72V9c0-1.1-.9-2-2-2h-3V5.72c.6-.34 1-.98 1-1.72 0-1.1-.9-2-2-2zm-4 8v-.99L8.01 9H16v1H8zm4 10c-1.66 0-3-.67-3-1.5V12h6v6.5c0 .83-1.34 1.5-3 1.5z"/>
-                        </svg>
+                    <div class="service-icon service-icon--logo">
+                        <!-- Sello de la empresa (pedido del cliente 2026-11-02) -->
+                        <img src="img/funerariadelzulia.png" alt="" width="56" height="56" loading="lazy">
                     </div>
                     <h3 class="service-title">Crematorios del Zulia</h3>
-                    <p class="service-desc">Crematorio propio en Maracaibo para las familias que prefieren la cremación como disposición final, con todos los permisos y sin recorrer largas distancias.</p>
+                    <p class="service-desc">Crematorio propio en el Estado Zulia para las familias que prefieren la cremación como disposición final, con todos los permisos y sin recorrer largas distancias.</p>
                     <span class="service-card-more">Ver detalle →</span>
                 </a>
             </div>
@@ -389,10 +387,10 @@ function fz_site_url(string $path = ''): string {
                 <article class="plan-card plan-featured">
                     <span class="plan-badge">Más elegido</span>
                     <h3 class="plan-name">Plan Vanguardia</h3>
-                    <p class="plan-subtitle">(Funeral completo + cremación, bóveda o inhumación)</p>
+                    <p class="plan-subtitle">(Funeral completo + cremación o gastos de inhumación)</p>
                     <p class="plan-target">Lo mejor de nuestros planes en el Zulia. Padres hasta 80 años.</p>
                     <ul class="plan-features">
-                        <li>Servicio funerario completo con ataúd</li>
+                        <li>Servicio funerario completo</li>
                         <li>Oficios religiosos y flores naturales</li>
                         <li>Cremación, bóveda aérea o inhumación</li>
                         <li>6 miembros de su familia</li>
@@ -405,7 +403,7 @@ function fz_site_url(string $path = ''): string {
                      Legado Holding, tenant lh en Prevision-Funeraria; sin precios) -->
                 <article class="plan-card">
                     <h3 class="plan-name">Plan Grupo Selecto</h3>
-                    <p class="plan-subtitle">(Cobertura en toda Venezuela)</p>
+                    <p class="plan-subtitle">(Único en Venezuela)</p>
                     <p class="plan-target">El plan más amplio: usted elige cada componente del servicio.</p>
                     <ul class="plan-features">
                         <li>Cobertura en toda Venezuela y traslado entre estados</li>

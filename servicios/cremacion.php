@@ -31,8 +31,8 @@ require __DIR__ . '/../partials/site_header.php';
         <ul class="service-list">
             <li><strong>Cremación directa</strong> o con <strong>acto velatorio previo</strong> en nuestras capillas.</li>
             <li>Gestión completa del <strong>permiso sanitario de cremación</strong> y la documentación legal.</li>
-            <li>Cofre para cremación y <strong>urna</strong> para la entrega de las cenizas.</li>
-            <li>Traslado del fallecido hacia nuestras instalaciones en Maracaibo.</li>
+            <li>Cofre para cremación y <strong>cenizario</strong> para la entrega de las cenizas.</li>
+            <li>Traslado del fallecido hacia nuestro crematorio en el Estado Zulia.</li>
             <li>Acompañamiento y asesoría a la familia durante todo el proceso.</li>
         </ul>
 
@@ -40,7 +40,7 @@ require __DIR__ . '/../partials/site_header.php';
         <p>Para realizar una cremación se requieren el <strong>Certificado Médico de Defunción (Forma EV-14)</strong>, el <strong>acta de defunción</strong> emitida por el Registro Civil, el <strong>permiso sanitario de cremación</strong> de la autoridad competente y la <strong>autorización escrita</strong> del familiar responsable. Nuestro equipo coordina la totalidad de estos trámites por usted, para que solo se ocupe de despedir a su ser querido.</p>
 
         <h2>Cremación con respeto y cercanía en Maracaibo y todo el Zulia</h2>
-        <p>Atendemos a familias de Maracaibo, San Francisco, Cabimas, Ciudad Ojeda y todo el Estado Zulia. Si el fallecimiento ocurrió fuera de la ciudad, gestionamos el <a href="traslados.php">traslado</a> cumpliendo las normativas sanitarias vigentes. También puede optar por un <a href="sepelio-tradicional.php">acto velatorio previo</a> en nuestras <a href="capillas-velatorias.php">capillas velatorias</a> antes de la cremación.</p>
+        <p>Atendemos a familias de Maracaibo, San Francisco, Cabimas, Ciudad Ojeda y todo el Estado Zulia. Si el fallecimiento ocurrió fuera de la ciudad, gestionamos el <a href="traslados.php">traslado</a> cumpliendo las normativas sanitarias vigentes. También puede optar por un <a href="funeral-tradicional.php">acto velatorio previo</a> en nuestras <a href="capillas-velatorias.php">capillas velatorias</a> antes de la cremación.</p>
 
         <?php
         $ctaHeading = 'Solicite información sobre la cremación';
@@ -54,7 +54,7 @@ require __DIR__ . '/../partials/site_header.php';
         <div class="service-related">
             <h3>Otros servicios</h3>
             <ul>
-                <li><a href="sepelio-tradicional.php">Sepelio Tradicional</a></li>
+                <li><a href="funeral-tradicional.php">Funeral Tradicional</a></li>
                 <li><a href="traslados.php">Traslados Nacionales</a></li>
                 <li><a href="capillas-velatorias.php">Capillas Velatorias</a></li>
                 <li><a href="../planes/">Planes de Previsión Familiar</a></li>

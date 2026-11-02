@@ -473,6 +473,19 @@ a {
     color: var(--color-surface);
 }
 
+/* Botón de Crematorios del Zulia: sello de la empresa en vez de icono (cliente 2026-11-02). */
+.service-icon--logo,
+.service-card:hover .service-icon--logo {
+    background-color: transparent;
+    overflow: hidden;
+}
+
+.service-icon--logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
 .service-icon svg {
     width: 28px;
     height: 28px;

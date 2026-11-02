@@ -10,7 +10,7 @@ require __DIR__ . '/../api/lib/public_init.php';
 $canonical = site_url('planes/plan-grupo-selecto.php');
 $img       = site_url('planes/img/plan-grupo-selecto.svg');
 $title     = 'Plan Grupo Selecto de Previsión Funeraria | Funeraria del Zulia';
-$desc      = 'Plan Grupo Selecto: el plan más amplio, con cobertura en toda Venezuela y traslado entre estados. Usted elige cada componente del servicio y entre cremación o bóveda en cementerio privado.';
+$desc      = 'Plan Grupo Selecto, único en Venezuela: el plan más amplio, con cobertura en toda Venezuela y traslado entre estados. Usted elige cada componente del servicio y entre cremación o bóveda en cementerio privado.';
 
 $head = page_head_meta($title, $desc, $canonical, $img, 'website',
     service_jsonld('Plan Grupo Selecto de Previsión Funeraria', $desc, $canonical, $img, 'Plan de previsión funeraria')
@@ -29,8 +29,8 @@ require __DIR__ . '/../partials/site_header.php';
     <article class="service-detail-body">
         <img src="img/plan-grupo-selecto.svg" alt="Plan Grupo Selecto de previsión funeraria con cobertura en toda Venezuela — Funeraria del Zulia" class="service-hero-img" width="1200" height="600">
 
-        <h1>Plan Grupo Selecto de Previsión Funeraria <span class="plan-subtitle-inline">(Cobertura en toda Venezuela)</span> <span class="inline-badge">El más completo</span></h1>
-        <p class="service-lead">El <strong>Plan Grupo Selecto</strong> es nuestro plan más amplio: <strong>cobertura en toda Venezuela</strong> con traslado entre estados, y la familia elige <strong>todos los componentes del servicio</strong> y la disposición final, <strong>cremación o bóveda en cementerio privado</strong>. Cubre al titular y a 6 familiares.</p>
+        <h1>Plan Grupo Selecto de Previsión Funeraria <span class="plan-subtitle-inline">(Único en Venezuela)</span> <span class="inline-badge">El más completo</span></h1>
+        <p class="service-lead">El <strong>Plan Grupo Selecto</strong> es nuestro plan más amplio y <strong>único en Venezuela</strong>: <strong>cobertura en toda Venezuela</strong> con traslado entre estados, y la familia elige <strong>todos los componentes del servicio</strong> y la disposición final, <strong>cremación o bóveda en cementerio privado</strong>. Cubre al titular y a 6 familiares.</p>
 
         <h2>¿Qué incluye el Plan Grupo Selecto?</h2>
         <ul class="service-list">

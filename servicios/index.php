@@ -3,12 +3,12 @@
 require __DIR__ . '/../api/lib/public_init.php';
 
 $canonical = site_url('servicios/');
-$img       = site_url('servicios/img/sepelio-tradicional.svg');
+$img       = site_url('servicios/img/funeral-tradicional.svg');
 $title     = 'Servicios Funerarios en Maracaibo | Funeraria del Zulia';
-$desc      = 'Servicios funerarios integrales en Maracaibo y el Estado Zulia: sepelio tradicional, cremación, traslados y capillas velatorias, 24 horas.';
+$desc      = 'Servicios funerarios integrales en Maracaibo y el Estado Zulia: funeral tradicional, cremación, traslados y capillas velatorias, 24 horas.';
 
 $servicios = [
-    ['slug' => 'sepelio-tradicional.php', 'img' => 'img/sepelio-tradicional.svg', 'name' => 'Sepelio Tradicional',
+    ['slug' => 'funeral-tradicional.php', 'img' => 'img/funeral-tradicional.svg', 'name' => 'Funeral Tradicional',
      'desc' => 'Acto velatorio, oficios religiosos y gestión completa, fiel a sus creencias y tradiciones.'],
     ['slug' => 'cremacion.php', 'img' => 'img/cremacion.svg', 'name' => 'Cremación en Maracaibo',
      'desc' => 'Cremación directa o con acto velatorio previo, en crematorio propio y con todos los permisos.'],

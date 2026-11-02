@@ -1,24 +1,24 @@
 <?php
-/** Crematorios del Zulia — crematorio propio en Maracaibo (server-rendered, SEO/GEO). */
+/** Crematorios del Zulia — crematorio propio en el Estado Zulia (server-rendered, SEO/GEO). */
 require __DIR__ . '/api/lib/public_init.php';
 
 $canonical = site_url('crematorios-del-zulia.php');
 $img       = site_url('img/crematorio.svg');
-$title     = 'Crematorios del Zulia | Crematorio Propio en Maracaibo';
-$desc      = 'Crematorios del Zulia: crematorio propio en Maracaibo. Cremación digna, con todos los permisos y acompañamiento las 24 horas.';
+$title     = 'Crematorios del Zulia | Crematorio Propio en el Estado Zulia';
+$desc      = 'Crematorios del Zulia: crematorio propio en el Estado Zulia, cercano a Maracaibo. Cremación digna, con todos los permisos y acompañamiento las 24 horas.';
 
 // Preguntas frecuentes sobre cremación (FAQPage JSON-LD)
 $faqs = [
     ['q' => '¿Qué son los Crematorios del Zulia?',
-     'a' => 'Es la unidad de cremación de la Funeraria del Zulia, con crematorio propio en Maracaibo. Atendemos a las familias que prefieren la cremación como forma de disposición final, con dignidad y sin necesidad de recorrer largas distancias.'],
+     'a' => 'Es la unidad de cremación de la Funeraria del Zulia, con crematorio propio en el Estado Zulia, cercano a Maracaibo. Atendemos a las familias que prefieren la cremación como forma de disposición final, con dignidad y sin necesidad de recorrer largas distancias.'],
     ['q' => '¿Cuánto tarda una cremación?',
      'a' => 'El proceso de cremación en sí toma entre dos y tres horas. La entrega de las cenizas a la familia se coordina una vez concluido el proceso y verificada toda la documentación.'],
     ['q' => '¿Qué requisitos se necesitan para cremar en el Estado Zulia?',
      'a' => 'Se requieren el Certificado Médico de Defunción (Forma EV-14), el acta de defunción del Registro Civil, el permiso sanitario de cremación y la autorización escrita del familiar responsable. Nuestro equipo gestiona todos estos trámites por usted.'],
-    ['q' => '¿Se puede velar antes de la cremación?',
-     'a' => 'Sí. Puede optar por un acto velatorio previo en nuestras capillas velatorias y, posteriormente, realizar la cremación. También ofrecemos cremación directa, sin acto velatorio.'],
+    ['q' => '¿Se puede hacer un acto velatorio antes de la cremación?',
+     'a' => 'Sí. La familia puede, según su voluntad, realizar un funeral previo a la cremación en nuestras capillas velatorias, o un acto de despedida una vez realizada. También ofrecemos cremación directa, sin acto velatorio.'],
     ['q' => '¿Qué se hace con las cenizas?',
-     'a' => 'Las cenizas se entregan a la familia en una urna. Puede conservarlas, depositarlas en un cementerio o columbario, o disponer de ellas según sus creencias y la normativa vigente.'],
+     'a' => 'Las cenizas se entregan a la familia en un cenizario. Puede conservarlas, depositarlas en un cementerio o columbario, o disponer de ellas según sus creencias y la normativa vigente.'],
 ];
 
 $faqJsonLd = '<script type="application/ld+json">' . json_encode([
@@ -45,10 +45,10 @@ require __DIR__ . '/partials/site_header.php';
     <nav class="breadcrumb"><a href="index.php">Inicio</a> › <span>Crematorios del Zulia</span></nav>
 
     <article class="service-detail-body">
-        <img src="img/crematorio.svg" alt="Crematorios del Zulia — crematorio propio en Maracaibo" class="service-hero-img" width="1200" height="600">
+        <img src="img/crematorio.svg" alt="Crematorios del Zulia — crematorio propio en el Estado Zulia" class="service-hero-img" width="1200" height="600">
 
         <h1>Crematorios del Zulia</h1>
-        <p class="service-lead">Desde 1942 hacemos de cada despedida un homenaje a la vida. En <strong>Crematorios del Zulia</strong> servimos a las familias que prefieren la <strong>cremación</strong> como forma de disposición final, con <strong>crematorio propio en Maracaibo</strong> y sin que tengan que recorrer largas distancias para lograrlo.</p>
+        <p class="service-lead">Desde 1942 hacemos de cada despedida un homenaje a la vida. En <strong>Crematorios del Zulia</strong> servimos a las familias que prefieren la <strong>cremación</strong> como forma de disposición final, con <strong>crematorio propio en el Estado Zulia</strong> y sin que tengan que recorrer largas distancias para lograrlo.</p>
 
         <h2>Un crematorio propio, cercano y seguro</h2>
         <p>La necesidad de continuar acompañando a las familias después del funeral, garantizando <strong>calidad, cercanía y seguridad</strong>, nos llevó a consolidar nuestro servicio de cremación en el Estado Zulia. Contar con crematorio propio nos permite ofrecer un proceso <strong>transparente, digno y ágil</strong>, cumpliendo cada norma sanitaria y legal, dentro de la misma ciudad.</p>
@@ -57,25 +57,26 @@ require __DIR__ . '/partials/site_header.php';
         <ul class="service-list">
             <li><strong>Cremación directa</strong> o con <strong>acto velatorio previo</strong> en nuestras capillas velatorias.</li>
             <li>Gestión completa del <strong>permiso sanitario de cremación</strong> y toda la documentación legal.</li>
-            <li>Cofre para cremación y <strong>urna</strong> para la entrega de las cenizas.</li>
-            <li>Traslado del fallecido hacia nuestras instalaciones en Maracaibo.</li>
+            <li>Cofre para cremación y <strong>cenizario</strong> para la entrega de las cenizas.</li>
+            <li>Traslado del fallecido hacia nuestro crematorio en el Estado Zulia.</li>
             <li>Acompañamiento y asesoría a la familia durante todo el proceso, las 24 horas.</li>
         </ul>
 
         <h2>El proceso de cremación, paso a paso</h2>
         <ol class="service-list">
             <li><strong>Atención inicial y trámites:</strong> coordinamos el retiro del fallecido y reunimos la documentación necesaria.</li>
-            <li><strong>Acto velatorio (opcional):</strong> si la familia lo desea, se realiza una vigilia en nuestras capillas antes de la cremación.</li>
+            <li><strong>Acto velatorio:</strong> la familia puede, según su voluntad, realizar un funeral previo a la cremación o, si lo prefiere, un acto de despedida una vez realizada.</li>
             <li><strong>Permiso de cremación:</strong> tramitamos el permiso sanitario ante la autoridad competente.</li>
             <li><strong>Cremación:</strong> el proceso se realiza en nuestro crematorio bajo estricto control y respeto.</li>
-            <li><strong>Entrega de cenizas:</strong> las cenizas se entregan a la familia en una urna, listas para su conservación o destino final.</li>
+            <li><strong>Entrega de cenizas:</strong> las cenizas se entregan a la familia en un cenizario, listo para su conservación o destino final.</li>
         </ol>
 
         <h2>Ventajas de elegir la cremación</h2>
         <ul class="service-list">
             <li>Una alternativa <strong>digna y serena</strong>, respetuosa de sus creencias y voluntad.</li>
             <li>Mayor <strong>flexibilidad</strong> para conservar o disponer de las cenizas según su deseo.</li>
-            <li>Todo el proceso <strong>en Maracaibo</strong>, sin recorrer largas distancias.</li>
+            <li>Todo el proceso <strong>cercano a Maracaibo</strong>, sin recorrer largas distancias.</li>
+            <li><strong>Horario exclusivo</strong>: un estricto control de asistencia y protocolo para garantizar a cada familia un servicio privado y personalizado.</li>
             <li>Acompañamiento profesional y <strong>atención inmediata las 24 horas</strong>.</li>
         </ul>
 
