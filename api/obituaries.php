@@ -60,12 +60,15 @@ function obit_out(array $r): array
 /** Recoge y valida los campos del cuerpo para crear/editar. */
 function obit_input(array $b): array
 {
-    $allowedTypes = ['Acto Velatorio', 'Cremación', 'Homenaje Póstumo', 'Traslado', 'Otro'];
+    // Lista del cliente (2026-11-03): se agregan Inhumación y Servicio Directo y
+    // se quitan Traslado y Otro del panel. Esos dos se siguen aceptando solo
+    // para no cambiarles el tipo a los obituarios viejos que ya los tienen.
+    $allowedTypes = ['Acto Velatorio', 'Cremación', 'Inhumación', 'Homenaje Póstumo', 'Servicio Directo', 'Traslado', 'Otro'];
     $type = $b['service_type'] ?? 'Acto Velatorio';
     // "Velación" se renombró a "Acto Velatorio" (pedido del cliente 2026-10-27,
     // migración 15). Un panel con admin.js viejo en caché todavía puede enviarlo.
     if ($type === 'Velación') $type = 'Acto Velatorio';
-    if (!in_array($type, $allowedTypes, true)) $type = 'Otro';
+    if (!in_array($type, $allowedTypes, true)) $type = 'Acto Velatorio';
 
     $full = clean_str($b['full_name'] ?? '', 200);
     $death = clean_str($b['death_date'] ?? '', 10);

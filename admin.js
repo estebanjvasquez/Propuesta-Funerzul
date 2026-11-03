@@ -323,6 +323,9 @@ const SOCIAL_SOURCES = [
     { key: 'ig',   label: 'Instagram', help: 'Solo en la biografía o en el sticker de enlace de las historias: Instagram no permite enlaces en las publicaciones.' },
     { key: 'otro', label: 'Otro',      help: 'Correo, Telegram u otras redes.' },
 ];
+// Tipos de servicio de un obituario (lista del cliente, 2026-11-03). "Traslado" y
+// "Otro" ya no se ofrecen; un obituario viejo que los tenga los conserva.
+const OBIT_SERVICE_TYPES = ['Acto Velatorio', 'Cremación', 'Inhumación', 'Homenaje Póstumo', 'Servicio Directo'];
 const SOCIAL_LABELS = { fb: 'Facebook', wa: 'WhatsApp', ig: 'Instagram', otro: 'Otro', directo: 'Enlace sin red' };
 
 /** Carpeta pública del sitio (admin.html vive en la raíz del sitio, igual que o.php). */
@@ -416,7 +419,8 @@ function obituaryFormHtml(o = {}) {
         <div class="form-grid-2">
             <div class="form-group"><label class="form-label">Tipo de servicio</label>
                 <select id="of_service_type" class="form-control">
-                    ${['Acto Velatorio', 'Cremación', 'Homenaje Póstumo', 'Traslado', 'Otro'].map(t => `<option ${o.service_type === t ? 'selected' : ''}>${t}</option>`).join('')}
+                    ${OBIT_SERVICE_TYPES.map(t => `<option ${o.service_type === t ? 'selected' : ''}>${t}</option>`).join('')}
+                    ${o.service_type && !OBIT_SERVICE_TYPES.includes(o.service_type) ? `<option value="${escapeHtml(o.service_type)}" selected>${escapeHtml(o.service_type)} (ya no se usa)</option>` : ''}
                 </select></div>
             <div class="form-group"><label class="form-label">Estado</label>
                 <select id="of_status" class="form-control">
