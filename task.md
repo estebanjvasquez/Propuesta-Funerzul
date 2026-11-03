@@ -11,6 +11,81 @@
 
 ---
 
+## Cierre: 2026-11-03 (corte a www.funerariadelzulia.com en curso)
+
+**Rama:** `feature/prevision-funeraria`, último commit de código `c622b3d`,
+pusheada. Sin mergear a `main`. Las sesiones del 2026-10-27 al 2026-11-02 no
+dejaron entrada aquí: su trabajo está en los commits `9ce5234` a `f01d3d9` y
+en `docs/BACKLOG.md`.
+
+**Estado del sitio (retomar desde aquí, sin volver a comprobar):**
+- El sitio nuevo **ya está en la raíz de `www.funerariadelzulia.com`**. El
+  despliegue de cPanel del 2026-11-02 fue a `public_html/` porque existía
+  `_wp-anterior/` (lógica de `.cpanel.yml`). El usuario copió
+  `api/config.php` y `uploads/` desde `public_html/nuevo.funerariadelzulia.com/`.
+- Verificado en vivo el 2026-11-03 con curl:
+  - `robots.txt` correcto, con `Sitemap: https://www.funerariadelzulia.com/sitemap.php`.
+  - Redirecciones 301: sin www → www; http → https; `sitemap.xml` y
+    `wp-sitemap.xml` → `sitemap.php`; `servicios/sepelio-tradicional.php` →
+    `funeral-tradicional.php`.
+  - `wp-login.php` → 410.
+  - `nuevo.funerariadelzulia.com` y `www…/nuevo.funerariadelzulia.com/` con
+    `X-Robots-Tag: noindex`.
+  - La portada tiene canonical www.
+- **Problema abierto:** `app.site_url` del `config.php` de producción sigue
+  en `https://nuevo.funerariadelzulia.com`. Por eso las páginas internas
+  (servicios, planes, Nosotros, Crematorio) y **todo el sitemap** declaran
+  canonical y og:url con `nuevo.`. Se le explicó al usuario cómo corregirlo.
+  No se sabe si ya lo hizo.
+- `obituarios.php`, `directorio-medico.php` y `recursos.php` → 404: esas
+  secciones están apagadas en el panel.
+- Sin confirmar: si WordPress quedó **movido** (no borrado) a `_wp-anterior/`
+  con `Require all denied`, si se quitó `auto_prepend_file` de Wordfence,
+  si se importaron las migraciones 20-21 y si se desplegaron `ea624ec` y
+  `c622b3d`.
+
+**Hecho en esta sesión (2026-11-02 → 03):**
+- Medición del interés en cremación de mascotas, manual al día y plan de
+  onboarding (artifact), en `336d1c6`.
+- Plan de corte reescrito para la cuenta única de FDZ y cómo mover
+  WordPress (`f01d3d9`).
+- Textos del cliente (`93b6e67`): hero, Sepelio → **Funeral Tradicional**
+  (nueva URL + 301), Crematorios del Zulia "en el Estado Zulia", nuevos
+  pasos y ventajas, Vanguardia sin "con ataúd", Grupo Selecto "Único en
+  Venezuela".
+- Crematorios del Zulia desde 2021, no 1942 (`aa9adb0`). Sello corporativo
+  en la imagen de la página (`ea624ec`).
+- `SITEMAP_STATIC_LASTMOD` = 2026-11-03 (`c622b3d`).
+- Se le dio al usuario la lista de URLs para Search Console. Está copiada en
+  `docs/BACKLOG.md` → "Retomar aquí".
+
+**Validaciones:**
+- Portada y la imagen del crematorio revisadas en Chromium (copia estática:
+  no hay PHP local).
+- Sitio en vivo revisado con curl (ver arriba).
+- PHP de las páginas nuevas no probado localmente. En producción cargan
+  (200).
+
+**Bloqueos:**
+- `site_url` de producción (lo corrige el usuario en cPanel).
+- Heredados: merge a `main` sin decidir; catálogo `fdz` en PF; Mercantil.
+
+**Siguiente acción:**
+1. Preguntar al usuario si ya corrigió `site_url`. Luego comprobar con
+   `curl -s https://www.funerariadelzulia.com/sitemap.php`: solo debe listar
+   `www`.
+2. Preguntar el estado de WordPress, Wordfence y las migraciones 20-21, y si
+   desplegó `c622b3d`.
+3. Search Console: enviar el sitemap y pedir indexación según la lista del
+   backlog.
+4. Encender la sección Obituarios si el cliente la quiere publicada.
+5. Después: tareas posteriores al corte de
+   `docs/specs/2026-10-28-migracion-dominio-final.md`, sección 7.
+
+Detalle: [`docs/BACKLOG.md`](docs/BACKLOG.md), sección "▶ Retomar aquí".
+
+---
+
 ## Cierre: 2026-10-08 (recuperación tras pérdida del equipo)
 
 **Rama:** `feature/prevision-funeraria` (`e7e24ee` + el commit de esta

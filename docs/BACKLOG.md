@@ -16,6 +16,25 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 ## Abiertas
 
+### ▶ Retomar aquí — corte en curso (estado al 2026-11-03)
+
+El sitio nuevo **ya está en la raíz de `www.funerariadelzulia.com`**. El
+despliegue del 2026-11-02 cayó en `public_html/` porque ya existía
+`_wp-anterior/`. El usuario copió `api/config.php` y `uploads/` desde la
+carpeta del ensayo. Lo verificado en vivo el 2026-11-03 está en `task.md`
+(entrada de arriba). No hace falta volver a comprobarlo.
+
+| Tarea | Estado | Notas |
+|---|---|---|
+| **`app.site_url` del `public_html/api/config.php` sigue en `https://nuevo.funerariadelzulia.com`** | Pendiente — **urgente, bloquea Google** | Cambiar a `https://www.funerariadelzulia.com`. Hoy la portada sí tiene canonical www (no usa `site_url`). Servicios, planes, Nosotros, Crematorio, og:image y **todo `sitemap.php`** salen con `nuevo.`, que tiene noindex. En el mismo archivo revisar `app.env` = production, `allowed_origins` (www + sin www) y `pf_sso.redirect_uri` (callback www). Comprobar: `curl -s https://www.funerariadelzulia.com/sitemap.php` solo debe listar `www`. |
+| Secciones Obituarios / Directorio médico / Recursos apagadas | Pendiente (decidir con el cliente) | `obituarios.php`, `directorio-medico.php` y `recursos.php` dan **404** en el dominio (2026-11-03). Por eso los obituarios tampoco salen en el sitemap. Se encienden en el panel: Sitio web → Secciones. |
+| Search Console tras corregir `site_url` | Pendiente | Enviar `https://www.funerariadelzulia.com/sitemap.php` y quitar `wp-sitemap.xml` si aparece. Probar robots.txt. Pedir indexación, unas 10-12 por día, en este orden: `/`, `servicios/`, `servicios/funeral-tradicional.php`, `servicios/cremacion.php`, `crematorios-del-zulia.php`, `planes/`, `planes/plan-vanguardia.php`, `planes/plan-grupo-selecto.php`, `planes/plan-tradicion.php`, `planes/plan-esencial.php`, `servicios/traslados.php`, `servicios/capillas-velatorias.php`, `nosotros.php`, `servicios/cremacion-mascotas.php`, `obituarios.php`. En la inspección, la canónica debe decir `www`. |
+| Confirmar el estado de WordPress y Wordfence en `public_html` | Pendiente (preguntar al usuario) | El 2026-11-02 el usuario dijo que iba a "limpiar toda la raíz". Se le pidió **mover** (no borrar) WordPress a `_wp-anterior/` (que debe quedar con `.htaccess` → `Require all denied`), y quitar antes `auto_prepend_file` de `.user.ini`. No se sabe si lo hizo. El sitio responde bien: 200, `wp-login.php` → 410. **No borrar** `nuevo.funerariadelzulia.com/` hasta revisar que nada dependa de él. Está con noindex y comparte la base de datos. |
+| Desplegar los últimos commits (`ea624ec` sello del crematorio, `c622b3d` lastmod del sitemap) | Pendiente | Solo si el último despliegue fue anterior a ellos. Comprobar con la imagen `img/crematorio.svg`: debe mostrar el sello. |
+| Migraciones 20 y 21 en la base real | Sin confirmar | `20_plantilla_catolica.sql` y `21_interes_servicios.sql`. `api/diag.php` lista las tablas que faltan. |
+| Rótulo "Oficios y sepelio" en obituarios | Pendiente (confirmar con el cliente) | Se dejó a propósito: aquí "sepelio" es el entierro. El cliente pidió cambiar "sepelio tradicional" y "velación". |
+| ¿El sello también en el botón "Cremación en Maracaibo"? ¿Ese título pasa a "en el Estado Zulia"? | Pendiente (confirmar con el cliente) | Hoy el sello está solo en el botón y la imagen de Crematorios del Zulia. "Cremación en Maracaibo" se mantuvo por SEO. |
+
 ### Urgente — sitio de prueba (`legadoholding.com/funerzul/`)
 
 | Tarea | Estado | Notas |
@@ -32,7 +51,8 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 |---|---|---|
 | Cargar el catálogo de servicios del tenant `fdz` | Pendiente | `GET /api/public/t/fdz/servicios` sigue devolviendo `items: []` (2026-10-08). El tenant `lh` sí tiene 3 servicios. Ojo: los slugs no coinciden con los 4 de `servicios/*.php`. |
 | Corregir precio de Tradición por debajo de Esencial | Pendiente | 2026-10-08: TRADICION US$12,00/mes vs. ESENCIAL US$13,70/mes. El catálogo de `fdz` tiene ahora 9 planes (incluye variantes "NEW" y planes de empleados al 30%/50%) — confirmar cuáles deben mostrarse en el sitio público. |
-| Mercantil: spec completa (`POST /api` + MasterKey del webhook) | Bloqueado | Depende del banco. Relevante para Prevision-Funeraria; este repo ya no tiene endpoints de cobro. *(Migrada de Notion.)* |
+| Mercantil: spec completa (`POST /api` + MasterKey del webhook) | Bloqueado | Depende del banco. Relevante para Prevision-Funeraria; este repo ya no tiene endpoints de cobro. *(Migrada de Notion.)* No confundir con la domiciliación por archivo (fila siguiente), que no depende de esto. |
+| Mercantil: piloto de domiciliación por archivo en `fdz` | Pendiente (datos del usuario) | 2026-11-02: formatos verificados contra archivos reales (cobro idéntico byte a byte) y **cargados y activos en producción** (versiones 1-4: afiliación, cobro, respuesta de afiliación, respuesta de cobro). Faltan en PF › Configuración: **RIF de la empresa** (vacío), **cuenta recaudadora Mercantil** (20 dígitos) y **convenio** (requiere afiliación, aprobadores, días de reintento). Luego: lote de afiliación con pocos contratos → respuesta → lote de cobro. Pedir a Mercantil la tabla completa de códigos de respuesta; falta el formato de DESAFILIACION. Detalle en `Prevision-Funeraria/docs/domiciliacion/mercantil.md`. |
 
 ### Comentarios del cliente (2026-11-02)
 
@@ -44,6 +64,7 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 | Medir el interés en cremación de mascotas (y servicios relacionados) | Hecho, falta desplegar | `docs/specs/2026-11-02-interes-servicios-nuevos.md`. Importar `database/21_interes_servicios.sql`. Página "Próximamente" `servicios/cremacion-mascotas.php` con formulario, pregunta frecuente con enlace, contador de aperturas de todas las FAQ, pestaña **Sistema → Interés del público** con descarga CSV. Probado en navegador con API simulada; PHP sin probar contra servidor real. Revisar resultados a los 60 y 90 días del corte. |
 | Manual de usuario al día | Hecho (2026-11-02) | Capítulos nuevos/actualizados: acceso desde el pie, alta de usuarios en Previsión Funeraria paso a paso, tarjetas 🎗️/✝/📰, plantilla católica, secciones Nosotros/Testimonios, Interés del público. Faltan capturas de lo nuevo (regenerar tras el corte). |
 | Plan de onboarding del personal para la dirección | Hecho (2026-11-02) | Publicado como artifact para la reunión con la dirección. Usuarios solo desde Previsión Funeraria. |
+| Últimos textos del cliente antes del corte (archivo "ultimos detalles … 02 11 26") | Hecho y desplegado (2026-11-02) | `93b6e67`, `aa9adb0`, `ea624ec`. Hero nuevo, "Desde el Zulia a toda Venezuela". **Sepelio Tradicional → Funeral Tradicional**: URL `servicios/funeral-tradicional.php` y 301 desde la vieja. El slug de pago en PF sigue siendo `sepelio-tradicional`. Crematorios del Zulia: "en el Estado Zulia / cercano a Maracaibo", desde **2021** (no 1942), cenizario, horario exclusivo y sello corporativo en el botón (`img/funerariadelzulia.png`) y en `img/crematorio.svg`. Vanguardia: "(Funeral completo + cremación o gastos de inhumación)", sin "con ataúd". Grupo Selecto: "(Único en Venezuela)". |
 | SEO: por qué no aparece mejor en Google | Diagnóstico hecho | `docs/specs/2026-11-02-seo-search-console.md`. Corregido: schema.org inválido y copias de prueba indexables. Pendiente: publicar en el dominio, Search Console el día del corte, Google Business Profile, confirmar la propiedad de Analytics ("Legado Holding"), FAQ sobre sepelio, páginas de urnas/mascotas solo si se ofrecen. |
 
 ### Comentarios del cliente (2026-10-27) — pendientes
@@ -92,7 +113,7 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 | Tarea | Estado | Notas |
 |---|---|---|
-| **Corte a `www.funerariadelzulia.com`** (www y sin www) | **Autorizado por el cliente (2026-11-02)** — se ejecuta en cPanel | Plan reescrito para la cuenta única de FDZ (el ensayo `nuevo.funerariadelzulia.com` ya usa la base final: no se mueve la base). Pasos: `docs/specs/2026-10-28-migracion-dominio-final.md`, secciones 3 y 4. **Riesgo:** Wordfence carga su firewall con `auto_prepend_file`; hay que quitarlo antes de mover WordPress o el sitio nuevo da error fatal (4.2). `.cpanel.yml` despliega solo en `public_html/` cuando existe `_wp-anterior/`. La redirección sin www → www la hacía WordPress; ahora la hace `.htaccess`. Antes del corte: borrar `manual@funerariadelzulia.com`, importar migraciones 20-21. |
+| **Corte a `www.funerariadelzulia.com`** (www y sin www) | **En curso**: sitio nuevo en la raíz desde el 2026-11-02. Faltan las tareas de "Retomar aquí" (arriba). | Plan reescrito para la cuenta única de FDZ (el ensayo `nuevo.funerariadelzulia.com` ya usa la base final: no se mueve la base). Pasos: `docs/specs/2026-10-28-migracion-dominio-final.md`, secciones 3 y 4. **Riesgo:** Wordfence carga su firewall con `auto_prepend_file`; hay que quitarlo antes de mover WordPress o el sitio nuevo da error fatal (4.2). `.cpanel.yml` despliega solo en `public_html/` cuando existe `_wp-anterior/`. La redirección sin www → www la hacía WordPress; ahora la hace `.htaccess`. Antes del corte: borrar `manual@funerariadelzulia.com`, importar migraciones 20-21. |
 | Importar `19_nosotros_testimonios.sql` y revisar Nosotros, Testimonios y el menú nuevo en el sitio de prueba | Pendiente | Código del 2026-10-28, sin probar contra PHP/MySQL real. |
 | Confirmar la IP real de los visitantes detrás de Cloudflare | Pendiente | Si `REMOTE_ADDR` es de Cloudflare, el límite de intentos del login de emergencia agrupa a todos. Plan, punto 0.6. |
 | Redirecciones 301 de las URLs de WordPress | Hecho (2026-10-28) | En `.htaccess`; tabla en la sección 1.6 del plan. |
@@ -113,6 +134,8 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 | Tarea | Estado | Motivo |
 |---|---|---|
+| Corte a `www.funerariadelzulia.com` (reemplaza el WordPress) | Hecho | Verificado en vivo el 2026-11-03: `www.funerariadelzulia.com/` y `servicios/funeral-tradicional.php` responden 200 con el sitio nuevo, sin `wp-content`. Las comprobaciones previas al corte quedaron como tarea abierta aparte. |
+| Recuperar contraseña en Prevision-Funeraria (el formulario mostraba correo y clave juntos; sin confirmación ni "ojo") | Hecho | 2026-11-02, commit `dab51f9` de PF, desplegado. |
 | Aplicar migraciones 14, 15 y 16 | Hecho | Aplicadas por el usuario el 2026-10-27. Verificado en vivo: FAQ nueva en la portada, obituarios con "Acto Velatorio", "En memoria de" en la plantilla predeterminada y ninguna plantilla con `{{photo}}`. |
 | Decidir esquema de login del personal y perfiles | Hecho | 2026-10-27: Opción C (híbrida) + 4 perfiles; portal de clientes en PF con OTP solo por correo. Ver sección 8 de la spec. |
 | Enlace "Portal de Clientes" con interruptor y URL en Configuración | Hecho | 2026-10-27, arranca apagado. Falta aplicarlo en el servidor (tarea abierta arriba). |
