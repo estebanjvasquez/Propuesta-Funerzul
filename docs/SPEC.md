@@ -22,11 +22,11 @@ Detalle de arquitectura y estructura de carpetas: `README.md`.
 
 | Módulo | Estado | Documento de referencia |
 |---|---|---|
-| Sitio público (obituarios, directorio médico, recursos, FAQs) | En prueba en `legadoholding.com/funerzul/` (dominio final: `funerariadelzulia.com`, hoy aún con WordPress). **2026-10-08: MySQL del servidor de prueba caído** (`SQLSTATE[HY000] [2002]`) — ver `docs/BACKLOG.md`. | `README.md` (manual de usuario, secciones 3-13) |
+| Sitio público (obituarios, directorio médico, recursos, FAQs, Nosotros, testimonios, 4 planes, interés en cremación de mascotas) | **En producción en `www.funerariadelzulia.com`** (reemplazó al WordPress; verificado en vivo el 2026-11-03: portada y `servicios/funeral-tradicional.php` 200, sin `wp-content`). Cuenta cPanel única de FDZ; `.cpanel.yml` despliega en `public_html/` (el WordPress quedó en `_wp-anterior/`). El ensayo `nuevo.funerariadelzulia.com` sigue respondiendo (con noindex). | `README.md` (manual), `docs/specs/2026-10-28-migracion-dominio-final.md` |
 | Auditoría SEO + correcciones | Hecho (2026-09-09). Pendiente fuera del repo: `site_url` del `config.php` del servidor. | `docs/specs/2026-09-09-auditoria-seo-funerzul.md` |
 | Enlaces cortos de obituarios para redes (`/o/{id}/{red}`), contador de clics por red, imagen de vista previa 1200×630, Google Analytics 4 y verificación de Search Console | Hecho (2026-10-27), sin probar en el servidor; falta migración 17 y corregir `site_url` del servidor | `docs/specs/2026-10-27-enlaces-redes-y-analitica.md` |
 | Enlace "Portal de Clientes" (portal del titular de Prevision-Funeraria, OTP por correo) con interruptor y URL en Configuración | Hecho (2026-10-27), apagado por defecto; falta aplicar la migración 14 en el servidor | `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md` |
-| Seguridad del login del panel (Fase 1: límite de intentos, MFA, vencimientos, 4 perfiles) → SSO con Prevision-Funeraria (Fase 2) | Aprobado (Opción C, 2026-10-27), sin implementar | `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md` |
+| Seguridad del login del panel (Fase 1: límite de intentos, MFA, vencimientos, 4 perfiles) → SSO con Prevision-Funeraria (Fase 2) | SSO "Entrar con Previsión Funeraria" + 4 perfiles + límite de intentos **hechos en código (2026-10-28)**; la puesta en marcha y el resto de la Fase 1 (MFA del login de emergencia, vencimientos) siguen pendientes — ver `docs/BACKLOG.md` | `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md`, `docs/specs/2026-10-28-sso-prevision-funeraria.md` |
 | Integración con Prevision-Funeraria (precios de planes, leads, WhatsApp de emergencia, aviso por correo al staff) | Activa en el servidor (verificado 2026-09-13 y 2026-10-08). Precios ocultos por defecto (`show_prices = false`). | `api/README.md`, `docs/specs/2026-08-28-migracion-a-prevision-funeraria.md` |
 | Panel admin base (usuarios, plantillas, configuración) | Producción, estable | `README.md`, `api/README.md` |
 | Secciones del sitio activables/desactivables (Obituarios, Directorio Médico, Recursos, FAQs) + marca de agua del ángel en el hero | Hecho (2026-09-08) | `docs/specs/2026-09-08-secciones-activables-y-marca-agua-hero.md` |
@@ -95,21 +95,24 @@ de límites entre repos. Resumen de una línea cada uno:
 
 ## 4. Roadmap / próximos pasos priorizados
 
-0. **Restablecer MySQL del sitio de prueba** y corregir el `api/config.php`
-   del servidor (`site_url`, `env` en `production`) — 2026-10-08. Luego
-   aplicar/probar las migraciones 11-13 y las tarjetas de obituario.
+0. **Después del corte (2026-11-03):** Search Console y Google Business
+   Profile con el dominio final, regenerar capturas del manual, borrar el
+   usuario temporal `manual@funerariadelzulia.com` y limpiar
+   `nuevo.funerariadelzulia.com` — detalle en `docs/BACKLOG.md`.
 1. Decidir si `feature/prevision-funeraria` se mergea a `main` (o PR).
-2. SSO del panel admin de este sitio con las cuentas de staff de
-   Prevision-Funeraria (tenant `fdz`) — **bloqueado**: ese módulo de
-   autenticación compartida no existe todavía del lado de
-   Prevision-Funeraria (ver sección 2).
+2. Puesta en marcha del SSO del panel con las cuentas de staff de
+   Prevision-Funeraria (tenant `fdz`) — código listo en los dos repos
+   (2026-10-28); pasos en `docs/specs/2026-10-28-sso-prevision-funeraria.md`,
+   sección 7.
 3. Rehacer `docs/legado-holding-prevision/` (se perdió sin commitear el
    2026-08-27) **solo si** sigue haciendo falta algo que Prevision-Funeraria
    no cubra ya para Legado Holding — verificar antes de asumirlo (ya cubre
    el tenant `lh` en producción).
-4. Retomar con Mercantil la solicitud de spec completa (bloqueado del lado
-   del banco) — relevante para `Prevision-Funeraria`, no para este repo
-   (que ya no tiene endpoints de cobro activos).
+4. Mercantil, del lado de `Prevision-Funeraria` (no de este repo):
+   la **domiciliación por archivo** ya funciona y sus 4 formatos están
+   cargados y activos en producción para `fdz` (2026-11-02; ver
+   `Prevision-Funeraria/docs/domiciliacion/mercantil.md`). La API de pago en
+   línea (`POST /api` + MasterKey) sigue bloqueada por el banco.
 
 El backlog operativo día a día (con estado por tarea) vive en
 [`docs/BACKLOG.md`](BACKLOG.md) — ver sección 6.
