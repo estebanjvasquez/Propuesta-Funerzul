@@ -6,7 +6,7 @@ header('Content-Type: application/xml; charset=utf-8');
 // Última vez que se tocó el contenido/plantillas de las páginas estáticas
 // (portada, servicios, planes, crematorios). Bajar la mano si se vuelven a
 // editar -- no hace falta que sea la fecha de hoy en cada despliegue.
-const SITEMAP_STATIC_LASTMOD = '2026-09-09';
+const SITEMAP_STATIC_LASTMOD = '2026-11-03';
 
 echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
 echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">' . "\n";
