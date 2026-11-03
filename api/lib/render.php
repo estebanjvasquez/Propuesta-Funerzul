@@ -14,6 +14,16 @@ function fmt_date_es(?string $d): string
     return (int)date('j', $ts) . ' de ' . $meses[(int)date('n', $ts)] . ' de ' . date('Y', $ts);
 }
 
+/**
+ * Nacimiento para mostrar: la fecha exacta ("12 de marzo de 1950") si se cargó,
+ * o solo el año en los obituarios viejos que no la tienen. '' si no hay ninguno.
+ */
+function obit_birth_label(array $o): string
+{
+    if (!empty($o['birth_date'])) return fmt_date_es($o['birth_date']);
+    return !empty($o['birth_year']) ? (string)$o['birth_year'] : '';
+}
+
 /** Obtiene un obituario activo por slug (o id numérico). */
 function get_public_obituary(string $slugOrId): ?array
 {
@@ -66,14 +76,17 @@ function render_obituary_html(array $o): string
     if (!$tpl) {
         // Layout por defecto si no hay plantilla
         return '<h1>' . esc($o['full_name']) . '</h1>'
-            . '<p class="obit-detail-dates">' . esc($o['birth_year']) . ' — ' . esc(fmt_date_es($o['death_date'])) . '</p>'
+            . '<p class="obit-detail-dates">' . (obit_birth_label($o) !== '' ? esc(obit_birth_label($o)) . ' — ' : '') . esc(fmt_date_es($o['death_date'])) . '</p>'
             . '<p class="obit-qepd">Q.E.P.D.</p>' . $photoImg
             . '<p>' . nl2br(esc($o['biography'])) . '</p>';
     }
 
     $map = [
         '{{full_name}}'        => esc($o['full_name']),
-        '{{birth_year}}'       => esc($o['birth_year']),
+        // {{birth_year}} muestra la fecha exacta si se cargó (así las plantillas
+        // ya guardadas en la base no hay que tocarlas); {{birth_date}} es lo mismo.
+        '{{birth_year}}'       => esc(obit_birth_label($o)),
+        '{{birth_date}}'       => esc(obit_birth_label($o)),
         '{{death_date}}'       => esc(fmt_date_es($o['death_date'])),
         '{{service_type}}'     => esc($o['service_type']),
         '{{location_name}}'    => esc($o['location_name']),

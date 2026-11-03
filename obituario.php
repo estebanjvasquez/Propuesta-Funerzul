@@ -45,7 +45,8 @@ $jsonld = [
     'url'       => $canonical,
     'image'     => site_url($photo),
 ];
-if (!empty($o['birth_year'])) $jsonld['birthDate'] = (string)$o['birth_year'];
+if (!empty($o['birth_date'])) $jsonld['birthDate'] = $o['birth_date'];
+elseif (!empty($o['birth_year'])) $jsonld['birthDate'] = (string)$o['birth_year'];
 $jsonld['subjectOf'] = [
     '@type'     => 'WebPage',
     'name'      => $title,

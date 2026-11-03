@@ -406,8 +406,10 @@ function obituaryFormHtml(o = {}) {
             <input type="text" id="of_full_name" class="form-control" value="${escapeHtml(o.full_name || '')}" required>
         </div>
         <div class="form-grid-2">
-            <div class="form-group"><label class="form-label">Año de nacimiento</label>
-                <input type="number" id="of_birth_year" class="form-control" min="1900" max="2026" value="${o.birth_year || ''}"></div>
+            <div class="form-group"><label class="form-label">Fecha de nacimiento</label>
+                <input type="date" id="of_birth_date" class="form-control" min="1880-01-01" value="${o.birth_date || ''}">
+                <input type="hidden" id="of_birth_year" value="${o.birth_date ? '' : (o.birth_year || '')}">
+                ${!o.birth_date && o.birth_year ? `<small class="setting-help">Solo se registró el año (${o.birth_year}). Escriba la fecha completa si la conoce; si la deja vacía se sigue mostrando el año.</small>` : ''}</div>
             <div class="form-group"><label class="form-label">Fecha de fallecimiento *</label>
                 <input type="date" id="of_death_date" class="form-control" value="${o.death_date || ''}" required></div>
         </div>
@@ -496,7 +498,8 @@ async function submitObituary(e) {
         const payload = {
             id: id || undefined,
             full_name: $('#of_full_name').value.trim(),
-            birth_year: $('#of_birth_year').value,
+            birth_date: $('#of_birth_date').value,
+            birth_year: $('#of_birth_date').value ? '' : $('#of_birth_year').value,
             death_date: $('#of_death_date').value,
             service_type: $('#of_service_type').value,
             status: $('#of_status').value,
@@ -1202,7 +1205,7 @@ function templateFormHtml(t = {}) {
             <input type="text" id="tf_desc" class="form-control" value="${escapeHtml(t.description || '')}"></div>
         <div class="form-group"><label class="form-label">Contenido HTML *</label>
             <textarea id="tf_body" class="form-control code-area" required>${escapeHtml(t.body_html || '')}</textarea>
-            <p class="setting-help">Marcadores: {{full_name}}, {{birth_year}}, {{death_date}}, {{photo}}, {{photo_optional}} (solo aparece si de verdad se subió una foto), {{biography}}, {{service_type}}, {{location_name}}, {{location_address}}, {{event_schedule}}</p></div>
+            <p class="setting-help">Marcadores: {{full_name}}, {{birth_year}} (fecha de nacimiento; el año si solo se cargó el año), {{death_date}}, {{photo}}, {{photo_optional}} (solo aparece si de verdad se subió una foto), {{biography}}, {{service_type}}, {{location_name}}, {{location_address}}, {{event_schedule}}</p></div>
         <div class="form-group"><label class="form-label">CSS (opcional)</label>
             <textarea id="tf_styles" class="form-control code-area">${escapeHtml(t.styles || '')}</textarea></div>
         <div class="form-group"><label class="switch-inline"><input type="checkbox" id="tf_active" ${t.is_active !== false ? 'checked' : ''}> Activa</label></div>

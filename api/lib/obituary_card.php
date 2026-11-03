@@ -26,6 +26,39 @@ function oc_font(string $name): string
     return __DIR__ . '/../../assets/fonts/' . $name . '.ttf';
 }
 
+/** "nacimiento — fallecimiento" (death_date ya viene formateada por el llamador). */
+function oc_dates_text(array $o): string
+{
+    $birth = obit_birth_label($o);
+    return trim(($birth !== '' ? $birth . ' — ' : '') . ($o['death_date'] ?? ''));
+}
+
+/**
+ * Dibuja las fechas centradas en [x0, x0+width]. Con la fecha exacta de
+ * nacimiento el texto puede no caber: primero achica la letra (hasta 80 %) y,
+ * si aun así no cabe, la parte en dos líneas por el " — ". Devuelve el alto
+ * extra usado (0 si fue una sola línea) para que el llamador corra lo de abajo.
+ */
+function oc_draw_dates($img, string $text, string $font, float $size, $color, float $y, int $x0, int $width): float
+{
+    if ($text === '') return 0;
+    $fits = function (string $t, float $s) use ($font, $width): bool {
+        $box = imagettfbbox($s, 0, $font, $t);
+        return ($box[2] - $box[0]) <= $width;
+    };
+    for ($s = $size; $s >= $size * 0.8; $s -= 1) {
+        if ($fits($text, $s)) { oc_text_center_in($img, $text, $font, $s, $color, $y, $x0, $width); return 0; }
+    }
+    $parts = explode(' — ', $text, 2);
+    if (count($parts) < 2) { oc_text_center_in($img, $text, $font, $size * 0.8, $color, $y, $x0, $width); return 0; }
+    $s = $size;
+    while ($s > $size * 0.6 && !($fits($parts[0] . ' —', $s) && $fits($parts[1], $s))) $s -= 1;
+    $lh = $s * 1.6;
+    oc_text_center_in($img, $parts[0] . ' —', $font, $s, $color, $y, $x0, $width);
+    oc_text_center_in($img, $parts[1], $font, $s, $color, $y + $lh, $x0, $width);
+    return $lh;
+}
+
 /** Color sólido desde hex ('#1F4E79' o '1F4E79'). */
 function oc_color($img, string $hex)
 {
@@ -247,8 +280,7 @@ function obit_card_cinta(array $o)
     oc_text_center($img, 'Paz a su alma', $fPlayfairItalic, 58, $white, $y);
     $y += 110;
 
-    $dates = trim(($o['birth_year'] ? $o['birth_year'] . ' — ' : '') . ($o['death_date'] ?? ''));
-    if ($dates !== '') oc_text_center($img, $dates, $fInter, 34, $mist, $y);
+    oc_draw_dates($img, oc_dates_text($o), $fInter, 34, $mist, $y, 80, OC_WIDTH - 160);
 
     return $img;
 }
@@ -369,8 +401,8 @@ function obit_card_catolica(array $o)
     oc_text_center($img, 'Descanse en paz', $fPlayfairItalic, 58, $white, $y);
     $y += 100;
 
-    $dates = trim(($o['birth_year'] ? $o['birth_year'] . ' — ' : '') . ($o['death_date'] ?? ''));
-    if ($dates !== '') { oc_text_center($img, $dates, $fInter, 34, $mist, $y); $y += 80; }
+    $dates = oc_dates_text($o);
+    if ($dates !== '') { $y += oc_draw_dates($img, $dates, $fInter, 34, $mist, $y, 80, OC_WIDTH - 160); $y += 80; }
 
     // Cita bíblica: se omite si con la foto ya no cabe en la tarjeta.
     $verse = oc_wrap_lines('«Yo soy la resurrección y la vida; el que cree en mí, aunque muera, vivirá.»', $fPlayfairItalic, 32, OC_WIDTH - 280);
@@ -414,6 +446,13 @@ function obit_card_esquela(array $o)
     // Nombre en sans-serif negrita, igual que la tarjeta de referencia (no serif).
     $nameLines = oc_wrap_lines(mb_strtoupper($o['full_name'] ?? ''), $fInter, 52, OC_WIDTH - 200);
     $y = oc_text_block($img, $nameLines, $fInter, 52, $ink, $y, 74);
+    // Fechas bajo el nombre (2026-11-03: la esquela no mostraba ni el año).
+    $dates = oc_dates_text($o);
+    if ($dates !== '') {
+        $y -= 10; // oc_text_block() deja $y una línea de nombre más abajo
+        $y += oc_draw_dates($img, $dates, $fInter, 30, $muted, $y, 100, OC_WIDTH - 200);
+        $y += 30;
+    }
     $y += 40;
 
     if (oc_has_real_photo($o)) {
@@ -483,7 +522,7 @@ function oc_text_center_in($img, string $text, string $font, float $size, $color
 function obit_og_version(array $o): string
 {
     return substr(md5(implode('|', [
-        $o['full_name'] ?? '', $o['birth_year'] ?? '', $o['death_date'] ?? '',
+        $o['full_name'] ?? '', $o['birth_year'] ?? '', $o['birth_date'] ?? '', $o['death_date'] ?? '',
         oc_has_real_photo($o) ? ($o['photo_path'] ?? '') : '', 'og-v1',
     ])), 0, 10);
 }
@@ -527,8 +566,7 @@ function obit_og_image(array $o)
     $y += 6;
     oc_text_center_in($img, 'Paz a su alma', $fPlayfairItalic, 34, $white, $y, $x0, $w);
     $y += 58;
-    $dates = trim(($o['birth_year'] ? $o['birth_year'] . ' — ' : '') . ($o['death_date'] ?? ''));
-    if ($dates !== '') oc_text_center_in($img, $dates, $fInter, 24, $mist, $y, $x0, $w);
+    oc_draw_dates($img, oc_dates_text($o), $fInter, 24, $mist, $y, $x0, $w);
 
     oc_text_center_in($img, 'FUNERARIA DEL ZULIA', $fInter, 20, $gold, OG_HEIGHT - 42, $x0, $w);
     return $img;

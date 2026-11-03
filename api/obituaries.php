@@ -38,6 +38,7 @@ function obit_out(array $r): array
         'slug'             => $r['slug'],
         'full_name'        => $r['full_name'],
         'birth_year'       => $r['birth_year'] !== null ? (int)$r['birth_year'] : null,
+        'birth_date'       => $r['birth_date'] ?? null,
         'death_date'       => $r['death_date'],
         'service_type'     => $r['service_type'],
         'location_name'    => $r['location_name'],
@@ -73,9 +74,28 @@ function obit_input(array $b): array
     }
     $status = in_array($b['status'] ?? 'active', ['draft', 'active', 'inactive'], true) ? $b['status'] : 'active';
 
+    // Fecha exacta de nacimiento (2026-11-03). Antes el panel solo pedía el año;
+    // birth_year se sigue guardando (derivado de la fecha) para los obituarios
+    // viejos que solo tienen el año y para quien todavía tenga admin.js en caché.
+    $birthDate = clean_str($b['birth_date'] ?? '', 10);
+    $birthYear = isset($b['birth_year']) && $b['birth_year'] !== '' ? (int)$b['birth_year'] : null;
+    if ($birthDate !== '') {
+        [$by, $bm, $bd] = array_map('intval', explode('-', $birthDate) + [0, 0, 0]);
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $birthDate) || !checkdate($bm, $bd, $by) || $by < 1880) {
+            json_out(['ok' => false, 'error' => 'La fecha de nacimiento no es válida.'], 422);
+        }
+        if ($birthDate > $death) {
+            json_out(['ok' => false, 'error' => 'La fecha de nacimiento no puede ser posterior a la de fallecimiento.'], 422);
+        }
+        $birthYear = $by;
+    } else {
+        $birthDate = null;
+    }
+
     return [
         'full_name'        => $full,
-        'birth_year'       => isset($b['birth_year']) && $b['birth_year'] !== '' ? (int)$b['birth_year'] : null,
+        'birth_year'       => $birthYear,
+        'birth_date'       => $birthDate,
         'death_date'       => $death,
         'service_type'     => $type,
         'location_name'    => clean_str($b['location_name'] ?? '', 200),
@@ -180,13 +200,13 @@ switch ($action) {
 
         $st = db()->prepare(
             "INSERT INTO obituaries
-             (slug, full_name, birth_year, death_date, service_type, location_name, location_address,
+             (slug, full_name, birth_year, birth_date, death_date, service_type, location_name, location_address,
               event_schedule, biography, photo_path, photo_uploaded_at, photo_purge_at,
               status, template_id, meta_description, created_by, updated_by)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
         );
         $st->execute([
-            $slug, $in['full_name'], $in['birth_year'], $in['death_date'], $in['service_type'],
+            $slug, $in['full_name'], $in['birth_year'], $in['birth_date'], $in['death_date'], $in['service_type'],
             $in['location_name'], $in['location_address'], $in['event_schedule'], $in['biography'],
             $in['photo_path'] ?: null, $uploadedAt, $purgeAt,
             $in['status'], $in['template_id'], $in['meta_description'], $u['id'], $u['id'],
@@ -229,13 +249,13 @@ switch ($action) {
 
         $st = db()->prepare(
             "UPDATE obituaries SET
-               full_name=?, birth_year=?, death_date=?, service_type=?, location_name=?, location_address=?,
+               full_name=?, birth_year=?, birth_date=?, death_date=?, service_type=?, location_name=?, location_address=?,
                event_schedule=?, biography=?, photo_path=?, photo_uploaded_at=?, photo_purge_at=?, photo_purged=?,
                status=?, template_id=?, meta_description=?, updated_by=?
              WHERE id=?"
         );
         $st->execute([
-            $in['full_name'], $in['birth_year'], $in['death_date'], $in['service_type'],
+            $in['full_name'], $in['birth_year'], $in['birth_date'], $in['death_date'], $in['service_type'],
             $in['location_name'], $in['location_address'], $in['event_schedule'], $in['biography'],
             ($in['photo_path'] !== '' ? $in['photo_path'] : $existing['photo_path']),
             $uploadedAt, $purgeAt, $purged,
