@@ -22,7 +22,7 @@ Detalle de arquitectura y estructura de carpetas: `README.md`.
 
 | Módulo | Estado | Documento de referencia |
 |---|---|---|
-| Sitio público (obituarios, directorio médico, recursos, FAQs, Nosotros, testimonios, 4 planes, interés en cremación de mascotas) | **En producción en `www.funerariadelzulia.com`** (reemplazó al WordPress; verificado en vivo el 2026-11-03: portada y `servicios/funeral-tradicional.php` 200, sin `wp-content`). Cuenta cPanel única de FDZ; `.cpanel.yml` despliega en `public_html/` (el WordPress quedó en `_wp-anterior/`). El ensayo `nuevo.funerariadelzulia.com` sigue respondiendo (con noindex). | `README.md` (manual), `docs/specs/2026-10-28-migracion-dominio-final.md` |
+| Sitio público (obituarios, directorio médico, recursos, FAQs, Nosotros, testimonios, 4 planes, interés en cremación de mascotas) | **En la raíz de `www.funerariadelzulia.com` desde el 2026-11-02** (reemplaza al WordPress; corte **en curso**: falta corregir `app.site_url` del `config.php` de producción, que sigue en `nuevo.`, y Search Console — ver "▶ Retomar aquí" en `docs/BACKLOG.md`). Cuenta cPanel única de FDZ; `.cpanel.yml` despliega en `public_html/` cuando existe `_wp-anterior/`. El ensayo `nuevo.funerariadelzulia.com` sigue respondiendo (con noindex). | `README.md` (manual), `docs/specs/2026-10-28-migracion-dominio-final.md` |
 | Auditoría SEO + correcciones | Hecho (2026-09-09). Pendiente fuera del repo: `site_url` del `config.php` del servidor. | `docs/specs/2026-09-09-auditoria-seo-funerzul.md` |
 | Enlaces cortos de obituarios para redes (`/o/{id}/{red}`), contador de clics por red, imagen de vista previa 1200×630, Google Analytics 4 y verificación de Search Console | Hecho (2026-10-27), sin probar en el servidor; falta migración 17 y corregir `site_url` del servidor | `docs/specs/2026-10-27-enlaces-redes-y-analitica.md` |
 | Enlace "Portal de Clientes" (portal del titular de Prevision-Funeraria, OTP por correo) con interruptor y URL en Configuración | Hecho (2026-10-27), apagado por defecto; falta aplicar la migración 14 en el servidor | `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md` |
@@ -95,10 +95,12 @@ de límites entre repos. Resumen de una línea cada uno:
 
 ## 4. Roadmap / próximos pasos priorizados
 
-0. **Después del corte (2026-11-03):** Search Console y Google Business
-   Profile con el dominio final, regenerar capturas del manual, borrar el
-   usuario temporal `manual@funerariadelzulia.com` y limpiar
-   `nuevo.funerariadelzulia.com` — detalle en `docs/BACKLOG.md`.
+0. **Terminar el corte a www** (en curso desde el 2026-11-02): `site_url`
+   de producción, Search Console, estado de WordPress/Wordfence,
+   migraciones 20-21; después Google Business Profile, capturas del manual,
+   borrar `manual@funerariadelzulia.com` y limpiar
+   `nuevo.funerariadelzulia.com` — detalle en `docs/BACKLOG.md`,
+   "▶ Retomar aquí".
 1. Decidir si `feature/prevision-funeraria` se mergea a `main` (o PR).
 2. Puesta en marcha del SSO del panel con las cuentas de staff de
    Prevision-Funeraria (tenant `fdz`) — código listo en los dos repos

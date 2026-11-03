@@ -134,7 +134,6 @@ carpeta del ensayo. Lo verificado en vivo el 2026-11-03 está en `task.md`
 
 | Tarea | Estado | Motivo |
 |---|---|---|
-| Corte a `www.funerariadelzulia.com` (reemplaza el WordPress) | Hecho | Verificado en vivo el 2026-11-03: `www.funerariadelzulia.com/` y `servicios/funeral-tradicional.php` responden 200 con el sitio nuevo, sin `wp-content`. Las comprobaciones previas al corte quedaron como tarea abierta aparte. |
 | Recuperar contraseña en Prevision-Funeraria (el formulario mostraba correo y clave juntos; sin confirmación ni "ojo") | Hecho | 2026-11-02, commit `dab51f9` de PF, desplegado. |
 | Aplicar migraciones 14, 15 y 16 | Hecho | Aplicadas por el usuario el 2026-10-27. Verificado en vivo: FAQ nueva en la portada, obituarios con "Acto Velatorio", "En memoria de" en la plantilla predeterminada y ninguna plantilla con `{{photo}}`. |
 | Decidir esquema de login del personal y perfiles | Hecho | 2026-10-27: Opción C (híbrida) + 4 perfiles; portal de clientes en PF con OTP solo por correo. Ver sección 8 de la spec. |

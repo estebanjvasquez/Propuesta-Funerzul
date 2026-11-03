@@ -11,6 +11,40 @@
 
 ---
 
+## Cierre: 2026-11-03 (2) — Prevision-Funeraria: recuperar contraseña y domiciliación Mercantil
+
+**Rama:** sin cambios de código en este repo; solo docs (`SPEC.md` al día con
+el corte, el SSO y Mercantil). El trabajo fue en
+`estebanjvasquez/Prevision-Funeraria` (`main`, pusheado). Su bitácora propia
+tiene el detalle: `Prevision-Funeraria/task.md`.
+
+**Hecho (2026-11-02):**
+- PF `dab51f9` (desplegado): `/recuperar` mostraba juntos el formulario del
+  correo y el de la clave nueva; ahora son dos pantallas, con confirmación y
+  botón de "ojo" en todos los campos de contraseña.
+- PF `1b569bc`: formatos de Mercantil (afiliación, cobranza en cuenta y sus
+  respuestas) verificados contra los archivos reales de FDZ. El cobro
+  generado es idéntico byte por byte al lote real; las respuestas reales
+  cruzan completas. Tope de fecha valor 30 días; lote de afiliación con ceros.
+- **Los 4 formatos quedaron cargados y ACTIVOS en producción para `fdz`**
+  (versiones 1-4 del banco Mercantil, id 3), vía la API del diseñador con la
+  sesión de admin del usuario. Verificado: 30/45/5/8 campos, 0 problemas.
+
+**Validaciones:** PF 530/530 pruebas y `tsc` limpio. Comparación con los
+archivos reales hecha fuera del repo (tienen datos de clientes; carpeta
+`docs/domiciliacion/Mercantil/` en `.gitignore` de PF).
+
+**Bloqueos:** para el piloto faltan datos que pone el usuario en PF:
+RIF de la empresa (vacío), cuenta recaudadora Mercantil y convenio.
+Tabla completa de códigos de respuesta: pedirla a Mercantil.
+
+**Siguiente acción (Mercantil, sin volver a verificar nada de lo anterior):**
+1. Cuando el usuario cargue RIF, cuenta y convenio: lote de afiliación de
+   prueba con pocos contratos → enviar al banco → importar respuesta.
+2. Formato DESAFILIACION (= afiliación con `D` en la posición 2).
+
+---
+
 ## Cierre: 2026-11-03 (corte a www.funerariadelzulia.com en curso)
 
 **Rama:** `feature/prevision-funeraria`, último commit de código `c622b3d`,
