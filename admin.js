@@ -303,9 +303,7 @@ function renderObitTable(items) {
                 <div class="admin-actions">
                     <button class="btn btn-outline btn-sm" onclick="togglePin(${o.id}, ${o.is_pinned ? 0 : 1})">${o.is_pinned ? 'Quitar' : 'Fijar'}</button>
                     <button class="btn btn-outline btn-sm" onclick="editObituary(${o.id})">Editar</button>
-                    <a class="btn btn-outline btn-sm" href="api/obituary_card.php?id=${o.id}&style=cinta" target="_blank" rel="noopener" title="Descargar tarjeta para compartir (fondo azul con cinta)">Tarjeta 🎗️</a>
-                    <a class="btn btn-outline btn-sm" href="api/obituary_card.php?id=${o.id}&style=catolica" target="_blank" rel="noopener" title="Descargar tarjeta para compartir (católica: cruz dorada)">Tarjeta ✝</a>
-                    <a class="btn btn-outline btn-sm" href="api/obituary_card.php?id=${o.id}&style=esquela" target="_blank" rel="noopener" title="Descargar tarjeta para compartir (esquela blanca)">Tarjeta 📰</a>
+                    <button class="btn btn-outline btn-sm" onclick="downloadObituaryCard(${o.id}, this)" title="Descargar la tarjeta para compartir: el obituario tal como se ve con su plantilla">Tarjeta</button>
                     <button class="btn btn-outline btn-sm" onclick="openSocialLinks(${o.id}, ${escapeAttr(o.full_name)}, ${escapeAttr(o.status)})" title="Enlaces cortos para publicar en redes y clics recibidos">Redes</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteObituary(${o.id}, ${escapeAttr(o.full_name)})">Baja</button>
                 </div>
@@ -546,6 +544,45 @@ function showPreview(title, html) {
     }));
     layer.addEventListener('click', e => { if (e.target === layer) closePreview(); });
 }
+// Tarjeta para compartir (pedido del cliente 2026-11-04): una sola, idéntica a la
+// plantilla del obituario. El servidor arma el HTML de la plantilla con las
+// fuentes y estilos del sitio; aquí se dibuja en un iframe oculto y html2canvas
+// (cargado dentro de ese iframe) lo convierte en un PNG al doble de resolución.
+const HTML2CANVAS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+async function downloadObituaryCard(id, btn) {
+    const label = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Generando…'; }
+    const frame = document.createElement('iframe');
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;height:2400px;border:0';
+    try {
+        const r = await API.req('obituaries.php?action=card&id=' + id);
+        const html = r.html.replace('</head>', `<script src="${HTML2CANVAS_URL}"><\/script></head>`);
+        const loaded = new Promise(res => { frame.onload = res; });
+        frame.srcdoc = html;              // antes de insertarlo: si no, onload salta con about:blank
+        document.body.appendChild(frame);
+        await loaded;
+        const win = frame.contentWindow, doc = frame.contentDocument;
+        if (doc.fonts && doc.fonts.ready) await doc.fonts.ready;
+        await Promise.all([...doc.images].map(img => img.complete ? null : new Promise(res => { img.onload = img.onerror = res; })));
+        if (typeof win.html2canvas !== 'function') throw new Error('No se pudo cargar el generador de imágenes. Revise la conexión e intente de nuevo.');
+        const card = doc.querySelector('.obit-detail');
+        const canvas = await win.html2canvas(card, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+        if (!blob) throw new Error('No se pudo generar la imagen.');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'obituario-' + String(r.slug).replace(/[^a-z0-9-]/gi, '') + '.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    } catch (e) {
+        toast(e.message);
+    } finally {
+        frame.remove();
+        if (btn) { btn.disabled = false; btn.textContent = label; }
+    }
+}
+
 function closePreview() { document.getElementById('previewLayer')?.remove(); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('previewLayer')) { e.stopImmediatePropagation(); closePreview(); } }, true);
 

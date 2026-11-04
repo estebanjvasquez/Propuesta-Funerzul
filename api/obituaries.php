@@ -10,6 +10,7 @@
  *   POST delete    (staff = baja lógica; admin con ?hard=1 = definitivo)
  *   POST restore   (staff)
  *   POST preview   (staff)  -> HTML de la página tal como quedaría, sin guardar
+ *   GET  card      (staff)  -> HTML de la plantilla para la tarjeta PNG (?id=)
  */
 require __DIR__ . '/lib/bootstrap.php';
 require __DIR__ . '/lib/render.php';
@@ -200,6 +201,19 @@ switch ($action) {
         $o  = $in + ['id' => (int)($b['id'] ?? 0), 'slug' => '', 'photo_purged' => 0];
         if (!empty($b['preview_local_photo'])) $o['photo_path'] = 'about:preview-photo';
         json_out(['ok' => true, 'html' => obit_preview_document($o)]);
+    }
+
+    // ---- TARJETA (HTML de la plantilla; el panel la convierte en PNG) -----
+    // Cualquier estado (se puede preparar la tarjeta de un borrador).
+    case 'card': {
+        require_method('GET');
+        require_perm('sitio.obituarios.write');
+        $st = db()->prepare("SELECT * FROM obituaries WHERE id = ? AND deleted_at IS NULL");
+        $st->execute([(int)($_GET['id'] ?? 0)]);
+        $r = $st->fetch();
+        if (!$r) json_out(['ok' => false, 'error' => 'Obituario no encontrado.'], 404);
+        audit('obituary.card_generate', 'obituaries', (int)$r['id'], ['style' => 'plantilla']);
+        json_out(['ok' => true, 'html' => obit_card_document($r), 'slug' => $r['slug'] ?: (string)$r['id']]);
     }
 
     // ---- CREAR ------------------------------------------------------------

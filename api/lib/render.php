@@ -155,12 +155,31 @@ function obit_preview_sample(): array
 function obit_preview_document(array $o, ?array $tpl = null): string
 {
     $article = render_obituary_article($o, render_obituary_html($o, $tpl));
+    return obit_standalone_document('<main class="container obit-detail-main section">' . $article . '</main>');
+}
+
+/**
+ * Documento para la tarjeta descargable (pedido del cliente 2026-11-04): solo el
+ * cuerpo de la plantilla del obituario dentro del mismo recuadro de la página
+ * pública, sin botones ni datos agregados. El panel lo dibuja en un iframe
+ * oculto y lo convierte en PNG en el navegador, así la tarjeta es idéntica a la
+ * plantilla (las tarjetas GD de obituary_card.php tenían diseños propios).
+ */
+function obit_card_document(array $o): string
+{
+    return obit_standalone_document('<main class="container obit-detail-main section">'
+        . '<article class="obit-detail">' . render_obituary_html($o) . '</article></main>');
+}
+
+/** <html> mínimo con las fuentes y la hoja de estilos del sitio (rutas relativas a la raíz). */
+function obit_standalone_document(string $bodyHtml): string
+{
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
         . '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">'
         . '<link rel="stylesheet" href="styles.css?v=20261102-3">'
         . '<style>a,button{pointer-events:none}</style>'
-        . '</head><body><main class="container obit-detail-main section">' . $article . '</main></body></html>';
+        . '</head><body>' . $bodyHtml . '</body></html>';
 }
 
 /** Condolencias aprobadas de un obituario. */
