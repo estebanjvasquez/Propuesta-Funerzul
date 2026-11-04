@@ -20,7 +20,6 @@ if (!$o) {
     exit('No encontrado');
 }
 
-$o['death_date'] = fmt_date_es($o['death_date']);
 $version = obit_og_version($o);
 $dir  = __DIR__ . '/cache/og';
 $file = $dir . '/' . (int)$o['id'] . '-' . $version . '.png';

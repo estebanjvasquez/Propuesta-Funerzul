@@ -34,7 +34,12 @@ $photo     = obit_photo_url($o);
 $canonical = site_url('obituario.php?slug=' . urlencode($o['slug'] ?: (string)$o['id']));
 $title     = $o['full_name'] . ' (Q.E.P.D.) — Obituario | Funeraria del Zulia';
 $bioPlain  = trim(preg_replace('/\s+/', ' ', strip_tags($o['biography'] ?? '')));
-$desc      = $o['meta_description'] ?: ('Obituario y homenaje a ' . $o['full_name'] . ' en Maracaibo. ' . mb_substr($bioPlain, 0, 140));
+// Título y descripción para buscadores y para la vista previa al compartir
+// (WhatsApp/Facebook): nombran al difunto, sus fechas y a la funeraria (pedido
+// del cliente 2026-11-04).
+$fechas    = trim((obit_birth_short($o) !== '' ? obit_birth_short($o) . ' - ' : '') . fmt_date_short($o['death_date']));
+$desc      = $o['meta_description'] ?: ('En memoria de ' . $o['full_name'] . ' (' . $fechas . '). Obituario, servicio y condolencias en Funeraria del Zulia, Maracaibo.'
+    . ($bioPlain !== '' ? ' ' . mb_substr($bioPlain, 0, 120) : ''));
 
 // JSON-LD (Person) para buscadores e IA
 $jsonld = [
@@ -57,7 +62,7 @@ $jsonld['subjectOf'] = [
 // no la foto/placeholder. "v" cambia si cambia lo que se dibuja (nombre, fechas,
 // foto), para que Facebook/WhatsApp no reutilicen una versión vieja.
 $ogImage = site_url('obituario_og.php?id=' . (int)$o['id'] . '&v='
-    . obit_og_version(['death_date' => fmt_date_es($o['death_date'])] + $o));
+    . obit_og_version($o));
 
 $breadcrumbLd = breadcrumb_jsonld([
     ['name' => 'Inicio', 'url' => site_url('index.php')],
@@ -68,7 +73,7 @@ $breadcrumbLd = breadcrumb_jsonld([
 $head = '<meta name="robots" content="index, follow">'
     . '<meta property="og:type" content="profile">'
     . '<meta property="og:site_name" content="Funeraria del Zulia">'
-    . '<meta property="og:title" content="' . esc($title) . '">'
+    . '<meta property="og:title" content="' . esc('En memoria de ' . $o['full_name'] . ' (Q.E.P.D.) | Funeraria del Zulia') . '">'
     . '<meta property="og:description" content="' . esc($desc) . '">'
     . '<meta property="og:image" content="' . esc($ogImage) . '">'
     . '<meta property="og:image:width" content="1200">'

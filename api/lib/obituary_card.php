@@ -523,51 +523,79 @@ function obit_og_version(array $o): string
 {
     return substr(md5(implode('|', [
         $o['full_name'] ?? '', $o['birth_year'] ?? '', $o['birth_date'] ?? '', $o['death_date'] ?? '',
-        oc_has_real_photo($o) ? ($o['photo_path'] ?? '') : '', 'og-v1',
+        'og-v2',
     ])), 0, 10);
 }
 
-/** $o['death_date'] debe venir ya formateado (fmt_date_es) por el llamador. */
+/**
+ * Imagen para redes (1200x630) con el diseño de la tarjeta que usa el cliente
+ * (2026-11-04, igual a la plantilla "Cinta Conmemorativa" v2). A la izquierda,
+ * el logo de la funeraria, la cruz y la cinta (img/obit-cinta-fondo.png). A la
+ * derecha, "En memoria de" y el recuadro abierto arriba con el nombre en
+ * mayúsculas, "PAZ A SU ALMA" y las fechas dd/mm/aaaa | dd/mm/aaaa.
+ * $o['death_date'] llega en Y-m-d (sin formatear). No lleva foto, igual que
+ * la tarjeta.
+ */
 function obit_og_image(array $o)
 {
-    $img = imagecreatetruecolor(OG_WIDTH, OG_HEIGHT);
-    imagefilledrectangle($img, 0, 0, OG_WIDTH, OG_HEIGHT, oc_color($img, '#041D31'));
+    $W = OG_WIDTH; $H = OG_HEIGHT;
+    $img = imagecreatetruecolor($W, $H);
     imagealphablending($img, true);
-    imagesavealpha($img, true);
+    imagefilledrectangle($img, 0, 0, $W, $H, oc_color($img, '#041D31'));
 
-    $white = oc_color($img, '#FFFFFF');
-    $mist  = oc_color($img, '#C3DAEE');
-    $gold  = oc_color($img, '#F2C572');
-    $fPlayfair       = oc_font('PlayfairDisplay-Variable');
-    $fPlayfairItalic = oc_font('PlayfairDisplay-Italic-Variable');
-    $fInter          = oc_font('Inter-Variable');
-
-    // Franja de texto: a la derecha de la foto si la hay, si no, todo el ancho.
-    $x0 = 80; $w = OG_WIDTH - 160;
-    if (oc_has_real_photo($o)) {
-        $photoAbs = __DIR__ . '/../../' . ltrim($o['photo_path'], '/');
-        if (is_file($photoAbs)) {
-            oc_circle_photo($img, $photoAbs, 260, (int)(OG_HEIGHT / 2), 340, $white);
-            $x0 = 480; $w = OG_WIDTH - 480 - 60;
+    // Fondo de la tarjeta (900x850) a toda la altura, pegado a la izquierda.
+    $bgW = 0;
+    if ($src = oc_load_image(__DIR__ . '/../../img/obit-cinta-fondo.png')) {
+        $bgW = (int)round(imagesx($src) * $H / imagesy($src));   // ~667
+        imagecopyresampled($img, $src, 0, 0, 0, 0, $bgW, $H, imagesx($src), imagesy($src));
+        imagedestroy($src);
+        // Fundido del borde derecho al navy: la cinta se pierde detrás del texto.
+        $fade = 170;
+        for ($i = 0; $i < $fade; $i++) {
+            $a = (int)round(127 - 127 * ($i / ($fade - 1)));          // 127 transparente -> 0 opaco
+            $c = imagecolorallocatealpha($img, 4, 29, 49, max(0, $a));
+            imageline($img, $bgW - $fade + $i, 0, $bgW - $fade + $i, $H, $c);
         }
+        imagefilledrectangle($img, $bgW, 0, $W, $H, oc_color($img, '#041D31'));
     }
-    oc_watermark_seal($img, $x0 + (int)($w / 2), (int)(OG_HEIGHT / 2), 420, 93);
 
-    $y = 170;
-    oc_text_center_in($img, 'En memoria de', $fPlayfairItalic, 34, $mist, $y, $x0, $w);
-    $y += 82;
+    $white  = oc_color($img, '#FFFFFF');
+    $fBold  = oc_font('LeagueSpartan-Bold');
+    $fReg   = oc_font('LeagueSpartan-Regular');
+    $fLight = oc_font('OpenSans-LightItalic');
 
-    $name = mb_strtoupper($o['full_name'] ?? '');
-    $size = 56; $lh = 72;
-    $lines = oc_wrap_lines($name, $fPlayfair, $size, $w);
-    if (count($lines) > 2) { $size = 42; $lh = 56; $lines = array_slice(oc_wrap_lines($name, $fPlayfair, $size, $w), 0, 3); }
-    foreach ($lines as $line) { oc_text_center_in($img, $line, $fPlayfair, $size, $white, $y, $x0, $w); $y += $lh; }
+    // Columna de texto a la derecha.
+    $x0 = 600; $w = $W - $x0 - 50;                                 // 600..1150
+    oc_text_center_in($img, 'En memoria de', $fLight, 44, $white, 128, $x0, $w);
 
-    $y += 6;
-    oc_text_center_in($img, 'Paz a su alma', $fPlayfairItalic, 34, $white, $y, $x0, $w);
-    $y += 58;
-    oc_draw_dates($img, oc_dates_text($o), $fInter, 24, $mist, $y, $x0, $w);
+    // Recuadro abierto arriba (como en la tarjeta), 2 px.
+    $bx0 = $x0 + 10; $bx1 = $x0 + $w - 10; $by0 = 178; $by1 = 590;
+    imagesetthickness($img, 2);
+    imageline($img, $bx0, $by0, $bx0, $by1, $white);
+    imageline($img, $bx1, $by0, $bx1, $by1, $white);
+    imageline($img, $bx0, $by1, $bx1, $by1, $white);
+    imagesetthickness($img, 1);
 
-    oc_text_center_in($img, 'FUNERARIA DEL ZULIA', $fInter, 20, $gold, OG_HEIGHT - 42, $x0, $w);
+    // Nombre: mayúsculas, hasta 3 líneas; se achica si no cabe.
+    $name = mb_strtoupper(trim($o['full_name'] ?? ''), 'UTF-8');
+    $inner = $bx1 - $bx0 - 60;
+    $size = 40;
+    do {
+        $lines = oc_wrap_lines($name, $fBold, $size, $inner);
+        if (count($lines) <= 2 || $size <= 28) break;
+        $size -= 2;
+    } while (true);
+    $lines = array_slice($lines, 0, 3);
+    $lh = (int)round($size * 1.4);
+    $blockH = $lh * (count($lines) - 1);
+    $y = 300 - $blockH / 2 + $size * 0.35;                         // centrado alrededor de y=300
+    foreach ($lines as $line) { oc_text_center_in($img, $line, $fBold, $size, $white, $y, $bx0, $bx1 - $bx0); $y += $lh; }
+
+    oc_text_center_in($img, 'PAZ A SU ALMA', $fLight, 32, $white, 448, $bx0 + 12, $bx1 - $bx0);
+
+    $birth = obit_birth_short($o);
+    $death = fmt_date_short($o['death_date'] ?? '');
+    $dates = $birth !== '' ? $birth . '    |    ' . $death : $death;
+    oc_text_center_in($img, $dates, $fReg, 29, $white, 538, $bx0, $bx1 - $bx0);
     return $img;
 }
