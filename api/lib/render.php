@@ -24,6 +24,20 @@ function obit_birth_label(array $o): string
     return !empty($o['birth_year']) ? (string)$o['birth_year'] : '';
 }
 
+/** Fecha corta dd/mm/aaaa (formato de la tarjeta de la cinta que usa el cliente). */
+function fmt_date_short(?string $d): string
+{
+    if (!$d || !preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $d, $m)) return (string)($d ?? '');
+    return $m[3] . '/' . $m[2] . '/' . $m[1];
+}
+
+/** Nacimiento corto: dd/mm/aaaa, o solo el año en los obituarios viejos. */
+function obit_birth_short(array $o): string
+{
+    if (!empty($o['birth_date'])) return fmt_date_short($o['birth_date']);
+    return !empty($o['birth_year']) ? (string)$o['birth_year'] : '';
+}
+
 /** Obtiene un obituario activo por slug (o id numérico). */
 function get_public_obituary(string $slugOrId): ?array
 {
@@ -91,6 +105,9 @@ function render_obituary_html(array $o, ?array $tpl = null): string
         '{{birth_year}}'       => esc(obit_birth_label($o)),
         '{{birth_date}}'       => esc(obit_birth_label($o)),
         '{{death_date}}'       => esc(fmt_date_es($o['death_date'])),
+        // Fechas cortas dd/mm/aaaa (plantilla Cinta, 2026-11-04).
+        '{{birth_date_short}}' => esc(obit_birth_short($o)),
+        '{{death_date_short}}' => esc(fmt_date_short($o['death_date'])),
         '{{service_type}}'     => esc($o['service_type']),
         '{{location_name}}'    => esc($o['location_name']),
         '{{location_address}}' => esc($o['location_address']),
@@ -167,19 +184,20 @@ function obit_preview_document(array $o, ?array $tpl = null): string
  */
 function obit_card_document(array $o): string
 {
-    return obit_standalone_document('<main class="container obit-detail-main section">'
-        . '<article class="obit-detail">' . render_obituary_html($o) . '</article></main>');
+    // 540 px de ancho (el panel la captura al doble: 1080 px, ancho de una historia).
+    return obit_standalone_document('<main class="obit-detail-main">'
+        . '<article class="obit-detail">' . render_obituary_html($o) . '</article></main>', 'obit-card-doc');
 }
 
 /** <html> mínimo con las fuentes y la hoja de estilos del sitio (rutas relativas a la raíz). */
-function obit_standalone_document(string $bodyHtml): string
+function obit_standalone_document(string $bodyHtml, string $bodyClass = ''): string
 {
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
-        . '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">'
-        . '<link rel="stylesheet" href="styles.css?v=20261102-3">'
+        . '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=League+Spartan:wght@400;700&family=Open+Sans:ital,wght@1,300&display=swap">'
+        . '<link rel="stylesheet" href="styles.css?v=20261104-2">'
         . '<style>a,button{pointer-events:none}</style>'
-        . '</head><body>' . $bodyHtml . '</body></html>';
+        . '</head><body' . ($bodyClass !== '' ? ' class="' . esc($bodyClass) . '"' : '') . '>' . $bodyHtml . '</body></html>';
 }
 
 /** Condolencias aprobadas de un obituario. */

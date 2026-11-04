@@ -80,6 +80,9 @@ disco y backend PHP, todo junto).
   `obituaries.birth_date` (fecha exacta de nacimiento) solo si falta, y agrega
   los tipos de servicio Inhumación y Servicio Directo (Traslado y Otro se
   conservan para los obituarios viejos). Idempotente; importar antes de usar el panel nuevo.
+- **`23_plantilla_cinta_tarjeta_cliente.sql`** — La plantilla "Cinta Conmemorativa"
+  pasa a ser la tarjeta que usa hoy el cliente (9:16, nombre en mayúsculas, fechas
+  dd/mm/aaaa). Como la tarjeta descargable sale de la plantilla, también cambia la tarjeta. Se puede repetir.
 - **`SIEMPRE.sql`** — Respaldo completo del sistema SIEMPRE (referencia; no se
   importa en el hosting: pesa más de 1 GB y usa el esquema antiguo).
 
@@ -127,7 +130,8 @@ disco y backend PHP, todo junto).
    `15_obituarios_ajustes_cliente.sql`, `16_faq_aseguradoras.sql`,
    `17_enlaces_redes_y_analitica.sql`, `18_sso_prevision.sql`,
    `19_nosotros_testimonios.sql`, `20_plantilla_catolica.sql`,
-   `21_interes_servicios.sql` y `22_obituarios_nacimiento_y_servicios.sql` (en ese orden).
+   `21_interes_servicios.sql`, `22_obituarios_nacimiento_y_servicios.sql` y
+   `23_plantilla_cinta_tarjeta_cliente.sql` (en ese orden).
 
 ### 3. Iniciar sesión y asegurar el admin
 

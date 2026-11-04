@@ -2077,6 +2077,67 @@ textarea.form-control {
     -webkit-mask-size: auto 60%; mask-size: auto 60%;
 }
 
+/* Plantilla "Cinta Conmemorativa" v2 (database/23_plantilla_cinta_tarjeta_cliente.sql,
+   2026-11-04): calco de la tarjeta que hoy usa el cliente (Canva, 900×1600, 9:16).
+   Fondo = img/obit-cinta-fondo.png (logo, cruz y cinta recortados de esa tarjeta,
+   sin el texto) sobre el navy exacto #041d31; el resto se dibuja aquí. Todas las
+   medidas salen de la tarjeta de referencia (px de 900 de ancho) pasadas a cqw
+   (1cqw = 9 px de referencia), así la tarjeta escala igual en la página, en la
+   vista previa y en el PNG descargable (html2canvas: sin mask-image, por eso el
+   ángel es un <img>). */
+.obit-cinta2 { max-width: 540px; margin: 0 auto; }
+.obit-cinta2-card {
+    container-type: inline-size;
+    position: relative; overflow: hidden;
+    aspect-ratio: 9 / 16;
+    background: #041d31 url('img/obit-cinta-fondo.png') center top / 100% auto no-repeat;
+    color: #fff; text-align: center;
+    border-radius: 6px;
+}
+.obit-detail .obit-cinta2-card > * { position: absolute; left: 0; right: 0; margin: 0; max-width: none; }
+.obit-cinta2-card .obit-cinta2-angel {
+    left: 40.5%; right: auto; top: 80%; width: 18.4%; height: 13.2%;
+    object-fit: contain; opacity: 0.07; pointer-events: none;
+}
+.obit-cinta2-card .obit-cinta2-kicker {
+    top: 49.85%; transform: translateY(-50%);
+    font-family: 'Open Sans', sans-serif; font-style: italic; font-weight: 300;
+    font-size: 7.8cqw; line-height: 1; letter-spacing: 0.01em; color: #fff; padding-left: 3.5cqw;
+}
+.obit-cinta2-card .obit-cinta2-box {
+    left: 7.67%; right: 7.78%; top: 59.19%; bottom: 4.19%;
+    border: max(1px, 0.25cqw) solid rgba(255, 255, 255, 0.92); border-top: 0;
+}
+.obit-cinta2-card .obit-cinta2-name {
+    top: 60.16%; height: 9.4%; left: 16%; right: 16%;
+    display: flex; align-items: center; justify-content: center;
+}
+.obit-detail .obit-cinta2-card h1 {
+    margin: 0; color: #fff;
+    font-family: 'League Spartan', sans-serif; font-weight: 700;
+    font-size: 5.1cqw; line-height: 1.37; letter-spacing: 0.045em;
+    text-transform: uppercase; text-wrap: balance;
+}
+.obit-cinta2-card .obit-cinta2-paz {
+    top: 78.3%; transform: translateY(-50%);
+    font-family: 'Open Sans', sans-serif; font-style: italic; font-weight: 300;
+    font-size: 4.75cqw; line-height: 1; text-transform: uppercase; color: #fff; padding-left: 3cqw;
+}
+.obit-cinta2-card .obit-cinta2-dates {
+    top: 90%; transform: translateY(-50%);
+    font-family: 'League Spartan', sans-serif; font-weight: 400;
+    font-size: 4.65cqw; line-height: 1; color: #fff;
+}
+.obit-cinta2-card .obit-cinta2-dates .sep { padding: 0 3.8cqw; }
+.obit-cinta2-card .obit-cinta2-dates .d:empty + .sep { display: none; }
+/* Tarjeta descargable (obit_card_document): la plantilla de borde a borde, sin el
+   recuadro blanco de la página. */
+.obit-card-doc .obit-detail:has(.obit-cinta2) { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.obit-card-doc .obit-cinta2 { max-width: none; }
+.obit-card-doc .obit-cinta2-card { border-radius: 0; }
+.obit-card-doc { margin: 0; background: #fff; }
+.obit-card-doc .obit-detail-main { width: 540px; max-width: 540px; margin: 0; padding: 0; }
+
 /* Plantilla "Cruz de Luz (Católica)" (database/20_plantilla_catolica.sql,
    2026-11-02) — variante de la Cinta: hereda .obit-cinta (navy, textos, sello
    de agua) y cambia solo la cabecera: en vez de la cinta genérica, una cruz

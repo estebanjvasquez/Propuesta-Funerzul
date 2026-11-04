@@ -1300,7 +1300,7 @@ function templateFormHtml(t = {}) {
             <input type="text" id="tf_desc" class="form-control" value="${escapeHtml(t.description || '')}"></div>
         <div class="form-group"><label class="form-label">Contenido HTML *</label>
             <textarea id="tf_body" class="form-control code-area" required>${escapeHtml(t.body_html || '')}</textarea>
-            <p class="setting-help">Marcadores: {{full_name}}, {{birth_year}} (fecha de nacimiento; el año si solo se cargó el año), {{death_date}}, {{photo}}, {{photo_optional}} (solo aparece si de verdad se subió una foto), {{biography}}, {{service_type}}, {{location_name}}, {{location_address}}, {{event_schedule}}</p></div>
+            <p class="setting-help">Marcadores: {{full_name}}, {{birth_year}} (fecha de nacimiento; el año si solo se cargó el año), {{death_date}}, {{birth_date_short}} y {{death_date_short}} (dd/mm/aaaa), {{photo}}, {{photo_optional}} (solo aparece si de verdad se subió una foto), {{biography}}, {{service_type}}, {{location_name}}, {{location_address}}, {{event_schedule}}</p></div>
         <div class="form-group"><label class="form-label">CSS (opcional)</label>
             <textarea id="tf_styles" class="form-control code-area">${escapeHtml(t.styles || '')}</textarea></div>
         <div class="form-group"><label class="switch-inline"><input type="checkbox" id="tf_active" ${t.is_active !== false ? 'checked' : ''}> Activa</label></div>
