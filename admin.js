@@ -452,6 +452,7 @@ function obituaryFormHtml(o = {}) {
         <p id="of_error" class="login-error" hidden></p>
         <div class="modal-actions">
             <button type="submit" class="btn btn-primary" id="of_submit">Guardar obituario</button>
+            <button type="button" class="btn btn-outline" id="of_preview">Vista previa</button>
             <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
         </div>
     </form>`;
@@ -479,7 +480,74 @@ function wireObitForm() {
         }
     });
     $('#obitForm').addEventListener('submit', submitObituary);
+    $('#of_preview').addEventListener('click', previewObituary);
 }
+
+/** Datos del formulario de obituario (los mismos para guardar y para la vista previa). */
+function obitFormPayload(photoPath) {
+    const id = $('#of_id').value;
+    return {
+        id: id || undefined,
+        full_name: $('#of_full_name').value.trim(),
+        birth_date: $('#of_birth_date').value,
+        birth_year: $('#of_birth_date').value ? '' : $('#of_birth_year').value,
+        death_date: $('#of_death_date').value,
+        service_type: $('#of_service_type').value,
+        status: $('#of_status').value,
+        location_name: $('#of_location_name').value.trim(),
+        location_address: $('#of_location_address').value.trim(),
+        event_schedule: $('#of_event_schedule').value.trim(),
+        biography: $('#of_biography').value.trim(),
+        template_id: $('#of_template_id').value,
+        photo_path: photoPath || ''
+    };
+}
+
+// Vista previa antes de guardar (pedido del cliente 2026-11-04): el servidor arma
+// la página con la plantilla elegida; la foto nueva todavía no subida se muestra
+// desde el equipo (no se sube nada hasta "Guardar").
+async function previewObituary() {
+    const err = $('#of_error'); err.hidden = true;
+    const file = $('#of_photo_file').files[0];
+    const payload = obitFormPayload($('#of_photo_path').value);
+    if (file) payload.preview_local_photo = true;
+    try {
+        const r = await API.req('obituaries.php?action=preview', { method: 'POST', json: payload });
+        let html = r.html;
+        if (file) html = html.split('about:preview-photo').join(URL.createObjectURL(file));
+        showPreview('Vista previa del obituario (sin guardar)', html);
+    } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+}
+
+/** Capa de vista previa sobre el formulario (no lo cierra). Sin scripts: iframe aislado. */
+function showPreview(title, html) {
+    closePreview();
+    const layer = document.createElement('div');
+    layer.id = 'previewLayer';
+    layer.className = 'admin-preview-overlay';
+    layer.innerHTML = `
+        <div class="admin-preview">
+            <div class="admin-preview-header">
+                <strong>${escapeHtml(title)}</strong>
+                <div class="admin-preview-sizes" role="group" aria-label="Tamaño de pantalla">
+                    <button type="button" class="btn btn-outline btn-sm is-active" data-w="">Computadora</button>
+                    <button type="button" class="btn btn-outline btn-sm" data-w="390">Teléfono</button>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" onclick="closePreview()">Volver a editar</button>
+            </div>
+            <iframe class="admin-preview-frame" sandbox="allow-same-origin" title="${escapeHtml(title)}"></iframe>
+        </div>`;
+    document.body.appendChild(layer);
+    const frame = layer.querySelector('iframe');
+    frame.srcdoc = html;
+    layer.querySelectorAll('[data-w]').forEach(b => b.addEventListener('click', () => {
+        layer.querySelectorAll('[data-w]').forEach(x => x.classList.toggle('is-active', x === b));
+        frame.style.maxWidth = b.dataset.w ? b.dataset.w + 'px' : '';
+    }));
+    layer.addEventListener('click', e => { if (e.target === layer) closePreview(); });
+}
+function closePreview() { document.getElementById('previewLayer')?.remove(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.getElementById('previewLayer')) { e.stopImmediatePropagation(); closePreview(); } }, true);
 
 async function submitObituary(e) {
     e.preventDefault();
@@ -499,21 +567,7 @@ async function submitObituary(e) {
         }
         // 2) Crear o actualizar
         const id = $('#of_id').value;
-        const payload = {
-            id: id || undefined,
-            full_name: $('#of_full_name').value.trim(),
-            birth_date: $('#of_birth_date').value,
-            birth_year: $('#of_birth_date').value ? '' : $('#of_birth_year').value,
-            death_date: $('#of_death_date').value,
-            service_type: $('#of_service_type').value,
-            status: $('#of_status').value,
-            location_name: $('#of_location_name').value.trim(),
-            location_address: $('#of_location_address').value.trim(),
-            event_schedule: $('#of_event_schedule').value.trim(),
-            biography: $('#of_biography').value.trim(),
-            template_id: $('#of_template_id').value,
-            photo_path: photoPath || ''
-        };
+        const payload = obitFormPayload(photoPath);
         await API.req('obituaries.php?action=' + (id ? 'update' : 'create'), { method: 'POST', json: payload });
         closeModal();
         toast(id ? 'Obituario actualizado.' : 'Obituario creado.');
@@ -1216,6 +1270,7 @@ function templateFormHtml(t = {}) {
         <p id="tf_error" class="login-error" hidden></p>
         <div class="modal-actions">
             <button type="submit" class="btn btn-primary">Guardar plantilla</button>
+            <button type="button" class="btn btn-outline" id="tf_preview">Vista previa</button>
             <button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button>
         </div>
     </form>`;
@@ -1226,6 +1281,15 @@ async function editTemplate(id) {
     catch (e) { toast(e.message); }
 }
 function wireTplForm() {
+    $('#tf_preview').addEventListener('click', async () => {
+        const err = $('#tf_error'); err.hidden = true;
+        try {
+            const r = await API.req('templates.php?action=preview', {
+                method: 'POST', json: { body_html: $('#tf_body').value, styles: $('#tf_styles').value }
+            });
+            showPreview('Vista previa de la plantilla (obituario de ejemplo, sin guardar)', r.html);
+        } catch (ex) { err.innerText = ex.message; err.hidden = false; }
+    });
     $('#tplForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const err = $('#tf_error'); err.hidden = true;

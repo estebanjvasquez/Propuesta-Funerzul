@@ -41,6 +41,7 @@ const MANUAL = [
             { t: 'Elija el <strong>Estado</strong>: <strong>Activo</strong> se publica en el sitio de inmediato; <strong>Borrador</strong> lo guarda sin publicarlo (ideal para revisarlo con la familia); <strong>Inactivo</strong> lo oculta.' },
             { t: 'La <strong>Plantilla</strong> define el diseño de la página del obituario. Si no elige ninguna se usa la predeterminada. Para una familia católica elija <strong>Cruz de Luz (Católica)</strong>; la <strong>Cinta Conmemorativa</strong> sirve para cualquier creencia.' },
             { t: 'La <strong>Fotografía</strong> es opcional (JPG, PNG o WebP). Si no se sube, la página simplemente no muestra foto.' },
+            { t: 'Antes de guardar puede pulsar <strong>Vista previa</strong>: muestra la página del obituario tal como se publicará, con la plantilla elegida y la foto seleccionada, en tamaño computadora o teléfono. No guarda nada; <strong>Volver a editar</strong> regresa al formulario.' },
             { t: 'Pulse <strong>Guardar obituario</strong>. Aparecerá en la lista con su estado.', img: '12-obituario-guardado', cap: 'El obituario nuevo, guardado como borrador.' },
         ],
         tips: [
@@ -140,7 +141,7 @@ const MANUAL = [
         intro: 'El diseño con que se muestra cada obituario en el sitio.',
         steps: [
             { t: 'Vaya a <strong>Sitio web → Plantillas de obituario</strong>. <strong>Predeterminar</strong> marca la plantilla que se usa cuando un obituario no tiene una asignada (solo puede haber una).', img: '60-plantillas', cap: 'Plantillas disponibles.' },
-            { t: 'Con <strong>Editar</strong> o <strong>+ Nueva plantilla</strong> se define el nombre, la descripción y el contenido HTML. Los marcadores entre llaves se reemplazan por los datos reales: <code>{{full_name}}</code>, <code>{{birth_year}}</code> (fecha de nacimiento), <code>{{death_date}}</code>, <code>{{photo_optional}}</code>, <code>{{biography}}</code>, <code>{{service_type}}</code>, <code>{{location_name}}</code>, <code>{{location_address}}</code>, <code>{{event_schedule}}</code>.', img: '61-plantilla-editar', cap: 'Edición de una plantilla.' },
+            { t: 'Con <strong>Editar</strong> o <strong>+ Nueva plantilla</strong> se define el nombre, la descripción y el contenido HTML. Los marcadores entre llaves se reemplazan por los datos reales: <code>{{full_name}}</code>, <code>{{birth_year}}</code> (fecha de nacimiento), <code>{{death_date}}</code>, <code>{{photo_optional}}</code>, <code>{{biography}}</code>, <code>{{service_type}}</code>, <code>{{location_name}}</code>, <code>{{location_address}}</code>, <code>{{event_schedule}}</code>. <strong>Vista previa</strong> muestra la plantilla con un obituario de ejemplo antes de guardarla.', img: '61-plantilla-editar', cap: 'Edición de una plantilla.' },
         ],
         tips: [
             'Plantillas disponibles: <strong>Cinta Conmemorativa</strong> (cualquier creencia), <strong>Cruz de Luz (Católica)</strong>, <strong>Clásico Sobrio</strong> y <strong>Esquela Familiar</strong>.',

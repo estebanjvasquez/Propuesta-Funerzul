@@ -88,18 +88,7 @@ $conds    = approved_condolences((int)$o['id']);
 <main class="container obit-detail-main section">
     <nav class="breadcrumb"><a href="index.php">Inicio</a> › <a href="obituarios.php">Obituarios</a> › <span><?= esc($o['full_name']) ?></span></nav>
 
-    <article class="obit-detail">
-        <?= $bodyHtml ?>
-        <div class="obit-detail-meta">
-            <span class="status-badge badge-blue"><?= esc($o['service_type']) ?></span>
-            <?php if ($o['location_name']): ?><span class="obit-detail-loc"><?= esc($o['location_name']) ?><?= $o['location_address'] ? ' — ' . esc($o['location_address']) : '' ?></span><?php endif; ?>
-        </div>
-        <?php if ($o['event_schedule']): ?><p class="obit-detail-event"><strong>Oficios y sepelio:</strong> <?= esc($o['event_schedule']) ?></p><?php endif; ?>
-        <div class="obit-detail-actions">
-            <a class="btn btn-outline" href="#condForm">Dejar condolencias</a>
-            <button class="btn btn-text" type="button" onclick="shareObituary('<?= esc($o['slug'] ?: $o['id']) ?>')">Compartir</button>
-        </div>
-    </article>
+    <?= render_obituary_article($o, $bodyHtml) ?>
 
     <section class="obit-condolences">
         <h2>Mensajes de Condolencia</h2>

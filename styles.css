@@ -1877,6 +1877,22 @@ textarea.form-control {
 /* Vistas densas (detalle/edición de contrato, cliente, siniestro): más ancho
    para que las tablas y los formularios de dos columnas no queden apretados. */
 .admin-modal--wide { max-width: 960px; }
+/* Vista previa de obituario / plantilla (encima del formulario, que sigue abierto) */
+.admin-preview-overlay {
+    position: fixed; inset: 0; z-index: 1100; background: rgba(22,58,95,0.75);
+    display: flex; justify-content: center; padding: 24px 16px;
+}
+.admin-preview {
+    background: var(--color-surface); width: 100%; max-width: 1100px; border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg); display: flex; flex-direction: column; overflow: hidden;
+}
+.admin-preview-header {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--color-surface-high);
+}
+.admin-preview-sizes { display: flex; gap: 6px; }
+.admin-preview-sizes .is-active { background: var(--color-primary, #163a5f); color: #fff; }
+.admin-preview-frame { flex: 1; width: 100%; margin: 0 auto; border: 0; background: #fff; }
 .admin-modal-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 20px 24px; border-bottom: 1px solid var(--color-surface-high); position: sticky; top: 0; background: var(--color-surface);

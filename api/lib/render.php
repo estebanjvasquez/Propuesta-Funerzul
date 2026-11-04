@@ -58,8 +58,11 @@ function get_template_for(array $o): ?array
     return $row ?: null;
 }
 
-/** Renderiza el cuerpo del obituario usando su plantilla (reemplazo de marcadores). */
-function render_obituary_html(array $o): string
+/**
+ * Renderiza el cuerpo del obituario usando su plantilla (reemplazo de marcadores).
+ * $tpl permite pasar una plantilla todavía sin guardar (vista previa del panel).
+ */
+function render_obituary_html(array $o, ?array $tpl = null): string
 {
     $photoUrl = obit_photo_url($o);
     $photoImg = '<img src="' . esc($photoUrl) . '" alt="Retrato de ' . esc($o['full_name']) . '" class="obit-detail-photo" loading="lazy">';
@@ -71,7 +74,7 @@ function render_obituary_html(array $o): string
     $photoOptional = (!empty($o['photo_path']) && empty($o['photo_purged'])
         && $o['photo_path'] !== get_setting('photo_placeholder_path', 'uploads/obituarios/_placeholder.webp'))
         ? $photoImg : '';
-    $tpl = get_template_for($o);
+    $tpl = $tpl ?? get_template_for($o);
 
     if (!$tpl) {
         // Layout por defecto si no hay plantilla
@@ -99,6 +102,65 @@ function render_obituary_html(array $o): string
     $html = strtr($tpl['body_html'], $map);
     $css  = !empty($tpl['styles']) ? '<style>' . $tpl['styles'] . '</style>' : '';
     return $css . $html;
+}
+
+/**
+ * Bloque <article> de la página pública del obituario (cuerpo de la plantilla +
+ * tipo de servicio, lugar, oficios y acciones). Lo comparten obituario.php y la
+ * vista previa del panel, para que lo que se ve antes de guardar sea lo mismo
+ * que se publica.
+ */
+function render_obituary_article(array $o, string $bodyHtml): string
+{
+    $loc = '';
+    if (!empty($o['location_name'])) {
+        $loc = '<span class="obit-detail-loc">' . esc($o['location_name'])
+            . (!empty($o['location_address']) ? ' — ' . esc($o['location_address']) : '') . '</span>';
+    }
+    $event = !empty($o['event_schedule'])
+        ? '<p class="obit-detail-event"><strong>Oficios y sepelio:</strong> ' . esc($o['event_schedule']) . '</p>'
+        : '';
+    $ref = !empty($o['slug']) ? $o['slug'] : (string)($o['id'] ?? '');
+    return '<article class="obit-detail">'
+        . $bodyHtml
+        . '<div class="obit-detail-meta"><span class="status-badge badge-blue">' . esc($o['service_type']) . '</span>' . $loc . '</div>'
+        . $event
+        . '<div class="obit-detail-actions">'
+        . '<a class="btn btn-outline" href="#condForm">Dejar condolencias</a>'
+        . '<button class="btn btn-text" type="button" onclick="shareObituary(\'' . esc($ref) . '\')">Compartir</button>'
+        . '</div></article>';
+}
+
+/** Obituario de ejemplo para la vista previa de una plantilla (no existe en la base). */
+function obit_preview_sample(): array
+{
+    return [
+        'id' => 0, 'slug' => '', 'full_name' => 'María Fernanda Pérez de Ejemplo',
+        'birth_year' => 1948, 'birth_date' => '1948-03-12', 'death_date' => date('Y-m-d'),
+        'service_type' => 'Acto Velatorio',
+        'location_name' => 'Funeraria del Zulia — Capilla San José',
+        'location_address' => 'Calle 84 No. 3F-70, Sector Valle Frío, Maracaibo',
+        'event_schedule' => 'Mañana a las 10:00 a. m., Cementerio El Cuadrado',
+        'biography' => "Madre, abuela y amiga entrañable. Dedicó su vida a la docencia y a su familia.\nSus hijos, nietos y demás familiares invitan al acto de despedida.",
+        'photo_path' => '', 'photo_purged' => 0, 'template_id' => null,
+    ];
+}
+
+/**
+ * Documento HTML completo de la vista previa del panel: la misma hoja de estilos
+ * y el mismo <article> de la página pública, sin encabezado ni condolencias.
+ * Las rutas son relativas a la raíz del sitio (el panel lo muestra en un iframe
+ * srcdoc, que hereda la URL de admin.html).
+ */
+function obit_preview_document(array $o, ?array $tpl = null): string
+{
+    $article = render_obituary_article($o, render_obituary_html($o, $tpl));
+    return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
+        . '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+        . '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">'
+        . '<link rel="stylesheet" href="styles.css?v=20261102-3">'
+        . '<style>a,button{pointer-events:none}</style>'
+        . '</head><body><main class="container obit-detail-main section">' . $article . '</main></body></html>';
 }
 
 /** Condolencias aprobadas de un obituario. */

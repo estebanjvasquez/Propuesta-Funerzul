@@ -9,8 +9,10 @@
  *   POST pin       (staff)  -> fijar/desfijar
  *   POST delete    (staff = baja lógica; admin con ?hard=1 = definitivo)
  *   POST restore   (staff)
+ *   POST preview   (staff)  -> HTML de la página tal como quedaría, sin guardar
  */
 require __DIR__ . '/lib/bootstrap.php';
+require __DIR__ . '/lib/render.php';
 
 $action = $_GET['action'] ?? 'list';
 
@@ -184,6 +186,20 @@ switch ($action) {
             db()->prepare("UPDATE obituaries SET view_count = view_count + 1 WHERE id = ?")->execute([$r['id']]);
         }
         json_out(['ok' => true, 'item' => obit_out($r)]);
+    }
+
+    // ---- VISTA PREVIA (no guarda nada) -------------------------------------
+    // El panel manda el formulario tal como está; si la foto todavía no se subió,
+    // marca preview_local_photo y reemplaza el marcador por la imagen local.
+    case 'preview': {
+        require_method('POST');
+        require_perm('sitio.obituarios.write');
+        require_csrf();
+        $b  = body_json();
+        $in = obit_input($b);
+        $o  = $in + ['id' => (int)($b['id'] ?? 0), 'slug' => '', 'photo_purged' => 0];
+        if (!empty($b['preview_local_photo'])) $o['photo_path'] = 'about:preview-photo';
+        json_out(['ok' => true, 'html' => obit_preview_document($o)]);
     }
 
     // ---- CREAR ------------------------------------------------------------

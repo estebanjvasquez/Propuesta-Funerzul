@@ -14,7 +14,7 @@ if (!defined('OBIT_APP')) { http_response_code(403); exit('Forbidden'); }
 
 const SSO_REVALIDATE_SECONDS = 300;   // cada cuánto se pregunta a PF si la sesión sigue viva
 const SSO_OUTAGE_GRACE_SECONDS = 1800; // PF caído: se tolera hasta 30 min sin poder verificar
-const SSO_STATE_TTL_SECONDS = 600;
+const SSO_STATE_TTL_SECONDS = 1800;  // alcanza para "¿Olvidaste tu contraseña?" en PF y volver
 
 /** Configuración del bloque 'pf_sso' de config.php, o null si falta algo (SSO apagado). */
 function sso_config(): ?array

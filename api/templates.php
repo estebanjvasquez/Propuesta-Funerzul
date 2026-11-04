@@ -5,8 +5,10 @@
  *   POST create/update     (admin)
  *   POST set_default       (admin)  -> deja una sola predeterminada
  *   POST delete            (admin)
+ *   POST preview           (admin)  -> la plantilla sin guardar, con un obituario de ejemplo
  */
 require __DIR__ . '/lib/bootstrap.php';
+require __DIR__ . '/lib/render.php';
 
 $action = $_GET['action'] ?? 'list';
 
@@ -79,6 +81,18 @@ switch ($action) {
         $row = db()->prepare("SELECT * FROM obituary_templates WHERE id = ?");
         $row->execute([$id]);
         json_out(['ok' => true, 'item' => tpl_out($row->fetch())]);
+    }
+
+    case 'preview': {
+        require_method('POST');
+        require_perm('sitio.admin');
+        require_csrf();
+        $b = body_json();
+        if (trim((string)($b['body_html'] ?? '')) === '') {
+            json_out(['ok' => false, 'error' => 'Escriba el contenido HTML de la plantilla para verla.'], 422);
+        }
+        $tpl = ['body_html' => (string)$b['body_html'], 'styles' => (string)($b['styles'] ?? '')];
+        json_out(['ok' => true, 'html' => obit_preview_document(obit_preview_sample(), $tpl)]);
     }
 
     case 'set_default': {
