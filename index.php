@@ -123,7 +123,7 @@ function fz_site_url(string $path = ''): string {
         "postalCode": "4001",
         "addressCountry": "VE"
       },
-      "hasMap": "https://www.google.com/maps/search/?api=1&query=M95W%2B839%20Maracaibo",
+      "hasMap": "https://www.google.com/maps?cid=15910872118152854902",
       "geo": {
         "@type": "GeoCoordinates",
         "latitude": 10.6580,
@@ -574,7 +574,7 @@ function fz_site_url(string $path = ''): string {
             </div>
 
             <ul class="contact-info">
-                <li><strong>Dirección:</strong> Calle 84 No. 3F-70, Edificio Funeraria del Zulia, Sector Valle Frío, Maracaibo 4001, Estado Zulia. <a href="https://www.google.com/maps/search/?api=1&amp;query=M95W%2B839%20Maracaibo" target="_blank" rel="noopener">Cómo llegar</a></li>
+                <li><strong>Dirección:</strong> Calle 84 No. 3F-70, Edificio Funeraria del Zulia, Sector Valle Frío, Maracaibo 4001, Estado Zulia. <a href="https://www.google.com/maps?cid=15910872118152854902" target="_blank" rel="noopener">Cómo llegar</a></li>
                 <li><strong>Horario:</strong> Lunes a domingo, 24 horas.</li>
                 <li><strong>Correo:</strong> <a href="mailto:contacto@funerariadelzulia.com">contacto@funerariadelzulia.com</a></li>
             </ul>
@@ -653,8 +653,8 @@ function fz_site_url(string $path = ''): string {
                 <div>
                     <h4>Nuestra Ubicación</h4>
 <div class="map-container">
-    <a href="https://www.google.com/maps/search/?api=1&query=M95W%2B839%20Maracaibo" target="_blank" rel="noopener" class="map-link" aria-label="Abrir ubicación de Funeraria del Zulia en Google Maps">
-        <iframe title="Mapa de ubicación de Funeraria del Zulia en Maracaibo" src="https://maps.google.com/maps?q=M95W%2B839%20Maracaibo&z=16&output=embed" width="100%" height="300" class="map-iframe" allowfullscreen="" loading="lazy"></iframe>
+    <a href="https://www.google.com/maps?cid=15910872118152854902" target="_blank" rel="noopener" class="map-link" aria-label="Abrir ubicación de Funeraria del Zulia en Google Maps">
+        <iframe title="Mapa de ubicación de Funeraria del Zulia en Maracaibo" src="https://maps.google.com/maps?cid=15910872118152854902&amp;z=16&amp;output=embed" width="100%" height="300" class="map-iframe" allowfullscreen="" loading="lazy"></iframe>
     </a>
     <p class="map-address">Dirección: Calle 84 No. 3F-70, Edificio Funeraria del Zulia, Sector Valle Frío, Maracaibo 4001, Zulia, Venezuela</p>
     <p>Teléfono: <a href="tel:+584246950136" class="footer-tel">+58 424 695-0136</a></p>
