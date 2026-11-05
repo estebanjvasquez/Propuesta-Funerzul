@@ -77,7 +77,7 @@ function fz_site_url(string $path = ''): string {
     <meta name="description" content="Servicios funerarios de confianza en Maracaibo, Zulia. Atención 24/7, cremación, traslados y previsión familiar con dignidad y respeto.">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap">
-    <link rel="stylesheet" href="styles.css?v=20261104-2">
+    <link rel="stylesheet" href="styles.css?v=20261105-1">
 
     <meta name="keywords" content="funeraria maracaibo, servicios funerarios zulia, cremación maracaibo, funeraria 24 horas, previsión funeraria familiar, traslados internacionales de restos, repatriación funeraria venezuela">
     <meta name="robots" content="index, follow">
@@ -110,6 +110,7 @@ function fz_site_url(string $path = ''): string {
       "url": "<?= fz_site_url() ?>",
       "logo": "<?= fz_site_url('logo.png') ?>",
       "image": "<?= fz_site_url('logo.png') ?>",
+      "sameAs": ["https://www.instagram.com/funerariazulia/", "https://www.facebook.com/funerariadelzuliaoficial/"],
       "telephone": "+584246950136",
       "foundingDate": "1942",
       "priceRange": "$$",
@@ -592,6 +593,10 @@ function fz_site_url(string $path = ''): string {
                     </a>
                     <p>Una empresa de <strong>Legado Holding</strong>.<br>Uniendo familias, honrando vidas, preservando memorias.</p>
                     <p class="footer-address"><strong>Sede Principal:</strong> Calle 84 No. 3F-70, Edificio Funeraria del Zulia, Oficina 3F-70, Sector Valle Frío, Maracaibo 4001, Estado Zulia.</p>
+                    <div class="footer-social" aria-label="Redes sociales">
+                        <a href="https://www.instagram.com/funerariazulia/" target="_blank" rel="noopener" aria-label="Instagram de Funeraria del Zulia"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2zm0 1.8c-3.15 0-3.5.01-4.74.07-.98.04-1.51.21-1.86.34-.47.18-.8.4-1.15.75-.35.35-.57.68-.75 1.15-.13.35-.3.88-.34 1.86C3.1 8.5 3.1 8.85 3.1 12s0 3.5.06 4.74c.04.98.21 1.51.34 1.86.18.47.4.8.75 1.15.35.35.68.57 1.15.75.35.13.88.3 1.86.34 1.24.06 1.59.07 4.74.07s3.5-.01 4.74-.07c.98-.04 1.51-.21 1.86-.34.47-.18.8-.4 1.15-.75.35-.35.57-.68.75-1.15.13-.35.3-.88.34-1.86.06-1.24.07-1.59.07-4.74s-.01-3.5-.07-4.74c-.04-.98-.21-1.51-.34-1.86a3.1 3.1 0 0 0-.75-1.15 3.1 3.1 0 0 0-1.15-.75c-.35-.13-.88-.3-1.86-.34C15.5 4.01 15.15 4 12 4zm0 3.06a4.94 4.94 0 1 1 0 9.88 4.94 4.94 0 0 1 0-9.88zm0 8.15a3.21 3.21 0 1 0 0-6.42 3.21 3.21 0 0 0 0 6.42zm6.29-8.35a1.15 1.15 0 1 1-2.3 0 1.15 1.15 0 0 1 2.3 0z"/></svg><span>Instagram</span></a>
+                        <a href="https://www.facebook.com/funerariadelzuliaoficial/" target="_blank" rel="noopener" aria-label="Facebook de Funeraria del Zulia"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.78-3.91 1.1 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.78-1.63 1.57v1.88h2.78l-.44 2.91h-2.34V22c4.78-.76 8.43-4.92 8.43-9.94z"/></svg><span>Facebook</span></a>
+                    </div>
                 </div>
 
                 <!-- Enlaces rápidos -->

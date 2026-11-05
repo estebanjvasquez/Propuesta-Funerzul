@@ -1692,6 +1692,16 @@ textarea.form-control {
 .map-container p { color: rgba(255, 255, 255, 0.7); }
 .map-address { margin-top: 8px; font-weight: 600; }
 .footer-address { font-size: 13px; }
+/* Redes sociales en el pie (pedido del cliente 2026-11-05). */
+.footer-social { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.footer-social a {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 999px;
+    color: rgba(255, 255, 255, 0.85); font-size: 14px; text-decoration: none;
+    transition: color .2s, border-color .2s, background-color .2s;
+}
+.footer-social a:hover, .footer-social a:focus-visible { color: #fff; border-color: var(--color-secondary); background: rgba(255, 255, 255, 0.06); }
+.footer-social svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
 /* 60px (antes 44px): el cliente reportó el logo pequeño (2026-10-27). */
 .header-logo-img {
     height: 60px;

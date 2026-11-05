@@ -195,7 +195,7 @@ function obit_standalone_document(string $bodyHtml, string $bodyClass = ''): str
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
         . '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
         . '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=League+Spartan:wght@400;700&family=Open+Sans:ital,wght@1,300&display=swap">'
-        . '<link rel="stylesheet" href="styles.css?v=20261104-2">'
+        . '<link rel="stylesheet" href="styles.css?v=20261105-1">'
         . '<style>a,button{pointer-events:none}</style>'
         . '</head><body' . ($bodyClass !== '' ? ' class="' . esc($bodyClass) . '"' : '') . '>' . $bodyHtml . '</body></html>';
 }
