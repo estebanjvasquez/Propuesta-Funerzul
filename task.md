@@ -11,6 +11,91 @@
 
 ---
 
+## Cierre: 2026-11-06 — obituarios al gusto del cliente, redes, mapa; producción al día
+
+> El mismo día hubo otra sesión, solo de Prevision-Funeraria (fase E, domiciliación,
+> portal y pagos del portal). Su entrada es la siguiente.
+
+**Rama:** `feature/prevision-funeraria`, pusheada. **Producción en `6e8f64c`**
+(verificado con curl el 2026-11-06). Migraciones 20-23 aplicadas en la base
+real.
+
+**Hecho (2026-11-03 → 05):**
+- `2eea8ac` + `42d1c42` (03-11): fecha exacta de nacimiento (`birth_date`).
+  Tipos de servicio Inhumación y Servicio Directo; Traslado y Otro salen del
+  panel. Migración 22.
+- 04-11: cPanel no conectaba con GitHub. GitHub y el repo estaban bien (público,
+  `ls-remote` anónimo OK); el problema era del servidor y el usuario lo
+  resolvió.
+- `5463368`: botón **Vista previa** en el formulario de obituario y en el de
+  plantilla.
+  - `obituaries.php?action=preview` y `templates.php?action=preview` (POST,
+    no guardan).
+  - El `<article>` público ahora sale de `render_obituary_article()`, que
+    comparten la página y la vista previa.
+  - El SSO aquí: `SSO_STATE_TTL_SECONDS` = 1800.
+- `7d911d0`: un único botón **Tarjeta** en lugar de las 3 tarjetas GD.
+  - `obituaries.php?action=card` devuelve el HTML de la plantilla.
+  - El panel lo convierte en PNG con html2canvas 1.4.1 (cdnjs) dentro de un
+    iframe oculto, al doble de tamaño (1080 px).
+  - Ojo: asignar `srcdoc` antes de insertar el iframe, o `onload` salta con
+    about:blank. Leer el canvas antes de quitar el iframe.
+- `09b499f`: plantilla **Cinta Conmemorativa** = la tarjeta que usa el
+  cliente (Canva 900×1600). Migración 23.
+  - Fondo `img/obit-cinta-fondo.png`, recortado de su tarjeta sin el texto.
+  - Ángel `img/angel-marca-agua.svg`, como `<img>` porque html2canvas no
+    soporta mask-image.
+  - CSS `.obit-cinta2-*` en cqw.
+  - Fuentes League Spartan y Open Sans Light Italic.
+  - Marcadores nuevos `{{birth_date_short}}` y `{{death_date_short}}`.
+  - Comparada píxel a píxel con la del cliente: diferencias de 1-5 px.
+- `9d5b5ec`: imagen para redes (og, GD 1200×630) con el diseño de la tarjeta.
+  og:title "En memoria de X (Q.E.P.D.) | Funeraria del Zulia" y descripción
+  con fechas. Fuentes TTF estáticas OFL en `assets/fonts/`.
+  - Que WhatsApp mostrara la portada era porque la sección Obituarios estaba
+    apagada; el usuario ya la encendió.
+- `e939356` + `339a51f`: Instagram y Facebook en el pie, en la portada y en
+  `partials/site_footer.php`. `sameAs` en el JSON-LD. CSS `v=20261105-1`.
+- `6e8f64c`: mapa, "Cómo llegar" y `hasMap` apuntan a la ficha de Google
+  (`cid=15910872118152854902`). Verificada en Maps: dirección M95W+839, C. 84,
+  tel. +58 261-4176653.
+- Prevision-Funeraria `e53fdba` (desplegado; lo hizo la sesión de PF): el
+  "Entrar con Previsión Funeraria" vuelve al sitio aunque se pase por
+  recuperar contraseña. Antes dejaba a la persona en el panel de PF. Detalle
+  en `Prevision-Funeraria/docs/auth/2026-11-04-regreso-sso.md`.
+- Respondido sin cambios de código: cómo entra un titular al portal de PF.
+  Es `https://app.previsionfuneraria.com/portal/login?empresa=fdz`, con
+  cédula + código de 6 dígitos por correo. En el sitio sigue apagado.
+
+**Validaciones:**
+- `php -l` de todos los PHP tocados: sin errores. PHP 8.2 + GD local: la
+  ruta está en la memoria `recuperacion-contexto-2026-10`.
+- Render de la plantilla nueva con `obit_preview_document()` (PHP local).
+- Imagen og generada con GD local: nombre corto y nombre largo de 3 líneas.
+- Captura html2canvas de la Cinta en Chrome (CDP 9333) contra la tarjeta del
+  cliente.
+- En vivo el 2026-11-06: versión de assets, pie, mapa, plantillas (API
+  pública), canonical/sitemap en www, Obituarios 200, `/o/6/wa` con el agente
+  de WhatsApp → og nueva (descargada y revisada), `wp-login.php` 410.
+- **No se probó con sesión de staff:** Vista previa, Tarjeta y fecha de
+  nacimiento en el panel real.
+
+**Bloqueos:**
+- Mercantil (pago con tarjeta en el portal): falta RIF, cuenta, convenio y
+  piloto. Ver la memoria `mercantil-domiciliacion-estado`.
+- Estado de WordPress y Wordfence en `_wp-anterior/`: sin confirmar.
+
+**Siguiente acción:**
+1. Search Console: enviar `sitemap.php` y pedir indexación. Lista y orden en
+   BACKLOG → "Retomar aquí".
+2. Que el usuario o el cliente prueben en el panel: Vista previa, Tarjeta con
+   cada plantilla y fecha de nacimiento.
+3. Decidir con el cliente: Portal de Clientes (enlace), Directorio médico y
+   Recursos (404), rótulo "Oficios y sepelio", y una imagen para redes según
+   la plantilla.
+
+---
+
 ## Cierre: 2026-11-06 — Prevision-Funeraria: fase E, domiciliación, portal y pagos del portal
 
 **Rama:** sin cambios de código en este repo en esta sesión; solo esta entrada y el

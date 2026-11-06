@@ -95,7 +95,6 @@ Runtime.evaluate / Page.captureScreenshot).
 
 | Tarea | Estado | Notas |
 |---|---|---|
-| Desplegar el código del 2026-10-27 (`9ef7d8d`) y revisar en el servidor | Pendiente | Migraciones 14, 15 y 16 ya aplicadas (verificado en vivo 2026-10-27). Revisar tras el deploy: Inicio y Preguntas Frecuentes no lleven a Legado, planes, un obituario sin foto, interruptor del Portal de Clientes en Configuración. |
 | Respuestas del cliente a las preguntas del 2026-10-27 | Esperando al cliente | Cobertura regional, edades, Grupo Selecto (una o dos tarjetas, quién lo contrata, destino del botón, precios, contenido), color de "Paz a su alma", qué logo sobraba, "En memoria de", texto de gestión documental, Tradición < Esencial y planes extra en PF, correo de avisos. **Nuevo:** revisar la tabla comparativa de `planes/#comparar` (en especial la columna Esencial: servicio a domicilio, oficios, flores y cafetería marcados como no incluidos según el catálogo de PF) y los datos de la sección Contacto de la portada. Grupo Selecto existe en Legado Holding (tenant `lh`: esencial-selecto, vanguardia-selecto, toda Venezuela). |
 | Grupo Selecto como 4to plan | Hecho (2026-10-29), falta desplegar | Publicado como "Plan Grupo Selecto" con el contenido del "Plan Vanguardia Grupo Selecto" de Legado (tenant `lh`, `vanguardia-selecto`), sin precios: tarjeta en portada y `planes/`, página `planes/plan-grupo-selecto.php`, columna en `#comparar`, sitemap. El Plan Vanguardia se alineó con el "Plan Vanguardia Zulia" de Legado (ataúd, oficios, flores naturales, cremación/bóveda aérea/inhumación, 6 familiares, padres hasta 80) y ya no muestra precio. Pendiente: no existe en el catálogo de `fdz` en PF (el botón de pago electrónico solo deja el lead); confirmar con el cliente la tabla (Esencial sin ataúd; Selecto con servicio a domicilio/cafetería "a su elección"). |
 | ¿Los planes son "a nivel regional"? | Pendiente (respuesta del cliente) | El cliente lo pregunta por cada plan. Falta definir la cobertura geográfica para publicarla. |
@@ -127,7 +126,6 @@ Runtime.evaluate / Page.captureScreenshot).
 | Tarea | Estado | Notas |
 |---|---|---|
 | Fase 1 de seguridad del login local (ahora solo emergencia): MFA TOTP, vencimientos, revocación, cabeceras | Pendiente (aprobada) | Ya hechos el 2026-10-28 con el SSO: límite de intentos y los 4 perfiles. Lo demás en `docs/specs/2026-10-27-autenticacion-staff-y-portal-clientes.md`, sección 4; necesita una migración nueva después de la 18. |
-| Probar el interruptor del Portal de Clientes tras el deploy | Pendiente | Migración 14 aplicada (2026-10-27); código sin probar contra PHP/MySQL real. Activar el enlace solo cuando el portal de PF esté listo para `fdz`. |
 | PF: entregabilidad del correo del OTP y marca FDZ | Pendiente (en Prevision-Funeraria) | El OTP queda **solo por correo** (decisión 2026-10-27); clientes sin correo registrado no pueden entrar — limitación conocida. |
 | **"Entrar con Previsión Funeraria" (SSO del panel con el staff de `fdz`)** — puesta en marcha | Pendiente — código listo (2026-10-28) | PF: rama `feature/sso-sitios` (465 pruebas OK) → merge, migración `control/0017` en remoto, deploy, `npm run oauth-client`. Este repo: importar `18_sso_prevision.sql`, bloque `pf_sso` en `api/config.php`, deploy, y dejar 1-2 cuentas locales de emergencia (correo propio). Pasos en `docs/specs/2026-10-28-sso-prevision-funeraria.md`, sección 7. PHP sin probar contra servidor real. |
 | Asignar los perfiles del sitio (`sitio.*`) a los roles de `fdz` en PF | Pendiente | Solo `tenant_global_admin` los recibe por migración. Definir con el cliente qué rol modera condolencias, publica obituarios, etc. |
@@ -158,6 +156,8 @@ Runtime.evaluate / Page.captureScreenshot).
 
 | Tarea | Estado | Motivo |
 |---|---|---|
+| Desplegar el código del 2026-10-27 (`9ef7d8d`) | Hecho | Incluido en producción (que está en `6e8f64c`, verificado el 2026-11-06). |
+| Probar el interruptor del Portal de Clientes | Obsoleto | Lo reemplaza la fila "Encender el Portal de Clientes en el sitio" (Retomar aquí, 2026-11-06). |
 | Desplegar todo lo del 2026-11-02 al 05 e importar las migraciones 20-23 | Hecho | Verificado en vivo el 2026-11-06 (producción en `6e8f64c`). El 2026-11-04, el error de cPanel "no puede conectar al repositorio" era del servidor, no de GitHub; el usuario lo resolvió. |
 | `app.site_url` en `nuevo.` (canonical y sitemap) | Hecho | Corregido por el usuario; verificado el 2026-11-06: canonical y sitemap con www. |
 | Encender la sección Obituarios | Hecho | Encendida; verificado el 2026-11-06 (`obituarios.php` 200, `/o/6/wa` → obituario). |
