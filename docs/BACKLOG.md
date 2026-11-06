@@ -16,30 +16,42 @@ se cambian estados aquí y se agregan tareas nuevas. Las tareas `Hecho` /
 
 ## Abiertas
 
-### ▶ Retomar aquí — corte en curso (estado al 2026-11-03)
+### ▶ Retomar aquí (estado verificado en vivo el 2026-11-06)
 
-El sitio nuevo **ya está en la raíz de `www.funerariadelzulia.com`**. El
-despliegue del 2026-11-02 cayó en `public_html/` porque ya existía
-`_wp-anterior/`. El usuario copió `api/config.php` y `uploads/` desde la
-carpeta del ensayo. Lo verificado en vivo el 2026-11-03 está en `task.md`
-(entrada de arriba). No hace falta volver a comprobarlo.
+**Producción está al día** con `feature/prevision-funeraria` hasta `6e8f64c`.
+Se comprobó con curl el 2026-11-06, así que no hace falta volver a hacerlo:
+
+- `admin.js?v=20261104-2` en vivo.
+- Pie con Instagram y Facebook, y mapa con `cid=15910872118152854902`.
+- `img/obit-cinta-fondo.png` responde 200.
+- Migraciones 20-23 aplicadas: existe la plantilla Cruz de Luz, está la
+  pregunta frecuente de mascotas, la Cinta tiene la descripción nueva y
+  `birth_date` sale en el obituario 6.
+- `site_url` ya es www: canonical de servicios/ y sitemap solo con www.
+- La sección Obituarios está encendida: `obituarios.php` responde 200 y el
+  sitemap incluye obituarios.
+- `/o/6/wa` (agente WhatsApp) da 302 a `obituario.php`, con og:title
+  "En memoria de … | Funeraria del Zulia" y la imagen og nueva.
+- `wp-login.php` da 410.
+
+Sin decidir: Directorio médico y Recursos siguen en 404.
+
+PHP 8.2 con GD corre en local (ruta en la memoria
+`recuperacion-contexto-2026-10`): sirve para `php -l` y para generar
+imágenes GD. Para revisar en el navegador: Chrome aislado CDP 9333 (memoria
+`chrome-aislado-cdp`) y scripts `ev2.mjs`/`shot.mjs` (se rehacen fácil: CDP
+Runtime.evaluate / Page.captureScreenshot).
 
 | Tarea | Estado | Notas |
 |---|---|---|
-| **`app.site_url` del `public_html/api/config.php` sigue en `https://nuevo.funerariadelzulia.com`** | Pendiente — **urgente, bloquea Google** | Cambiar a `https://www.funerariadelzulia.com`. Hoy la portada sí tiene canonical www (no usa `site_url`). Servicios, planes, Nosotros, Crematorio, og:image y **todo `sitemap.php`** salen con `nuevo.`, que tiene noindex. En el mismo archivo revisar `app.env` = production, `allowed_origins` (www + sin www) y `pf_sso.redirect_uri` (callback www). Comprobar: `curl -s https://www.funerariadelzulia.com/sitemap.php` solo debe listar `www`. |
-| Secciones Obituarios / Directorio médico / Recursos apagadas | Pendiente (decidir con el cliente) | `obituarios.php`, `directorio-medico.php` y `recursos.php` dan **404** en el dominio (2026-11-03). Por eso los obituarios tampoco salen en el sitemap. Se encienden en el panel: Sitio web → Secciones. |
-| Search Console tras corregir `site_url` | Pendiente | Enviar `https://www.funerariadelzulia.com/sitemap.php` y quitar `wp-sitemap.xml` si aparece. Probar robots.txt. Pedir indexación, unas 10-12 por día, en este orden: `/`, `servicios/`, `servicios/funeral-tradicional.php`, `servicios/cremacion.php`, `crematorios-del-zulia.php`, `planes/`, `planes/plan-vanguardia.php`, `planes/plan-grupo-selecto.php`, `planes/plan-tradicion.php`, `planes/plan-esencial.php`, `servicios/traslados.php`, `servicios/capillas-velatorias.php`, `nosotros.php`, `servicios/cremacion-mascotas.php`, `obituarios.php`. En la inspección, la canónica debe decir `www`. |
+| Search Console | Pendiente — **lo siguiente** | `site_url` ya está corregido (2026-11-06).  Enviar `https://www.funerariadelzulia.com/sitemap.php` y quitar `wp-sitemap.xml` si aparece. Probar robots.txt. Pedir indexación, unas 10-12 por día, en este orden: `/`, `servicios/`, `servicios/funeral-tradicional.php`, `servicios/cremacion.php`, `crematorios-del-zulia.php`, `planes/`, `planes/plan-vanguardia.php`, `planes/plan-grupo-selecto.php`, `planes/plan-tradicion.php`, `planes/plan-esencial.php`, `servicios/traslados.php`, `servicios/capillas-velatorias.php`, `nosotros.php`, `servicios/cremacion-mascotas.php`, `obituarios.php`. En la inspección, la canónica debe decir `www`. |
+| Probar en el panel lo del 2026-11-04 con datos reales | Pendiente (lo hace el usuario o el cliente) | Desplegado. No se probó con sesión de staff: (1) Vista previa en el formulario de obituario y en el de plantilla. (2) Botón **Tarjeta**: PNG 1080×1920 con html2canvas (cdnjs); con la plantilla Cinta debe salir igual a la tarjeta del cliente. Revisar las demás plantillas, sobre todo con foto. (3) Fecha exacta de nacimiento y los tipos Inhumación y Servicio Directo. Si html2canvas falla, el panel avisa con un toast. |
+| Encender el Portal de Clientes en el sitio | Pendiente (decidir con el cliente) | Hoy el enlace está apagado: no aparece en el pie. El portal de PF funciona: `https://app.previsionfuneraria.com/portal/login?empresa=fdz`. Se entra con la cédula y un código de 6 dígitos que llega al correo. Antes de encenderlo, probar con un titular real que tenga correo y cuotas. Para encenderlo: panel → Configuración → Portal de Clientes + esa URL. El pago con tarjeta Mercantil sigue bloqueado (RIF, cuenta, convenio, piloto); el reporte manual de transferencia sí funciona. |
 | Confirmar el estado de WordPress y Wordfence en `public_html` | Pendiente (preguntar al usuario) | El 2026-11-02 el usuario dijo que iba a "limpiar toda la raíz". Se le pidió **mover** (no borrar) WordPress a `_wp-anterior/` (que debe quedar con `.htaccess` → `Require all denied`), y quitar antes `auto_prepend_file` de `.user.ini`. No se sabe si lo hizo. El sitio responde bien: 200, `wp-login.php` → 410. **No borrar** `nuevo.funerariadelzulia.com/` hasta revisar que nada dependa de él. Está con noindex y comparte la base de datos. |
-| Desplegar los últimos commits (`ea624ec` sello del crematorio, `c622b3d` lastmod del sitemap) | Pendiente | Solo si el último despliegue fue anterior a ellos. Comprobar con la imagen `img/crematorio.svg`: debe mostrar el sello. |
-| Migraciones 20 y 21 en la base real | Sin confirmar | `20_plantilla_catolica.sql` y `21_interes_servicios.sql`. `api/diag.php` lista las tablas que faltan. |
-| Fecha exacta de nacimiento en obituarios | Hecho en código (2026-11-03), falta desplegar y probar | El panel pide la fecha completa (`birth_date`; `birth_year` se sigue guardando y es lo que se ve en los obituarios viejos). Se muestra en la página, en las 3 tarjetas PNG (la Esquela ahora también lleva fechas) y en la imagen para redes; si no cabe en una línea se achica o se parte en dos. `{{birth_year}}` de las plantillas muestra ya la fecha completa. Importar `database/22_obituarios_nacimiento_y_servicios.sql`. **Obligatoria**: también agrega los tipos de servicio Inhumación y Servicio Directo (sin ella, guardar con esos tipos da error). Traslado y Otro salieron del panel; los obituarios viejos los conservan. Probar: editar un obituario con fecha, ver la página y descargar las 3 tarjetas. PHP/GD sin probar local. |
-| Vista previa del obituario y de la plantilla antes de guardar | Hecho en código (2026-11-04), falta desplegar y probar | Pedido del cliente. Botón **Vista previa** en ambos formularios: `obituaries.php?action=preview` y `templates.php?action=preview` (POST, sin guardar) devuelven la página armada con el mismo `<article>` de `obituario.php` (ahora `render_obituary_article()` en `api/lib/render.php`). Se muestra en un iframe sin scripts, en tamaño computadora o teléfono. La foto todavía no subida se ve desde el equipo. Las plantillas se prueban con un obituario de ejemplo. PHP sin probar local. |
-| Entrar con Previsión Funeraria terminaba en el panel de PF | Hecho en el árbol de Prevision-Funeraria **sin commitear** (2026-11-04); lo aprueba y despliega una sesión de PF siguiendo `Prevision-Funeraria/docs/auth/2026-11-04-regreso-sso.md` | Reportado el 2026-11-04. El lado de FDZ y `/oauth/authorize` funcionaban (rastreado en vivo). El destino de regreso se guardaba en `sessionStorage` y se borraba al pasar por `/login` sin `?next`. Por eso "¿Olvidaste tu contraseña?" → "Volver a ingresar" (o el correo de recuperación en otra pestaña) dejaba a la persona en el panel de PF. Ahora va en `localStorage` con 30 min de vida (`public/admin.js` de PF). Aquí `SSO_STATE_TTL_SECONDS` pasó de 10 a 30 min para que el regreso no dé "expirado". |
-| Una sola **Tarjeta** igual a la plantilla del obituario | Hecho en código (2026-11-04), falta desplegar y probar | Pedido del cliente: las 3 tarjetas GD (cinta, católica, esquela) no se parecían a la plantilla. Ahora hay un único botón **Tarjeta**. `obituaries.php?action=card` devuelve el HTML de la plantilla (`obit_card_document()`); el panel lo dibuja en un iframe oculto y lo pasa a PNG con html2canvas 1.4.1 (cdnjs, cargado dentro del iframe), al doble de resolución. La captura se probó en Chrome con los estilos del sitio en vivo. `api/obituary_card.php` y las funciones GD quedan solo para la imagen de redes (og). Probar con cada plantilla real, sobre todo la foto. |
-| Plantilla "Cinta Conmemorativa" = la tarjeta que usa el cliente | Hecho en código (2026-11-04), falta importar la migración 23, desplegar y probar | El cliente mandó su tarjeta actual (Canva, 900×1600). La nueva plantilla la calca: `img/obit-cinta-fondo.png` (recortado de esa tarjeta, sin texto), `img/angel-marca-agua.svg` y `.obit-cinta2-*` en `styles.css`. Fuentes League Spartan y Open Sans Light Italic. Marcadores nuevos `{{birth_date_short}}` y `{{death_date_short}}` (dd/mm/aaaa). Sin foto. Se comparó píxel a píxel con la tarjeta del cliente renderizando con html2canvas (diferencias de 1-5 px). La imagen para redes (`obituario_og.php`, GD) no cambió. |
-| Vista previa al compartir un obituario (WhatsApp/Facebook) | Hecho en código (2026-11-04), falta desplegar; **el cliente debe encender la sección Obituarios** | Reportado el 2026-11-04: `/o/6/wa` mostraba la portada. Causa: la sección Obituarios está apagada, y `o.php` manda a `/` y `obituario.php` da 404. Se corrige encendiéndola en el panel: Sitio web → Secciones. Además, la imagen og (`obit_og_image`, GD, 1200×630) ahora tiene el diseño de la tarjeta del cliente: fondo de la cinta, "En memoria de", nombre en mayúsculas, PAZ A SU ALMA y fechas dd/mm/aaaa. Fuentes estáticas OFL en `assets/fonts/` (League Spartan, Open Sans Light Italic). og:title es "En memoria de X (Q.E.P.D.) \| Funeraria del Zulia" y la descripción nombra a la funeraria. Probado con PHP 8.2 + GD local. WhatsApp guarda la vista previa por URL: para probar, agregar `?1` al enlace. |
+| Directorio médico y Recursos apagados (404) | Pendiente (decidir con el cliente) | Se encienden en el panel: Sitio web → Secciones. Obituarios ya está encendido (2026-11-06). |
 | Rótulo "Oficios y sepelio" en obituarios | Pendiente (confirmar con el cliente) | Se dejó a propósito: aquí "sepelio" es el entierro. El cliente pidió cambiar "sepelio tradicional" y "velación". |
 | ¿El sello también en el botón "Cremación en Maracaibo"? ¿Ese título pasa a "en el Estado Zulia"? | Pendiente (confirmar con el cliente) | Hoy el sello está solo en el botón y la imagen de Crematorios del Zulia. "Cremación en Maracaibo" se mantuvo por SEO. |
+| Imagen para redes de las plantillas que no son Cinta | Pendiente (preguntar si hace falta) | `obituario_og.php` siempre dibuja el diseño Cinta (GD, `obit_og_image`), sin importar la plantilla del obituario. Para un obituario con la plantilla católica, la vista previa de WhatsApp sale con la cinta. Variante posible: elegir el diseño según `template_id`. |
 
 ### Urgente — sitio de prueba (`legadoholding.com/funerzul/`)
 
@@ -58,7 +70,13 @@ carpeta del ensayo. Lo verificado en vivo el 2026-11-03 está en `task.md`
 | Cargar el catálogo de servicios del tenant `fdz` | Pendiente | `GET /api/public/t/fdz/servicios` sigue devolviendo `items: []` (2026-10-08). El tenant `lh` sí tiene 3 servicios. Ojo: los slugs no coinciden con los 4 de `servicios/*.php`. |
 | Corregir precio de Tradición por debajo de Esencial | Pendiente | 2026-10-08: TRADICION US$12,00/mes vs. ESENCIAL US$13,70/mes. El catálogo de `fdz` tiene ahora 9 planes (incluye variantes "NEW" y planes de empleados al 30%/50%) — confirmar cuáles deben mostrarse en el sitio público. |
 | Mercantil: spec completa (`POST /api` + MasterKey del webhook) | Bloqueado | Depende del banco. Relevante para Prevision-Funeraria; este repo ya no tiene endpoints de cobro. *(Migrada de Notion.)* No confundir con la domiciliación por archivo (fila siguiente), que no depende de esto. |
-| Mercantil: piloto de domiciliación por archivo en `fdz` | Pendiente (datos del usuario) | 2026-11-02: formatos verificados contra archivos reales (cobro idéntico byte a byte) y **cargados y activos en producción** (versiones 1-4: afiliación, cobro, respuesta de afiliación, respuesta de cobro). Faltan en PF › Configuración: **RIF de la empresa** (vacío), **cuenta recaudadora Mercantil** (20 dígitos) y **convenio** (requiere afiliación, aprobadores, días de reintento). Luego: lote de afiliación con pocos contratos → respuesta → lote de cobro. Pedir a Mercantil la tabla completa de códigos de respuesta; falta el formato de DESAFILIACION. Detalle en `Prevision-Funeraria/docs/domiciliacion/mercantil.md`. |
+| Mercantil: piloto de domiciliación por archivo en `fdz` | Pendiente (usuario) | **2026-11-05:** ya hay convenio 2356 (exige afiliación) y una autorización verificada esperando afiliación; el lote #1 de cobro quedó vacío por error (anularlo). Siguiente: Domiciliación › Pendientes › "Preparar lote de afiliación" → aprobación por otra persona → archivo a Mercantil → respuesta → mandato activo → lote de cobro. Antes, 2026-11-02: formatos verificados contra archivos reales (cobro idéntico byte a byte) y **cargados y activos en producción** (versiones 1-4: afiliación, cobro, respuesta de afiliación, respuesta de cobro). Faltan en PF › Configuración: **RIF de la empresa** (vacío), **cuenta recaudadora Mercantil** (20 dígitos) y **convenio** (requiere afiliación, aprobadores, días de reintento). Luego: lote de afiliación con pocos contratos → respuesta → lote de cobro. Pedir a Mercantil la tabla completa de códigos de respuesta; falta el formato de DESAFILIACION. Detalle en `Prevision-Funeraria/docs/domiciliacion/mercantil.md`. |
+| PF: desplegar lo del 05-11 y aplicar migraciones | Pendiente (usuario) | En Prevision-Funeraria: `npm.cmd run migrate:remote` (empresa 0006 y 0007, control 0031) y `npm.cmd run deploy`. Confirmado en prod hasta `6b869a6`; lo posterior (paneles apilados, pagos del portal con tasa/fecha, permiso de datos personales, seguridad del menú) sin confirmar. |
+| PF: configurar comprobantes y permisos tras el deploy | Pendiente (usuario) | Bancos y pagos › pagos manuales: WhatsApp y correo para comprobantes por forma de pago. Roles: asignar "Datos personales: atender solicitudes" y "Conciliar pagos". |
+| PF: subir la foto del comprobante en el portal | Pendiente (propuesta) | Hoy el titular la manda por WhatsApp/correo con enlaces armados. Se puede guardar en R2 (binding `EXPORTACIONES` ya existe) y mostrarla en *Pagos del portal pendientes*. |
+| PF: rediseño del portal del titular | Pendiente (propuesta) | Sigue con diseño básico (estados en minúscula, sin tarjetas de resumen, poco pensado para teléfono). |
+| PF: ingreso al portal con la cédula en cualquier formato | Pendiente (propuesta) | `getClienteByDocumento` compara exacto: `V-12345678` ≠ `12345678`. Normalizar letra, guiones y puntos. |
+| PF: sitio institucional — correo comercial y Search Console | Pendiente (usuario) | `previsionfuneraria.com` usa `soporte@` como contacto comercial; decidir si se crea `ventas@`. Registrar `https://previsionfuneraria.com/sitemap.xml` en Search Console. |
 
 ### Comentarios del cliente (2026-11-02)
 
@@ -140,6 +158,18 @@ carpeta del ensayo. Lo verificado en vivo el 2026-11-03 está en `task.md`
 
 | Tarea | Estado | Motivo |
 |---|---|---|
+| Desplegar todo lo del 2026-11-02 al 05 e importar las migraciones 20-23 | Hecho | Verificado en vivo el 2026-11-06 (producción en `6e8f64c`). El 2026-11-04, el error de cPanel "no puede conectar al repositorio" era del servidor, no de GitHub; el usuario lo resolvió. |
+| `app.site_url` en `nuevo.` (canonical y sitemap) | Hecho | Corregido por el usuario; verificado el 2026-11-06: canonical y sitemap con www. |
+| Encender la sección Obituarios | Hecho | Encendida; verificado el 2026-11-06 (`obituarios.php` 200, `/o/6/wa` → obituario). |
+| Sello del crematorio y lastmod del sitemap (`ea624ec`, `c622b3d`) | Hecho | En producción (`img/crematorio.svg` con el sello; "Desde 2021"). |
+| Fecha exacta de nacimiento y tipos Inhumación / Servicio Directo | Hecho | `2eea8ac`, `42d1c42` + migración 22, en producción. |
+| Vista previa de obituario y plantilla | Hecho | `5463368`, en producción. Falta solo la prueba con sesión (fila abierta). |
+| Una sola Tarjeta igual a la plantilla | Hecho | `7d911d0`, en producción. |
+| Plantilla Cinta = tarjeta del cliente | Hecho | `09b499f` + migración 23, en producción. |
+| Vista previa al compartir por WhatsApp/Facebook | Hecho | `9d5b5ec`, verificada en vivo con el agente de WhatsApp. |
+| Instagram y Facebook en el pie | Hecho | `e939356` (+ `sameAs` en el JSON-LD), en producción. |
+| Mapa y "Cómo llegar" a la ficha de Google de la empresa | Hecho | `6e8f64c`, cid 15910872118152854902, en producción. |
+| "Entrar con Previsión Funeraria" terminaba en el panel de PF tras pasar por recuperar contraseña | Hecho | 2026-11-04. Causa: PF guardaba el regreso en sessionStorage y lo borraba en /login sin ?next. PF `e53fdba` lo guarda 30 min en localStorage; verificado en producción el 2026-11-06 (`leerDestinoTrasLogin` en admin.js en vivo). Aquí `SSO_STATE_TTL_SECONDS` = 1800 (`5463368`). |
 | Recuperar contraseña en Prevision-Funeraria (el formulario mostraba correo y clave juntos; sin confirmación ni "ojo") | Hecho | 2026-11-02, commit `dab51f9` de PF, desplegado. |
 | Aplicar migraciones 14, 15 y 16 | Hecho | Aplicadas por el usuario el 2026-10-27. Verificado en vivo: FAQ nueva en la portada, obituarios con "Acto Velatorio", "En memoria de" en la plantilla predeterminada y ninguna plantilla con `{{photo}}`. |
 | Decidir esquema de login del personal y perfiles | Hecho | 2026-10-27: Opción C (híbrida) + 4 perfiles; portal de clientes en PF con OTP solo por correo. Ver sección 8 de la spec. |

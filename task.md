@@ -11,6 +11,43 @@
 
 ---
 
+## Cierre: 2026-11-06 — Prevision-Funeraria: fase E, domiciliación, portal y pagos del portal
+
+**Rama:** sin cambios de código en este repo en esta sesión; solo esta entrada y el
+Backlog. El trabajo fue en `estebanjvasquez/Prevision-Funeraria` (`main`, pusheado hasta
+`efecc02`). **Para retomar ese trabajo basta la entrada de arriba de
+`Prevision-Funeraria/task.md`** (estado de producción, commits y siguiente acción).
+Commits de otras sesiones en esta rama desde la última entrada (obituarios y sitio:
+`2eea8ac` … `6e8f64c`) — no salen en esta conversación; su detalle está en sus mensajes.
+
+**Hecho (en PF, 04 → 05-11):**
+- Fase E del portal de plataforma: E5 (cartera de vendedores), E3 (estructura de
+  cumplimiento), E2 (condiciones generales) y E4 (datos personales) en producción.
+- Domiciliación: verificación de la autorización por un aprobador, corrección de datos,
+  bandeja **Pendientes**, lote vacío ya no se crea, paneles apilados corregidos.
+- Portal del titular y pagos: tasa BCV y fecha del pago, WhatsApp/correo para
+  comprobantes, comprobación automática en *Pagos del portal pendientes* (frena montos que
+  no alcanzan), permiso por rol para datos personales.
+- Cuentas bancarias con código SUDEBAN automático y cuentas de EE. UU. (ABA).
+- Sitio institucional `previsionfuneraria.com` para vender la plataforma a empresas de
+  previsión de Venezuela (SEO, JSON-LD, sitemap, llms.txt).
+- Seguridad: secciones de configuración solo con permiso, también entrando por dirección.
+
+**Validaciones:** PF 693/693 pruebas y `tsc` limpio (05-11); UI verificada en el Chrome
+aislado contra el servidor local. Nada que validar en este repo.
+
+**Bloqueos:** sin confirmar el último deploy de PF ni las migraciones empresa 0006/0007 y
+control 0031 (las corre el usuario). Siguen los de terceros: datos legales de E3, cuentas
+de cobro y proveedor SENIAT de SISTEG, códigos de respuesta y DESAFILIACION de Mercantil.
+
+**Siguiente acción:**
+1. Usuario: `npm.cmd run migrate:remote` y `npm.cmd run deploy` en Prevision-Funeraria.
+2. Piloto Mercantil en fdz (ya hay convenio 2356 y una autorización verificada): anular el
+   lote #1 vacío → lote de afiliación desde Pendientes → respuesta → cobro.
+3. Ver Backlog › "Del lado de Prevision-Funeraria" para lo propuesto y no hecho.
+
+---
+
 ## Cierre: 2026-11-03 (2) — Prevision-Funeraria: recuperar contraseña y domiciliación Mercantil
 
 **Rama:** sin cambios de código en este repo; solo docs (`SPEC.md` al día con
